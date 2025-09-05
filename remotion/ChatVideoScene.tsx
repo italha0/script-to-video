@@ -101,16 +101,16 @@ export const ChatVideoScene: React.FC<ChatVideoSceneProps> = ({ characters, mess
             <div style={{ fontSize: 22, fontWeight: 700, color: "#111827" }}>Messages</div>
           </div>
 
-          <div style={{ flex: 1, padding: "0 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ flex: 1, padding: "0 20px", display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 14, width: "100%" }}>
             {messages.map((message, index) => {
               const character = getCharacterById(message.characterId) || { id: "_", name: "User", color: "#3074f2" }
-              const isOwnMessage = userCharacterId ? message.characterId === userCharacterId : index % 2 === 1
+              const isOwnMessage = userCharacterId ? message.characterId === userCharacterId : index % 2 === 0
               const timing = getMessageTiming(index)
 
               return (
                 <div key={message.id}>
                   <Sequence from={timing.typingStart} durationInFrames={timing.typingEnd - timing.typingStart}>
-                    <div style={{ display: "flex", alignItems: "flex-end", gap: 12, justifyContent: isOwnMessage ? "flex-end" : "flex-start" }}>
+                    <div style={{ width: "100%", display: "flex", alignItems: "flex-end", gap: 12, justifyContent: isOwnMessage ? "flex-end" : "flex-start" }}>
                       <TypingIndicator isVisible={true} color={isOwnMessage ? "#0a84ff" : "#a1a1aa"} />
                     </div>
                   </Sequence>
@@ -157,8 +157,9 @@ const MessageBubble: React.FC<{
   const scale = spring({ frame: animationFrame, fps, config: { damping: 15, stiffness: 150 }, from: 0.8, to: 1 })
 
   return (
-    <div
+  <div
       style={{
+    width: "100%",
         display: "flex",
         alignItems: "flex-end",
         gap: 12,
@@ -167,7 +168,7 @@ const MessageBubble: React.FC<{
         transform: `translateY(${translateY}px) scale(${scale})`,
       }}
     >
-      <div style={{ maxWidth: "78%" }}>
+  <div style={{ maxWidth: "78%", marginLeft: isOwnMessage ? 0 : 8, marginRight: isOwnMessage ? 8 : 0 }}>
         <div
           style={{
             display: "inline-block",
