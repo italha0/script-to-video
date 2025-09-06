@@ -207,20 +207,17 @@ export default function EditorPage() {
     }
   }
 
-  const generateVideo = async () => {
+  // Updated: Generate video using Remotion instead of downloading JSON
+  const downloadFramesJson = async () => {
     if (messages.length === 0) {
-      toast({
-        title: "No messages to render",
-        description: "Add some messages to your chat before generating a video.",
-        variant: "destructive",
-      })
+      toast({ title: "No messages to export", description: "Add some messages first.", variant: "destructive" })
       return
     }
 
     setIsGeneratingVideo(true)
 
     try {
-      console.log("[v0] Starting video generation request...")
+      console.log("[Remotion] Starting video generation request...")
       const response = await fetch("/api/generate-video", {
         method: "POST",
         headers: {
@@ -229,26 +226,37 @@ export default function EditorPage() {
         body: JSON.stringify({
           characters,
           messages,
-          isPro: false, // For now, all users are free users
+          isPro: false,
         }),
       })
 
-      console.log("[v0] Response status:", response.status)
+      console.log("[Remotion] Response status:", response.status)
 
       if (!response.ok) {
         let errorMessage = "Failed to generate video"
+        let errorDetails = ""
         try {
           const errorData = await response.json()
           errorMessage = errorData.details || errorData.error || errorMessage
-          console.log("[v0] Server error details:", errorData)
+          errorDetails = errorData.stack || ""
+          console.log("[Remotion] Server error details:", errorData)
+          console.log("[Remotion] Full error response:", errorData)
         } catch (parseError) {
-          console.log("[v0] Could not parse error response:", parseError)
+          console.log("[Remotion] Could not parse error response:", parseError)
+          console.log("[Remotion] Response status:", response.status)
+          console.log("[Remotion] Response statusText:", response.statusText)
         }
-        throw new Error(errorMessage)
+        
+        // Log the full error for debugging
+        console.error("[Remotion] API Error - Status:", response.status)
+        console.error("[Remotion] API Error - Message:", errorMessage)
+        console.error("[Remotion] API Error - Details:", errorDetails)
+        
+        throw new Error(`${errorMessage}${errorDetails ? ` - ${errorDetails}` : ''}`)
       }
 
       const videoBlob = await response.blob()
-      console.log("[v0] Video blob received, size:", videoBlob.size)
+      console.log("[Remotion] Video blob received, size:", videoBlob.size)
 
       // Create download link and trigger download
       const downloadUrl = URL.createObjectURL(videoBlob)
@@ -262,12 +270,12 @@ export default function EditorPage() {
 
       toast({
         title: "Video downloaded successfully!",
-        description: `Your chat video has been downloaded to your device.`,
+        description: "Your chat video has been downloaded to your device.",
       })
 
-      console.log("[v0] Video download completed")
+      console.log("[Remotion] Video download completed")
     } catch (error) {
-      console.error("[v0] Video generation error:", error)
+      console.error("[Remotion] Video generation error:", error)
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
       toast({
         title: "Video generation failed",
@@ -331,11 +339,20 @@ export default function EditorPage() {
             </Badge>
             <Button
               className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={generateVideo}
-              disabled={isGeneratingVideo || messages.length === 0}
+              onClick={downloadFramesJson}
+              disabled={messages.length === 0 || isGeneratingVideo}
             >
-              {isGeneratingVideo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
-              <span className="hidden sm:inline">{isGeneratingVideo ? "Generating..." : "Generate Video"}</span>
+              {isGeneratingVideo ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="hidden sm:inline">Generating Video...</span>
+                </>
+              ) : (
+                <>
+                  <Video className="w-4 h-4" />
+                  <span className="hidden sm:inline">Generate Video</span>
+                </>
+              )}
             </Button>
           </div>
         </div>

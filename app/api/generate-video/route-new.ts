@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFileSync, unlinkSync, existsSync, mkdirSync, writeFileSync } from 'fs';
+import { writeFileSync, readFileSync, unlinkSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { spawn } from 'child_process';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
-// Force dynamic to avoid caching & ensure Node runtime
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+const execAsync = promisify(exec);
 
 interface Character {
   id: string;
@@ -30,12 +29,9 @@ interface RequestBody {
 export async function POST(request: NextRequest) {
   let propsPath: string | null = null;
   let outputPath: string | null = null;
-  let hadError = false;
-  let childStdout = '';
-  let childStderr = '';
 
   try {
-    console.log('[API] Starting video generation (programmatic renderer)...');
+    console.log('[API] Starting video generation...');
     
     const body: RequestBody = await request.json();
     const { characters, messages, isPro } = body;
@@ -85,53 +81,61 @@ export async function POST(request: NextRequest) {
     console.log('[API] Output path:', outputPath);
     console.log('[API] Props data:', JSON.stringify(propsData, null, 2));
 
-    // Use external Node script to perform Remotion rendering to avoid React context issues in Next API route
-    const rendererScript = join(process.cwd(), 'scripts', 'render-video.cjs');
-    if (!existsSync(rendererScript)) {
-      throw new Error(`Renderer script missing at ${rendererScript}`);
+    // First, let's test if remotion is available
+    try {
+      const versionResult = await execAsync('npx remotion --version', {
+        cwd: process.cwd(),
+        timeout: 30000
+      });
+      console.log('[API] Remotion version check:', versionResult.stdout);
+    } catch (versionError) {
+      console.error('[API] Remotion version check failed:', versionError);
+      throw new Error(`Remotion is not properly installed: ${versionError}`);
     }
 
-    // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
-    const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
-    console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
-    const child = spawn(process.execPath, args, {
+    // Check if our remotion files exist
+    const remotionIndexPath = join(process.cwd(), 'remotion', 'index.ts');
+    if (!existsSync(remotionIndexPath)) {
+      throw new Error(`Remotion index file not found at: ${remotionIndexPath}`);
+    }
+    console.log('[API] Remotion index file found:', remotionIndexPath);
+
+    // Build the command
+    const command = `npx remotion render remotion/index.ts MessageConversation "${outputPath}" --props="${propsPath}" --log=info`;
+    console.log('[API] Executing command:', command);
+    console.log('[API] Working directory:', process.cwd());
+
+    // Execute the command
+    const { stdout, stderr } = await execAsync(command, {
       cwd: process.cwd(),
-      stdio: ['ignore', 'pipe', 'pipe']
+      timeout: 300000, // 5 minutes timeout
+      maxBuffer: 1024 * 1024 * 10 // 10MB buffer
     });
 
-    await new Promise<void>((resolve, reject) => {
-      child.stdout.on('data', (d) => {
-        const line = d.toString();
-        childStdout += line;
-        console.log('[Renderer STDOUT]', line.trim());
-      });
-      child.stderr.on('data', (d) => {
-        const line = d.toString();
-        childStderr += line;
-        console.warn('[Renderer STDERR]', line.trim());
-      });
-      child.on('exit', (code) => {
-        if (code === 0) return resolve();
-        hadError = true;
-        reject(new Error(`Renderer exited with code ${code}`));
-      });
-      child.on('error', (err) => reject(err));
-    });
-
-    if (!existsSync(outputPath)) {
-      throw new Error('Render finished but output file missing');
+    console.log('[API] Command completed successfully');
+    console.log('[API] Command stdout:', stdout);
+    if (stderr) {
+      console.warn('[API] Command stderr:', stderr);
     }
 
-    const videoBuffer = readFileSync(outputPath);
-    console.log('[API] Render complete. Size:', videoBuffer.length);
+    // Check if video file exists
+    if (!existsSync(outputPath)) {
+      console.error('[API] Video file was not created at:', outputPath);
+      throw new Error('Video file was not created after successful command execution');
+    }
 
+    // Read the video file
+    const videoBuffer = readFileSync(outputPath);
+    console.log('[API] Video buffer size:', videoBuffer.length);
+
+    // Return the video as a response
     return new NextResponse(videoBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'video/mp4',
         'Content-Disposition': `attachment; filename="chat-video-${timestamp}.mp4"`,
-        'Content-Length': String(videoBuffer.length),
-      }
+        'Content-Length': videoBuffer.length.toString(),
+      },
     });
 
   } catch (error) {
@@ -149,14 +153,20 @@ export async function POST(request: NextRequest) {
         stack: error.stack
       });
       
-  // Handle specific error types
+      // Handle specific error types
       if (error.message.includes('ENOENT') || error.message.includes('not found')) {
         statusCode = 404;
         errorMessage = 'Required files not found. Please ensure the Remotion setup is complete.';
       } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
         statusCode = 408;
         errorMessage = 'Video generation timed out. Please try again.';
-  }
+      } else if (error.message.includes('Command failed')) {
+        statusCode = 500;
+        errorMessage = `Remotion command failed: ${error.message}`;
+      } else if (error.message.includes('not properly installed')) {
+        statusCode = 500;
+        errorMessage = 'Remotion is not properly installed or configured.';
+      }
     }
 
     return NextResponse.json(
@@ -164,8 +174,6 @@ export async function POST(request: NextRequest) {
         error: 'Video generation failed', 
         details: errorMessage,
         fullError: error instanceof Error ? error.message : String(error),
-        stdout: childStdout || undefined,
-        stderr: childStderr || undefined,
         stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : '') : undefined,
         timestamp: new Date().toISOString()
       },
@@ -182,7 +190,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    if (outputPath && !hadError) { // keep output if there was an error for inspection
+    if (outputPath) {
       try {
         unlinkSync(outputPath);
         console.log('[API] Video file cleaned up');

@@ -1,6 +1,8 @@
-import { Config } from "@remotion/cli/config"
+import { Config } from '@remotion/cli/config';
 
-Config.setVideoImageFormat("jpeg")
-Config.setOverwriteOutput(true)
-// Avoid white frames on Windows by using software ANGLE
-Config.setChromiumOpenGlRenderer("swangle")
+Config.setVideoImageFormat('jpeg');
+Config.setOverwriteOutput(true);
+Config.setPixelFormat('yuv420p');
+Config.setCodec('h264');
+Config.setBrowserExecutable(null);
+Config.setChromiumDisableWebSecurity(true);
