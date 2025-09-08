@@ -16,8 +16,11 @@ const GAP_SECONDS = 2;
 const TYPING_DURATION = 1.2; // seconds the typing bubble is shown
 const TYPING_GAP = 0.15; // gap before actual message appears
 const DELIVERED_DELAY = 1.0; // seconds after last sent message
-const KEYBOARD_DELAY_AFTER_DELIVERED = 1.0;
+// Keyboard typing effect configuration (for outgoing messages)
 const KEYBOARD_HEIGHT = 300;
+const KEYBOARD_LEAD = 1.0; // seconds keyboard appears before a sent message shows
+const KEYBOARD_TAIL = 0.6; // seconds keyboard remains after the sent message appears
+const KEYBOARD_MERGE_GAP = 0.3; // merge intervals separated by less than this
 
 const fontStack = 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
@@ -75,13 +78,32 @@ const TypingBubble: React.FC<{ startSec: number; endSec: number; sent: boolean }
   );
 };
 
-const Keyboard: React.FC<{ startSec: number }> = ({ startSec }) => {
+const Keyboard: React.FC<{ startSec: number; endSec?: number }> = ({ startSec, endSec }) => {
   const frame = useCurrentFrame();
-  const { fps, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
   const startFrame = Math.round(startSec * fps);
+  const endFrame = endSec != null ? Math.round(endSec * fps) : undefined;
   if (frame < startFrame) return null;
-  const progress = spring({ frame: frame - startFrame, fps, config:{ damping:16, mass:1, stiffness:180 } });
-  const translateY = interpolate(progress,[0,1],[KEYBOARD_HEIGHT,0]);
+  if (endFrame !== undefined && frame > endFrame) return null;
+
+  const appearFrames = 12; // frames for slide in
+  const disappearFrames = 12; // frames for slide out
+  const sinceStart = frame - startFrame;
+  const untilEnd = endFrame !== undefined ? endFrame - frame : Infinity;
+
+  const appearProgress = spring({ frame: sinceStart, fps, config:{ damping:16, mass:1, stiffness:180 } });
+  const slideIn = interpolate(appearProgress, [0,1],[KEYBOARD_HEIGHT,0]);
+  let translateY = slideIn;
+  let opacity = appearProgress;
+
+  if (endFrame !== undefined && untilEnd <= disappearFrames) {
+    // animate out
+    const outProgress = 1 - untilEnd / disappearFrames; // 0 -> 1
+    const eased = spring({ frame: Math.round(outProgress * disappearFrames), fps, config:{ damping:18, mass:0.9, stiffness:140 } });
+    const slideOut = interpolate(eased, [0,1],[0, KEYBOARD_HEIGHT]);
+    translateY = slideOut;
+    opacity = 1 - eased * 0.4; // slight fade
+  }
   const keyRows = [ ['Q','W','E','R','T','Y','U','I','O','P'], ['A','S','D','F','G','H','J','K','L'], ['⇧','Z','X','C','V','B','N','M','⌫'], ['123','😀','space','return'] ];
   const renderKey = (k: string) => {
     const isSpace = k==='space';
@@ -145,7 +167,26 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
   const lastSentIndex = [...messages].map((m,i)=> m.sent? i : -1).filter(i=>i>=0).pop();
   const lastSentAppearSec = lastSentIndex != null ? lastSentIndex * GAP_SECONDS : messages.length * GAP_SECONDS;
   const deliveredStartSec = lastSentAppearSec + DELIVERED_DELAY;
-  const keyboardStartSec = deliveredStartSec + KEYBOARD_DELAY_AFTER_DELIVERED;
+
+  // Build keyboard intervals: for each sent message show keyboard from (appearSec - LEAD) to (appearSec + TAIL)
+  interface Interval { start: number; end: number }
+  const rawIntervals: Interval[] = messages
+    .map((m,i)=> m.sent ? { start: i * GAP_SECONDS - KEYBOARD_LEAD, end: i * GAP_SECONDS + KEYBOARD_TAIL } : null)
+    .filter((v): v is Interval => !!v)
+    .map(iv => ({ start: Math.max(0, iv.start), end: Math.max(iv.start + 0.1, iv.end) }));
+
+  // Merge overlapping or close intervals
+  rawIntervals.sort((a,b)=> a.start - b.start);
+  const keyboardIntervals: Interval[] = [];
+  for (const iv of rawIntervals) {
+    const last = keyboardIntervals[keyboardIntervals.length - 1];
+    if (!last) { keyboardIntervals.push(iv); continue; }
+    if (iv.start - last.end <= KEYBOARD_MERGE_GAP) {
+      last.end = Math.max(last.end, iv.end); // merge
+    } else {
+      keyboardIntervals.push(iv);
+    }
+  }
 
   return (
     <AbsoluteFill style={{ background:'#000', fontFamily:fontStack, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -176,7 +217,10 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
             </div>
           </Sequence>
         </div>
-        <Keyboard startSec={keyboardStartSec} />
+        {/* Keyboard intervals: shows before each outgoing (sent) message */}
+        {keyboardIntervals.map((iv: { start: number; end: number }, idx: number) => (
+          <Keyboard key={idx} startSec={iv.start} endSec={iv.end} />
+        ))}
       </div>
     </AbsoluteFill>
   );
