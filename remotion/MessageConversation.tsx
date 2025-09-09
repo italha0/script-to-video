@@ -82,7 +82,7 @@ const TypingBubble: React.FC<{ startSec: number; endSec: number; sent: boolean }
   );
 };
 
-const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?: string }> = ({ startSec, endSec, currentInputText }) => {
+const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?: string; activeChar?: string }> = ({ startSec, endSec, currentInputText, activeChar }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const startFrame = Math.round(startSec * fps);
@@ -111,7 +111,24 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
   const keyRows = [ ['Q','W','E','R','T','Y','U','I','O','P'], ['A','S','D','F','G','H','J','K','L'], ['⇧','Z','X','C','V','B','N','M','⌫'], ['123','😀','space','return'] ];
   const renderKey = (k: string) => {
     const isSpace = k==='space';
-    return <div key={k} style={{ flex:isSpace?4:1, background:'#fff', borderRadius:6, padding:'10px 6px', textAlign:'center', fontSize:14, fontWeight:500, boxShadow:'0 1px 0 rgba(0,0,0,0.25)', margin:'0 3px' }}>{isSpace? '': k}</div>;
+    const normalizedActive = (activeChar || '').toLowerCase();
+    const keyChar = isSpace ? ' ' : k.toLowerCase();
+    const isActive = normalizedActive === keyChar && normalizedActive !== '';
+    const baseStyle: React.CSSProperties = {
+      flex: isSpace?4:1,
+      background: isActive ? '#8E8E93' : '#fff',
+      color: isActive ? '#FFFFFF' : '#000',
+      borderRadius:6,
+      padding:'10px 6px',
+      textAlign:'center',
+      fontSize:14,
+      fontWeight:500,
+      boxShadow:'0 1px 0 rgba(0,0,0,0.25)',
+      margin:'0 3px',
+      transform: isActive ? 'translateY(1px)' : 'translateY(0)',
+      transition:'background 80ms ease, color 80ms ease, transform 80ms ease'
+    };
+    return <div key={k} style={baseStyle}>{isSpace? '' : k}</div>;
   };
   const caretBlink = (frame / fps) % 1 < 0.5;
   const showCaret = true;
@@ -135,7 +152,7 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
 const StatusBar: React.FC<{ batteryLevel?: number }> = ({ batteryLevel = 100 }) => {
   const clamped = Math.min(100, Math.max(0, batteryLevel));
   return (
-    <div style={{ position:'absolute', top:0, left:0, right:0, height:44, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize:15, fontWeight:600, fontFamily:fontStack }}>
+  <div style={{ position:'absolute', top:0, left:0, right:0, height:44, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize:15, fontWeight:600, fontFamily:fontStack, zIndex:30 }}>
       <div>9:41</div>
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
         {/* Signal Bars */}
@@ -161,7 +178,7 @@ const StatusBar: React.FC<{ batteryLevel?: number }> = ({ batteryLevel = 100 }) 
 };
 
 const NavigationHeader: React.FC<{ contactName?: string }> = ({ contactName }) => (
-  <div style={{ position:'absolute', top:44, left:0, right:0, height:52, background:'#F2F2F7', borderBottom:'1px solid #C7C7CC', display:'flex', alignItems:'center', padding:'0 12px', fontFamily:fontStack }}>
+  <div style={{ position:'absolute', top:44, left:0, right:0, height:52, background:'#F2F2F7', borderBottom:'1px solid #C7C7CC', display:'flex', alignItems:'center', padding:'0 12px', fontFamily:fontStack, zIndex:20 }}>
     <div style={{ fontSize:17, color:'#007AFF' }}>Back</div>
     <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', fontSize:17, fontWeight:600 }}>{contactName || 'Contact'}</div>
   </div>
@@ -244,12 +261,17 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
   // Derive current input text
   const currentSec = frame / fps;
   let currentInputText = '';
+  let activeChar = '';
   if (keyboardStart != null && currentSec >= keyboardStart && (!keyboardEnd || currentSec <= keyboardEnd)) {
     const active = entries.find(e => e.msg.sent && e.typingStart !== undefined && e.typingEnd !== undefined && currentSec >= e.typingStart && currentSec < e.typingEnd);
     if (active && active.typingStart !== undefined) {
       const elapsed = currentSec - active.typingStart;
       const chars = Math.min(active.msg.text.length, Math.floor(elapsed * TYPE_SPEED));
       currentInputText = active.msg.text.slice(0, chars);
+      if (chars < active.msg.text.length) {
+        // character currently being typed (next char appearing)
+        activeChar = active.msg.text.charAt(chars).toLowerCase();
+      }
     } else {
       const sending = entries.find(e => e.msg.sent && e.typingEnd !== undefined && currentSec >= e.typingEnd && currentSec < e.appearSec);
       if (sending) currentInputText = sending.msg.text;
@@ -284,7 +306,7 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
       <div style={{ width:360, height:780, background:'#FFFFFF', borderRadius:48, position:'relative', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.4)', border:'6px solid #000' }}>
   <StatusBar batteryLevel={batteryLevel} />
   <NavigationHeader contactName={contactName} />
-  <div style={{ position:'absolute', top:96, left:0, right:0, bottom:0, padding:'0 12px', paddingBottom: 12 + keyboardVisibleHeight, display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box' }}>
+  <div style={{ position:'absolute', top:96, left:0, right:0, bottom:0, padding:'0 12px', paddingBottom: 4 + keyboardVisibleHeight, display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box', zIndex:5 }}>
           {entries.map(entry=>{
             const { msg, idx, appearSec, typingIndicatorStart, typingIndicatorEnd } = entry;
             const prev = entries[idx-1]?.msg;
@@ -305,7 +327,7 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
           })}
         </div>
         {keyboardStart != null && (
-          <Keyboard startSec={keyboardStart} endSec={keyboardEnd} currentInputText={currentInputText} />
+          <Keyboard startSec={keyboardStart} endSec={keyboardEnd} currentInputText={currentInputText} activeChar={activeChar} />
         )}
       </div>
     </AbsoluteFill>
