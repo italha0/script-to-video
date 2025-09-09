@@ -14,11 +14,10 @@ const nextConfig = {
   webpack: (config, { isServer, webpack }) => {
     config.module.rules.push({ test: /\.d\.ts$/, use: "ignore-loader" });
     if (isServer) {
-      // Use a direct import for webpack's IgnorePlugin
+      // Ignore all optional native Remotion compositor platform builds; they are dynamically required but optional.
       config.plugins.push(
         new webpack.IgnorePlugin({
-          resourceRegExp:
-            /^@remotion\/compositor-(linux-arm64-(musl|gnu)|darwin-arm64|win32-x64|linux-arm64)$/,
+          resourceRegExp: /^@remotion\/compositor-/,
         })
       );
     }
