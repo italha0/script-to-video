@@ -51,14 +51,16 @@ export async function POST(request: NextRequest) {
     console.log('[API] Processing', messages.length, 'messages with', characters.length, 'characters');
 
     // Transform data for Remotion
+    // Determine outgoing vs incoming.
+    // In the redesigned editor we use ids 'them' and 'you'. Outgoing (right side / blue) should be 'you'.
+    // Fallback: if legacy numeric ids, treat first character as 'them'.
+    const hasYouId = characters.some(c=>c.id==='you');
     const remotionMessages = messages.map((msg, index) => {
-      const character = characters.find(c => c.id === msg.characterId);
-      const isFirstCharacter = character?.id === characters[0]?.id;
-      
+      const isOutgoing = hasYouId ? msg.characterId === 'you' : (characters[1] ? msg.characterId === characters[1].id : false);
       return {
         id: index + 1,
         text: msg.text,
-        sent: isFirstCharacter,
+        sent: isOutgoing,
         time: `0:${String(index * 2).padStart(2, '0')}`
       };
     });
@@ -78,7 +80,8 @@ export async function POST(request: NextRequest) {
     propsPath = join(outputDir, `props-${timestamp}.json`);
 
     // Write props to temporary file
-    const propsData = { messages: remotionMessages };
+  const contactCharacter = characters.find(c=> c.id === 'them') || characters[0];
+  const propsData = { messages: remotionMessages, contactName: contactCharacter?.name || 'Contact' };
     writeFileSync(propsPath, JSON.stringify(propsData, null, 2));
 
     console.log('[API] Props file created at:', propsPath);

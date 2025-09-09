@@ -3,18 +3,16 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Plus, Send, Video, User, MessageSquare, ArrowLeft, Loader2, Save, FolderOpen, LogOut } from "lucide-react"
+import { Plus, Video, Loader2, Save, FolderOpen, LogOut, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-
 interface Character {
   id: string
   name: string
@@ -39,15 +37,14 @@ interface SavedScript {
 }
 
 export default function EditorPage() {
+  // Contact name (the other person). We keep two logical characters: them + you
+  const [contactName, setContactName] = useState("John Doe")
   const [characters, setCharacters] = useState<Character[]>([
-    { id: "1", name: "Alex", color: "bg-primary" },
-    { id: "2", name: "Sam", color: "bg-secondary" },
+    { id: "them", name: "John Doe", color: "bg-blue-500" },
+    { id: "you", name: "You", color: "bg-green-500" },
   ])
   const [messages, setMessages] = useState<Message[]>([])
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string>("1")
-  const [currentMessage, setCurrentMessage] = useState("")
-  const [newCharacterName, setNewCharacterName] = useState("")
-  const [isAddingCharacter, setIsAddingCharacter] = useState(false)
+  const [isAddingCharacter, setIsAddingCharacter] = useState(false) // retained for compatibility with save/load (unused visually)
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -63,28 +60,16 @@ export default function EditorPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       setIsLoading(false)
-
-      if (user) {
-        loadSavedScripts()
-      }
+      if (user) loadSavedScripts()
     }
-
     checkUser()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evt, session) => {
       setUser(session?.user ?? null)
-      if (session?.user) {
-        loadSavedScripts()
-      }
+      if (session?.user) loadSavedScripts()
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -92,524 +77,211 @@ export default function EditorPage() {
     setIsLoadingScripts(true)
     try {
       const { data, error } = await supabase.from("saved_scripts").select("*").order("updated_at", { ascending: false })
-
       if (error) throw error
       setSavedScripts(data || [])
-    } catch (error) {
-      console.error("Error loading scripts:", error)
-      toast({
-        title: "Error loading scripts",
-        description: "Could not load your saved scripts.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoadingScripts(false)
-    }
+    } catch (e) {
+      console.error(e)
+      toast({ title: "Error loading scripts", description: "Could not load your saved scripts.", variant: "destructive" })
+    } finally { setIsLoadingScripts(false) }
   }
 
   const saveScript = async () => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to save your scripts.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!scriptTitle.trim()) {
-      toast({
-        title: "Title required",
-        description: "Please enter a title for your script.",
-        variant: "destructive",
-      })
-      return
-    }
-
+    if (!user) { toast({ title: "Sign in required", description: "Please sign in to save.", variant: "destructive" }); return }
+    if (!scriptTitle.trim()) { toast({ title: "Title required", description: "Enter a title.", variant: "destructive" }); return }
     setIsSaving(true)
     try {
-      const { error } = await supabase.from("saved_scripts").insert({
-        user_id: user.id,
-        title: scriptTitle.trim(),
-        characters,
-        messages,
-      })
-
+      const { error } = await supabase.from("saved_scripts").insert({ user_id: user.id, title: scriptTitle.trim(), characters, messages })
       if (error) throw error
-
-      toast({
-        title: "Script saved!",
-        description: "Your chat script has been saved successfully.",
-      })
-
+      toast({ title: "Saved", description: "Script saved." })
       setScriptTitle("")
       loadSavedScripts()
-    } catch (error) {
-      console.error("Error saving script:", error)
-      toast({
-        title: "Error saving script",
-        description: "Could not save your script. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
+    } catch (e) {
+      console.error(e)
+      toast({ title: "Save failed", description: "Could not save script.", variant: "destructive" })
+    } finally { setIsSaving(false) }
   }
 
   const loadScript = (script: SavedScript) => {
-    setCharacters(script.characters)
-    setMessages(script.messages)
+    setCharacters(script.characters.map(c => c.id === script.characters[0].id ? { ...c, id: "them" } : { ...c, id: "you" }))
+    setContactName(script.characters[0]?.name || "Contact")
+    setMessages(mapLegacyMessages(script.messages, script.characters))
     setShowLoadDialog(false)
-    toast({
-      title: "Script loaded!",
-      description: `Loaded "${script.title}" successfully.`,
-    })
+    toast({ title: "Script loaded" })
   }
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/")
+  const handleSignOut = async () => { await supabase.auth.signOut(); router.push("/") }
+
+  // Helpers for inline editor (originally added earlier but removed in patch cleanup)
+  const addMessage = () => {
+    setMessages(m => [...m, { id: Date.now().toString(), characterId: "them", text: "", timestamp: Date.now() }])
+  }
+  const updateMessageText = (id: string, text: string) => setMessages(ms => ms.map(m => m.id === id ? { ...m, text } : m))
+  const toggleMessageSpeaker = (id: string, who: "them" | "you") => setMessages(ms => ms.map(m => m.id === id ? { ...m, characterId: who } : m))
+  const deleteMessage = (id: string) => setMessages(ms => ms.filter(m => m.id !== id))
+  const mapLegacyMessages = (incoming: Message[], legacyChars: Character[]) => {
+    if (!legacyChars.length) return incoming
+    const first = legacyChars[0].id
+    return incoming.map(m => ({ ...m, characterId: m.characterId === first ? "them" : "you" }))
   }
 
-  const selectedCharacter = characters.find((c) => c.id === selectedCharacterId)
-
-  const addCharacter = () => {
-    if (newCharacterName.trim()) {
-      const colors = ["bg-blue-500", "bg-purple-500", "bg-pink-500", "bg-orange-500", "bg-teal-500"]
-      const newCharacter: Character = {
-        id: Date.now().toString(),
-        name: newCharacterName.trim(),
-        color: colors[characters.length % colors.length],
-      }
-      setCharacters([...characters, newCharacter])
-      setNewCharacterName("")
-      setIsAddingCharacter(false)
-    }
-  }
-
-  const sendMessage = () => {
-    if (currentMessage.trim() && selectedCharacter) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        characterId: selectedCharacterId,
-        text: currentMessage.trim(),
-        timestamp: Date.now(),
-      }
-      setMessages([...messages, newMessage])
-      setCurrentMessage("")
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
-  }
-
-  // Updated: Generate video using Remotion instead of downloading JSON
   const downloadFramesJson = async () => {
-    if (messages.length === 0) {
-      toast({ title: "No messages to export", description: "Add some messages first.", variant: "destructive" })
-      return
-    }
-
+    if (messages.length === 0) { toast({ title: "No messages", variant: "destructive" }); return }
     setIsGeneratingVideo(true)
-
     try {
-      console.log("[Remotion] Starting video generation request...")
-      const response = await fetch("/api/generate-video", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          characters,
-          messages,
-          isPro: false,
-        }),
-      })
-
-      console.log("[Remotion] Response status:", response.status)
-
-      if (!response.ok) {
-        let errorMessage = "Failed to generate video"
-        let errorDetails = ""
-        try {
-          const errorData = await response.json()
-          errorMessage = errorData.details || errorData.error || errorMessage
-          errorDetails = errorData.stack || ""
-          console.log("[Remotion] Server error details:", errorData)
-          console.log("[Remotion] Full error response:", errorData)
-        } catch (parseError) {
-          console.log("[Remotion] Could not parse error response:", parseError)
-          console.log("[Remotion] Response status:", response.status)
-          console.log("[Remotion] Response statusText:", response.statusText)
-        }
-        
-        // Log the full error for debugging
-        console.error("[Remotion] API Error - Status:", response.status)
-        console.error("[Remotion] API Error - Message:", errorMessage)
-        console.error("[Remotion] API Error - Details:", errorDetails)
-        
-        throw new Error(`${errorMessage}${errorDetails ? ` - ${errorDetails}` : ''}`)
+      const res = await fetch("/api/generate-video", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ characters, messages, isPro: false }) })
+      if (!res.ok) {
+        let msg = "Failed to generate video"
+        try { const e = await res.json(); msg = e.details || e.error || msg } catch {}
+        throw new Error(msg)
       }
-
-      const videoBlob = await response.blob()
-      console.log("[Remotion] Video blob received, size:", videoBlob.size)
-
-      // Create download link and trigger download
-      const downloadUrl = URL.createObjectURL(videoBlob)
-      const link = document.createElement("a")
-      link.href = downloadUrl
-      link.download = `chat-video-${Date.now()}.mp4`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(downloadUrl)
-
-      toast({
-        title: "Video downloaded successfully!",
-        description: "Your chat video has been downloaded to your device.",
-      })
-
-      console.log("[Remotion] Video download completed")
-    } catch (error) {
-      console.error("[Remotion] Video generation error:", error)
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
-      toast({
-        title: "Video generation failed",
-        description: errorMessage,
-        variant: "destructive",
-      })
-    } finally {
-      setIsGeneratingVideo(false)
-    }
+      const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`chat-video-${Date.now()}.mp4`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+      toast({ title: "Video ready", description: "Download started" })
+    } catch (e:any) {
+      toast({ title: "Generation failed", description: e.message, variant: "destructive" })
+    } finally { setIsGeneratingVideo(false) }
   }
-
-  const getCharacterById = (id: string) => characters.find((c) => c.id === id)
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    )
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 transition-all duration-300">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/"
-              className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105 group"
-            >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-              <span>Back</span>
-            </Link>
-            <div className="flex items-center space-x-2 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-primary/25 transition-all duration-300">
-                <MessageSquare className="w-5 h-5 text-primary-foreground" />
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-4xl font-black tracking-tight leading-tight">
+          CREATE A FAKE <br /> <span className="text-blue-600">iMESSAGE VIDEO</span>
+        </h1>
+        <p className="text-muted-foreground mt-2 mb-8">Type in any story you’d like to be told in the video</p>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left: Form */}
+          <div className="space-y-8">
+            {/* Contact Name */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Name</Label>
+              <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/50 px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500/30 transition shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center font-medium text-slate-700 select-none">
+                  {contactName.split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase() || "JD"}
+                </div>
+                <Input
+                  value={contactName}
+                  onChange={(e)=>setContactName(e.target.value)}
+                  className="border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-base"
+                  placeholder="Contact name"
+                />
               </div>
-              <span className="font-bold text-xl text-foreground">Chat Editor</span>
+            </div>
+
+            {/* Conversation */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold">Conversation</h2>
+              <div className="space-y-4">
+                {messages.map((m, idx) => {
+                  const isThem = m.characterId === "them";
+                  return (
+                    <div key={m.id} className="group relative rounded-xl border border-border/60 bg-card/50 px-3 py-3 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/30 transition">
+                      <Textarea
+                        value={m.text}
+                        onChange={(e)=>updateMessageText(m.id, e.target.value)}
+                        autoFocus={idx === messages.length -1}
+                        placeholder={isThem ? "Their message..." : "Your message..."}
+                        className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 min-h-[70px] text-sm"
+                      />
+                      <div className="mt-2 flex items-center justify-between">
+                        <div className="inline-flex bg-muted rounded-full p-0.5 text-xs font-medium">
+                          <button
+                            onClick={()=>toggleMessageSpeaker(m.id, "them")}
+                            className={`px-3 py-1 rounded-full transition ${isThem?"bg-blue-600 text-white shadow":"text-muted-foreground hover:text-foreground"}`}
+                          >Them</button>
+                          <button
+                            onClick={()=>toggleMessageSpeaker(m.id, "you")}
+                            className={`px-3 py-1 rounded-full transition ${!isThem?"bg-blue-600 text-white shadow":"text-muted-foreground hover:text-foreground"}`}
+                          >You</button>
+                        </div>
+                        <button onClick={()=>deleteMessage(m.id)} className="text-red-500/70 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+                <Button onClick={addMessage} variant="outline" className="w-full border-dashed hover:border-blue-500/50 hover:bg-blue-50/40 text-sm">
+                  <Plus className="w-4 h-4 mr-2" /> Add Message
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={downloadFramesJson}
+                disabled={messages.length===0 || isGeneratingVideo}
+                className="flex-1 bg-blue-600 hover:bg-blue-600/90 text-white shadow-lg hover:shadow-blue-600/30"
+              >
+                {isGeneratingVideo ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Generating...</>) : (<><Video className="w-4 h-4 mr-2"/>Generate Video</>)}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={()=>setMessages([])}
+                className="hover:bg-red-50 hover:border-red-300 text-red-600 border-red-200"
+                disabled={messages.length===0}
+              >Clear</Button>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            {user && (
-              <div className="hidden sm:flex items-center space-x-2 text-sm text-muted-foreground">
-                <span>{user.email}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="hover:bg-destructive/10 hover:text-destructive transition-all duration-300"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
+
+          {/* Right: Live Preview */}
+          <div className="lg:pl-4">
+            <div className="sticky top-10">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold">Preview</h3>
+                <Badge variant="outline" className="bg-blue-600/10 text-blue-600 border-blue-600/30">{messages.length} msgs</Badge>
               </div>
-            )}
-            <Badge variant="secondary" className="hidden sm:flex bg-primary/10 text-primary border-primary/20">
-              {messages.length} messages
-            </Badge>
-            <Button
-              className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={downloadFramesJson}
-              disabled={messages.length === 0 || isGeneratingVideo}
-            >
-              {isGeneratingVideo ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="hidden sm:inline">Generating Video...</span>
-                </>
-              ) : (
-                <>
-                  <Video className="w-4 h-4" />
-                  <span className="hidden sm:inline">Generate Video</span>
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
-          {/* Editor Panel */}
-          <div className="space-y-6">
-            <Card className="group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 border-border/50 bg-card/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Characters</span>
-                  <Dialog open={isAddingCharacter} onOpenChange={setIsAddingCharacter}>
-                    <DialogTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="hover:bg-primary/5 hover:border-primary/50 transition-all duration-300 hover:scale-105 bg-transparent"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Character
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add New Character</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="character-name">Character Name</Label>
-                          <Input
-                            id="character-name"
-                            value={newCharacterName}
-                            onChange={(e) => setNewCharacterName(e.target.value)}
-                            placeholder="Enter character name"
-                            onKeyPress={(e) => e.key === "Enter" && addCharacter()}
-                          />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline" onClick={() => setIsAddingCharacter(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={addCharacter}>Add Character</Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-2">
-                  {characters.map((character) => (
-                    <Button
-                      key={character.id}
-                      variant={selectedCharacterId === character.id ? "default" : "outline"}
-                      className={`justify-start transition-all duration-300 hover:scale-105 ${
-                        selectedCharacterId === character.id
-                          ? "bg-gradient-to-r from-primary to-primary/90 shadow-lg hover:shadow-primary/25"
-                          : "hover:bg-primary/5 hover:border-primary/50"
-                      }`}
-                      onClick={() => setSelectedCharacterId(character.id)}
-                    >
-                      <div className={`w-3 h-3 rounded-full ${character.color} mr-2 shadow-sm`} />
-                      {character.name}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 border-border/50 bg-card/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-primary" />
-                  <span>Speaking as: {selectedCharacter?.name}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="message-input">Message</Label>
-                  <Textarea
-                    id="message-input"
-                    value={currentMessage}
-                    onChange={(e) => setCurrentMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={`Type ${selectedCharacter?.name}'s message...`}
-                    className="min-h-[100px] resize-none border-border/50 focus:border-primary/50 focus:ring-primary/25 transition-all duration-300"
-                  />
-                </div>
-                <Button
-                  onClick={sendMessage}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300 hover:scale-105 disabled:opacity-50"
-                  disabled={!currentMessage.trim()}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Send Message
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className="group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 border-border/50 bg-card/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-transparent"
-                  onClick={() => setMessages([])}
-                >
-                  Clear All Messages
-                </Button>
-                {user ? (
-                  <>
-                    <div className="flex space-x-2">
-                      <Input
-                        placeholder="Script title..."
-                        value={scriptTitle}
-                        onChange={(e) => setScriptTitle(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button onClick={saveScript} disabled={isSaving || !scriptTitle.trim()} size="sm">
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                    <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start bg-transparent">
-                          <FolderOpen className="w-4 h-4 mr-2" />
-                          Load Script
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Load Saved Script</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {isLoadingScripts ? (
-                            <div className="text-center py-4">
-                              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">Loading scripts...</p>
-                            </div>
-                          ) : savedScripts.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-4">No saved scripts found.</p>
-                          ) : (
-                            savedScripts.map((script) => (
-                              <Button
-                                key={script.id}
-                                variant="outline"
-                                className="w-full justify-start text-left bg-transparent"
-                                onClick={() => loadScript(script)}
-                              >
-                                <div>
-                                  <div className="font-medium">{script.title}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {script.messages.length} messages •{" "}
-                                    {new Date(script.updated_at).toLocaleDateString()}
-                                  </div>
-                                </div>
-                              </Button>
-                            ))
-                          )}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground mb-2">Sign in to save and load scripts</p>
-                    <Button size="sm" asChild>
-                      <Link href="/auth/login">Sign In</Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Preview Panel */}
-          <div className="lg:sticky lg:top-24 lg:h-fit">
-            <Card className="h-[600px] flex flex-col group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 border-border/50 bg-card/80 backdrop-blur-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between">
-                  <span>Chat Preview</span>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                    {messages.length} messages
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                {/* Phone Frame */}
-                <div className="flex-1 bg-gradient-to-br from-muted/20 to-muted/40 rounded-2xl p-4 overflow-hidden shadow-inner">
-                  <div className="bg-background rounded-xl h-full flex flex-col shadow-2xl border border-border/50">
-                    {/* Chat Header */}
-                    <div className="p-4 border-b border-border/50 bg-gradient-to-r from-card to-card/80">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-muted to-muted/80 rounded-full flex items-center justify-center shadow-sm">
-                          <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-sm">Chat Preview</h3>
-                          <p className="text-xs text-muted-foreground">{characters.map((c) => c.name).join(", ")}</p>
-                        </div>
+              <div className="relative mx-auto w-[300px] md:w-[340px] aspect-[390/844]">
+                <div className="absolute inset-0 rounded-[40px] border border-black/20 bg-gradient-to-br from-slate-900 to-slate-800 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)] p-3 flex flex-col">
+                  <div className="relative flex-1 rounded-[32px] bg-white overflow-hidden flex flex-col">
+                    <div className="h-14 pt-2 px-4 flex flex-col items-center justify-start bg-gradient-to-b from-white to-white/80 border-b border-slate-200">
+                      <div className="w-12 h-2 rounded-full bg-slate-300 mb-1" />
+                      <div className="flex items-center w-full justify-between text-[13px] font-medium text-slate-600">
+                        <span className="text-blue-600 font-semibold text-sm">&lt; Back</span>
+                        <span className="text-[15px] font-semibold text-slate-800">{contactName || "Contact"}</span>
+                        <span className="text-blue-600 text-sm">99+</span>
                       </div>
                     </div>
-
-                    {/* Messages */}
-                    <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+                    <div className="flex-1 px-3 pb-4 pt-3 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-300">
                       {messages.length === 0 ? (
-                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                          <div className="text-center animate-pulse">
-                            <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">Start typing to see your chat preview</p>
-                          </div>
-                        </div>
+                        <div className="h-full flex items-center justify-center text-slate-400 text-sm">Your conversation will appear here...</div>
                       ) : (
-                        messages.map((message, index) => {
-                          const character = getCharacterById(message.characterId)
-                          const isFirstMessage = index === 0
-                          const prevMessage = index > 0 ? messages[index - 1] : null
-                          const isNewSpeaker = !prevMessage || prevMessage.characterId !== message.characterId
-                          const isOwnMessage = character?.id === "1" // Assuming first character is "user"
-
-                          return (
-                            <div
-                              key={message.id}
-                              className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-500`}
-                            >
-                              <div className={`max-w-[80%] ${isNewSpeaker ? "mt-2" : ""}`}>
-                                {isNewSpeaker && (
-                                  <div
-                                    className={`text-xs text-muted-foreground mb-1 ${isOwnMessage ? "text-right" : "text-left"}`}
-                                  >
-                                    {character?.name}
-                                  </div>
-                                )}
-                                <div
-                                  className={`px-4 py-2 rounded-2xl shadow-sm transition-all duration-300 hover:shadow-md ${
-                                    isOwnMessage
-                                      ? "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-br-md"
-                                      : "bg-muted text-foreground rounded-bl-md hover:bg-muted/80"
-                                  }`}
-                                >
-                                  <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })
+                        messages.map((m,i)=>{
+                          const isOwn = m.characterId === "you"; const prev=messages[i-1]; const next=messages[i+1]; const prevSame=prev && prev.characterId===m.characterId; const nextSame=next && next.characterId===m.characterId; const base="text-[14px] leading-snug px-3 py-2 inline-block shadow-sm"; const ownColors="bg-[#007AFF] text-white"; const otherColors="bg-[#E5E5EA] text-black"; const radiusOwn=`rounded-2xl ${prevSame?"rounded-tr-md":""} ${nextSame?"rounded-br-md":""}`; const radiusOther=`rounded-2xl ${prevSame?"rounded-tl-md":""} ${nextSame?"rounded-bl-md":""}`; return (<div key={m.id} className={`flex w-full ${isOwn?"justify-end":"justify-start"}`}><div className={`max-w-[78%] ${isOwn?ownColors:otherColors} ${isOwn?radiusOwn:radiusOther} ${base}`}>{m.text || <span className="opacity-40">(empty)</span>}</div></div>) })
                       )}
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Save / Load Section */}
+        <div className="mt-12 space-y-4">
+          <h3 className="font-semibold text-sm text-muted-foreground">Save / Load (optional)</h3>
+          <div className="flex gap-2">
+            <Input placeholder="Script title" value={scriptTitle} onChange={e=>setScriptTitle(e.target.value)} className="max-w-xs" />
+            <Button size="sm" onClick={saveScript} disabled={!scriptTitle.trim() || isSaving}>{isSaving? <Loader2 className="w-4 h-4 animate-spin"/>: <Save className="w-4 h-4"/>}</Button>
+            <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
+              <DialogTrigger asChild><Button size="sm" variant="outline"><FolderOpen className="w-4 h-4 mr-1"/>Load</Button></DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader><DialogTitle>Saved Scripts</DialogTitle></DialogHeader>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {isLoadingScripts ? <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div> : savedScripts.length===0 ? <div className="text-center py-4 text-sm text-muted-foreground">None</div> : savedScripts.map(s => (
+                    <Button key={s.id} variant="outline" className="w-full justify-start text-left" onClick={()=>loadScript(s)}>
+                      <div>
+                        <div className="font-medium">{s.title}</div>
+                        <div className="text-xs text-muted-foreground">{s.messages.length} messages • {new Date(s.updated_at).toLocaleDateString()}</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+            {user && <Button size="sm" variant="ghost" onClick={handleSignOut} className="ml-auto text-red-500">Sign out</Button>}
           </div>
         </div>
       </div>

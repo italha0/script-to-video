@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Sequence } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 
 interface Message { id: number; text: string; sent: boolean; time: string; }
 interface MessageConversationProps {
@@ -15,12 +15,11 @@ interface MessageConversationProps {
 const GAP_SECONDS = 2;
 const TYPING_DURATION = 1.2; // seconds the typing bubble is shown
 const TYPING_GAP = 0.15; // gap before actual message appears
-const DELIVERED_DELAY = 1.0; // seconds after last sent message
-// Keyboard typing effect configuration (for outgoing messages)
-const KEYBOARD_HEIGHT = 300;
-const KEYBOARD_LEAD = 1.0; // seconds keyboard appears before a sent message shows
-const KEYBOARD_TAIL = 0.6; // seconds keyboard remains after the sent message appears
-const KEYBOARD_MERGE_GAP = 0.3; // merge intervals separated by less than this
+const DELIVERED_DELAY = 0.6; // seconds after last outgoing bubble appears
+// Keyboard + typing effect configuration
+const KEYBOARD_HEIGHT = 300; 
+const KEYBOARD_LEAD = 0.8; // seconds keyboard appears before first outgoing message
+const TYPE_SPEED = 14; // characters per second for live typing of sender text
 
 const fontStack = 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
@@ -32,6 +31,13 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
   const progress = spring({ frame: frame - appearFrame, fps, config:{ damping: 12, mass:0.9, stiffness:170 } });
   const translateY = interpolate(progress, [0,1],[24,0]);
   const scale = interpolate(progress, [0,1],[0.8,1]);
+  // Live typing effect for sent messages: reveal characters over time
+  let displayText = msg.text;
+  if (msg.sent) {
+    const secondsSince = (frame - appearFrame) / fps;
+    const chars = Math.min(msg.text.length, Math.max(0, Math.floor(secondsSince * TYPE_SPEED)));
+    displayText = msg.text.slice(0, chars);
+  }
   const bubbleStyle: React.CSSProperties = {
     maxWidth: '78%',
     padding: '8px 14px',
@@ -50,7 +56,7 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
   };
   return (
     <div style={{ display:'flex', justifyContent: msg.sent ? 'flex-end':'flex-start', marginBottom:6, transform:`translateY(${translateY}px) scale(${scale})`, opacity: progress }}>
-      <div style={bubbleStyle}>{msg.text}</div>
+  <div style={bubbleStyle}>{displayText}</div>
     </div>
   );
 };
@@ -158,6 +164,22 @@ const NavigationHeader: React.FC<{ contactName?: string }> = ({ contactName }) =
   </div>
 );
 
+// Inline delivered label component
+const DeliveredBelow: React.FC<{ startSec: number }> = ({ startSec }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const startFrame = Math.round(startSec * fps);
+  if (frame < startFrame) return null;
+  const progress = spring({ frame: frame - startFrame, fps, config:{ damping:20, stiffness:170, mass:0.8 } });
+  const opacity = interpolate(progress, [0,1],[0,1]);
+  const translateY = interpolate(progress, [0,1],[6,0]);
+  return (
+    <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4, transform:`translateY(${translateY}px)`, opacity }}>
+      <div style={{ fontSize:12, color:'#8E8E93', fontFamily:fontStack }}>Delivered</div>
+    </div>
+  );
+};
+
 export const MessageConversation: React.FC<MessageConversationProps> = ({ messages, typingBeforeIndices, contactName, batteryLevel }) => {
   const { fps } = useVideoConfig();
 
@@ -165,28 +187,12 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
   const typingSet = new Set(typingBeforeIndices ?? messages.map((m,i)=> (!m.sent && i>0 && messages[i-1].sent) ? i : -1).filter(i=>i>=0));
 
   const lastSentIndex = [...messages].map((m,i)=> m.sent? i : -1).filter(i=>i>=0).pop();
-  const lastSentAppearSec = lastSentIndex != null ? lastSentIndex * GAP_SECONDS : messages.length * GAP_SECONDS;
-  const deliveredStartSec = lastSentAppearSec + DELIVERED_DELAY;
+  const lastSentAppearSec = lastSentIndex != null ? lastSentIndex * GAP_SECONDS : null;
+  const deliveredStartSec = lastSentAppearSec != null ? lastSentAppearSec + DELIVERED_DELAY : null;
 
-  // Build keyboard intervals: for each sent message show keyboard from (appearSec - LEAD) to (appearSec + TAIL)
-  interface Interval { start: number; end: number }
-  const rawIntervals: Interval[] = messages
-    .map((m,i)=> m.sent ? { start: i * GAP_SECONDS - KEYBOARD_LEAD, end: i * GAP_SECONDS + KEYBOARD_TAIL } : null)
-    .filter((v): v is Interval => !!v)
-    .map(iv => ({ start: Math.max(0, iv.start), end: Math.max(iv.start + 0.1, iv.end) }));
-
-  // Merge overlapping or close intervals
-  rawIntervals.sort((a,b)=> a.start - b.start);
-  const keyboardIntervals: Interval[] = [];
-  for (const iv of rawIntervals) {
-    const last = keyboardIntervals[keyboardIntervals.length - 1];
-    if (!last) { keyboardIntervals.push(iv); continue; }
-    if (iv.start - last.end <= KEYBOARD_MERGE_GAP) {
-      last.end = Math.max(last.end, iv.end); // merge
-    } else {
-      keyboardIntervals.push(iv);
-    }
-  }
+  // Determine persistent keyboard start (first sent message)
+  const firstSentIndex = messages.findIndex(m => m.sent);
+  const keyboardStart = firstSentIndex >= 0 ? Math.max(0, firstSentIndex * GAP_SECONDS - KEYBOARD_LEAD) : null;
 
   return (
     <AbsoluteFill style={{ background:'#000', fontFamily:fontStack, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -207,20 +213,18 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
                   <TypingBubble startSec={appearSec - TYPING_DURATION} endSec={appearSec - TYPING_GAP} sent={false} />
                 )}
                 <MessageBubble msg={m} appearSec={appearSec} first={first} last={last} />
+                {lastSentIndex === i && deliveredStartSec != null && (
+                  <DeliveredBelow startSec={deliveredStartSec} />
+                )}
               </React.Fragment>
             );
           })}
-          {/* Delivered status */}
-          <Sequence from={Math.round(deliveredStartSec * fps)}>
-            <div style={{ display:'flex', justifyContent:'flex-end', marginTop:6 }}>
-              <div style={{ fontSize:12, color:'#8E8E93' }}>Delivered</div>
-            </div>
-          </Sequence>
+          {/* Delivered now appears inline under last outgoing message */}
         </div>
-        {/* Keyboard intervals: shows before each outgoing (sent) message */}
-        {keyboardIntervals.map((iv: { start: number; end: number }, idx: number) => (
-          <Keyboard key={idx} startSec={iv.start} endSec={iv.end} />
-        ))}
+        {/* Persistent keyboard after first outgoing message */}
+        {keyboardStart != null && (
+          <Keyboard startSec={keyboardStart} />
+        )}
       </div>
     </AbsoluteFill>
   );

@@ -7,12 +7,13 @@ export const RemotionRoot: React.FC = () => {
     <>
       <Composition
         id="MessageConversation"
-        component={MessageConversation}
+        component={MessageConversation as any}
         durationInFrames={600} // 20 seconds at 30fps
         fps={30}
         width={390}
         height={844}
         defaultProps={{
+          contactName: 'Alex',
           messages: [
             { id: 1, text: "oh no.", sent: false, time: "0:00" },
             { id: 2, text: "i thought you meant.", sent: false, time: "0:02" },
