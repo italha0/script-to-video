@@ -94,10 +94,18 @@ export async function POST(request: NextRequest) {
       throw new Error(`Renderer script missing at ${rendererScript}`);
     }
 
+    // Helpful log for serverless environment path resolution
+    console.log('[API] CWD:', process.cwd());
+    console.log('[API] Files expected to exist:', rendererScript, join(process.cwd(), 'remotion', 'index.ts'));
+    console.log('[API] Running on Vercel?', !!process.env.VERCEL, 'Node ENV:', process.env.NODE_ENV);
+    if (process.env.REMOTION_BROWSER_EXECUTABLE) {
+      console.log('[API] Using custom REMOTION_BROWSER_EXECUTABLE');
+    }
+
     // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
     const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
     console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
-    const child = spawn(process.execPath, args, {
+  const child = spawn(process.execPath, args, {
       cwd: process.cwd(),
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -155,7 +163,7 @@ export async function POST(request: NextRequest) {
   // Handle specific error types
       if (error.message.includes('ENOENT') || error.message.includes('not found')) {
         statusCode = 404;
-        errorMessage = 'Required files not found. Please ensure the Remotion setup is complete.';
+        errorMessage = 'Required files not found. In production ensure outputFileTracingIncludes includes remotion + scripts.';
       } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
         statusCode = 408;
         errorMessage = 'Video generation timed out. Please try again.';
