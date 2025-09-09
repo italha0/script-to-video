@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawn } from 'child_process';
+// Inline Remotion rendering (fallback) imports so Next's file tracing includes these deps
+import { bundle } from '@remotion/bundler';
+import { getCompositions, renderMedia } from '@remotion/renderer';
 
 // Force dynamic to avoid caching & ensure Node runtime
 export const dynamic = 'force-dynamic';
@@ -90,8 +93,9 @@ export async function POST(request: NextRequest) {
 
     // Use external Node script to perform Remotion rendering to avoid React context issues in Next API route
     const rendererScript = join(process.cwd(), 'scripts', 'render-video.cjs');
-    if (!existsSync(rendererScript)) {
-      throw new Error(`Renderer script missing at ${rendererScript}`);
+    const scriptExists = existsSync(rendererScript);
+    if (!scriptExists) {
+      console.warn('[API] External renderer script missing; will attempt inline rendering fallback.');
     }
 
     // Helpful log for serverless environment path resolution
@@ -103,31 +107,66 @@ export async function POST(request: NextRequest) {
     }
 
     // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
-    const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
-    console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
-  const child = spawn(process.execPath, args, {
-      cwd: process.cwd(),
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
+    if (scriptExists) {
+      const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
+      console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
+      const child = spawn(process.execPath, args, {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
 
-    await new Promise<void>((resolve, reject) => {
-      child.stdout.on('data', (d) => {
-        const line = d.toString();
-        childStdout += line;
-        console.log('[Renderer STDOUT]', line.trim());
+      await new Promise<void>((resolve, reject) => {
+        child.stdout.on('data', (d) => {
+          const line = d.toString();
+          childStdout += line;
+          console.log('[Renderer STDOUT]', line.trim());
+        });
+        child.stderr.on('data', (d) => {
+          const line = d.toString();
+          childStderr += line;
+          console.warn('[Renderer STDERR]', line.trim());
+        });
+        child.on('exit', (code) => {
+          if (code === 0) return resolve();
+          hadError = true;
+          reject(new Error(`Renderer exited with code ${code}`));
+        });
+        child.on('error', (err) => reject(err));
       });
-      child.stderr.on('data', (d) => {
-        const line = d.toString();
-        childStderr += line;
-        console.warn('[Renderer STDERR]', line.trim());
+    } else {
+      // Inline fallback rendering path (no child process) for environments where the script isn't traced.
+      console.log('[API] Inline fallback: bundling Remotion entry...');
+      const entry = join(process.cwd(), 'remotion', 'index.ts');
+      if (!existsSync(entry)) {
+        throw new Error(`Remotion entry not found at ${entry}`);
+      }
+      const bundleLocation = await bundle(entry);
+      console.log('[API] Inline fallback: bundle at', bundleLocation);
+      const props = JSON.parse(readFileSync(propsPath, 'utf-8'));
+      const comps = await getCompositions(bundleLocation, { inputProps: props });
+      const comp = comps.find(c => c.id === 'MessageConversation');
+      if (!comp) throw new Error('Composition MessageConversation not found');
+      const msgCount = (props.messages || []).length;
+      const perMessage = 2; const tail = 4;
+      const desired = Math.round((msgCount * perMessage + tail) * comp.fps);
+      const durationInFrames = Math.max(comp.durationInFrames, desired);
+      console.log('[API] Inline fallback: rendering with duration', durationInFrames);
+      await renderMedia({
+        composition: { ...comp, durationInFrames },
+        serveUrl: bundleLocation,
+        codec: 'h264',
+        outputLocation: outputPath,
+        inputProps: props,
+        concurrency: 2,
+        dumpBrowserLogs: false,
+        onProgress: (p) => {
+          if (p.renderedFrames % 30 === 0) {
+            console.log(`[INLINE RENDER] ${p.renderedFrames}/${durationInFrames} ${(p.progress*100).toFixed(1)}%`);
+          }
+        }
       });
-      child.on('exit', (code) => {
-        if (code === 0) return resolve();
-        hadError = true;
-        reject(new Error(`Renderer exited with code ${code}`));
-      });
-      child.on('error', (err) => reject(err));
-    });
+      console.log('[API] Inline fallback: render complete');
+    }
 
     if (!existsSync(outputPath)) {
       throw new Error('Render finished but output file missing');
