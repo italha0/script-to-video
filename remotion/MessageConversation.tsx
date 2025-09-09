@@ -12,18 +12,19 @@ interface MessageConversationProps {
 }
 
 // CONFIG
-const GAP_SECONDS = 2;
-const TYPING_DURATION = 1.2; // seconds the typing bubble is shown
-const TYPING_GAP = 0.15; // gap before actual message appears
-const DELIVERED_DELAY = 0.6; // seconds after last outgoing bubble appears
+const GAP_SECONDS = 2; // base gap inserted after each message (before next starts)
+const TYPING_DURATION = 1.2; // total lead time allocated for an incoming typing bubble (indicator length + gap before bubble pops to message)
+const TYPING_GAP = 0.15; // gap between typing indicator end and bubble appear
+const DELIVERED_DELAY = 0.6; // seconds after last outgoing message finishes typing
 // Keyboard + typing effect configuration
 const KEYBOARD_HEIGHT = 300; 
-const KEYBOARD_LEAD = 0.8; // seconds keyboard appears before first outgoing message
-const TYPE_SPEED = 14; // characters per second for live typing of sender text
+const KEYBOARD_LEAD = 0.8; // seconds keyboard appears before first outgoing message typing begins
+const KEYBOARD_TRAIL = 0.3; // seconds keyboard stays after last outgoing finishes
+const TYPE_SPEED = 14; // characters per second (sender typing speed)
 
 const fontStack = 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean; last: boolean; }>= ({ msg, appearSec, first, last }) => {
+const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean; last: boolean; typingDuration?: number; }>= ({ msg, appearSec, first, last, typingDuration }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const appearFrame = Math.round(appearSec * fps);
@@ -31,12 +32,12 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
   const progress = spring({ frame: frame - appearFrame, fps, config:{ damping: 12, mass:0.9, stiffness:170 } });
   const translateY = interpolate(progress, [0,1],[24,0]);
   const scale = interpolate(progress, [0,1],[0.8,1]);
-  // Live typing effect for sent messages: reveal characters over time
+  // Live typing effect for sent (outgoing) messages using provided typingDuration
   let displayText = msg.text;
-  if (msg.sent) {
+  if (msg.sent && typingDuration && typingDuration > 0) {
     const secondsSince = (frame - appearFrame) / fps;
-    const chars = Math.min(msg.text.length, Math.max(0, Math.floor(secondsSince * TYPE_SPEED)));
-    displayText = msg.text.slice(0, chars);
+    const charsTyped = interpolate(secondsSince, [0, typingDuration], [0, msg.text.length], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+    displayText = msg.text.slice(0, Math.floor(charsTyped));
   }
   const bubbleStyle: React.CSSProperties = {
     maxWidth: '78%',
@@ -181,18 +182,55 @@ const DeliveredBelow: React.FC<{ startSec: number }> = ({ startSec }) => {
 };
 
 export const MessageConversation: React.FC<MessageConversationProps> = ({ messages, typingBeforeIndices, contactName, batteryLevel }) => {
-  const { fps } = useVideoConfig();
+  // Precompute a dynamic timeline for all messages.
+  type TimelineEntry = {
+    idx: number;
+    msg: Message;
+    appearSec: number; // when bubble mounts
+    typingDuration: number; // for outgoing messages
+    endSec: number; // when this message is finished (after typing if outgoing)
+    typingIndicatorStart?: number; // for incoming typing indicator
+    typingIndicatorEnd?: number;   // end of indicator (before gap)
+  };
 
-  // Determine which indices have typing bubble
-  const typingSet = new Set(typingBeforeIndices ?? messages.map((m,i)=> (!m.sent && i>0 && messages[i-1].sent) ? i : -1).filter(i=>i>=0));
+  const entries: TimelineEntry[] = [];
+  let prevEnd = 0; // end time of previous message
+  for (let i=0;i<messages.length;i++) {
+    const m = messages[i];
+    // Should we show a typing indicator before this message (incoming after an outgoing)?
+    const indicatorForced = typingBeforeIndices?.includes(i);
+    const autoIndicator = !m.sent && i>0 && messages[i-1].sent;
+    const showIndicator = indicatorForced || autoIndicator;
 
-  const lastSentIndex = [...messages].map((m,i)=> m.sent? i : -1).filter(i=>i>=0).pop();
-  const lastSentAppearSec = lastSentIndex != null ? lastSentIndex * GAP_SECONDS : null;
-  const deliveredStartSec = lastSentAppearSec != null ? lastSentAppearSec + DELIVERED_DELAY : null;
+    const base = i===0 ? 0 : prevEnd + GAP_SECONDS; // base time before any typing indicator or bubble
+    let typingIndicatorStart: number | undefined;
+    let typingIndicatorEnd: number | undefined;
+    let appearSec: number;
+    if (showIndicator) {
+      typingIndicatorStart = base;
+      // indicator duration (visible) is TYPING_DURATION - TYPING_GAP
+      typingIndicatorEnd = typingIndicatorStart + (TYPING_DURATION - TYPING_GAP);
+      appearSec = base + TYPING_DURATION; // bubble appears after full TYPING_DURATION
+    } else {
+      appearSec = base;
+    }
+    let typingDuration = 0;
+    if (m.sent) {
+      typingDuration = m.text.length / TYPE_SPEED;
+    }
+    const endSec = m.sent ? appearSec + typingDuration : appearSec; // incoming instantaneous
+    entries.push({ idx:i, msg:m, appearSec, typingDuration, endSec, typingIndicatorStart, typingIndicatorEnd });
+    prevEnd = endSec;
+  }
 
-  // Determine persistent keyboard start (first sent message)
-  const firstSentIndex = messages.findIndex(m => m.sent);
-  const keyboardStart = firstSentIndex >= 0 ? Math.max(0, firstSentIndex * GAP_SECONDS - KEYBOARD_LEAD) : null;
+  // Keyboard timings: from just before first outgoing begins to shortly after last outgoing finished
+  const firstSent = entries.find(e=> e.msg.sent);
+  const lastSent = [...entries].reverse().find(e=> e.msg.sent);
+  const keyboardStart = firstSent ? Math.max(0, firstSent.appearSec - KEYBOARD_LEAD) : null;
+  const keyboardEnd = lastSent ? lastSent.endSec + KEYBOARD_TRAIL : undefined;
+
+  // Delivered label starts after last outgoing finished typing + delay
+  const deliveredStartSec = lastSent ? lastSent.endSec + DELIVERED_DELAY : null;
 
   return (
     <AbsoluteFill style={{ background:'#000', fontFamily:fontStack, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -200,30 +238,27 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
   <StatusBar batteryLevel={batteryLevel} />
   <NavigationHeader contactName={contactName} />
         <div style={{ position:'absolute', top:96, left:0, right:0, bottom:0, padding:'0 12px', display:'flex', flexDirection:'column' }}>
-          {messages.map((m,i)=>{
-            const prev = messages[i-1];
-            const next = messages[i+1];
-            const first = !prev || prev.sent !== m.sent;
-            const last = !next || next.sent !== m.sent;
-            const appearSec = i * GAP_SECONDS;
-            const typing = typingSet.has(i);
+          {entries.map(entry=>{
+            const { msg, idx, appearSec, typingDuration, typingIndicatorStart, typingIndicatorEnd } = entry;
+            const prev = entries[idx-1]?.msg;
+            const next = entries[idx+1]?.msg;
+            const first = !prev || prev.sent !== msg.sent;
+            const last = !next || next.sent !== msg.sent;
             return (
-              <React.Fragment key={m.id}>
-                {typing && (
-                  <TypingBubble startSec={appearSec - TYPING_DURATION} endSec={appearSec - TYPING_GAP} sent={false} />
+              <React.Fragment key={msg.id}>
+                {typingIndicatorStart !== undefined && typingIndicatorEnd !== undefined && (
+                  <TypingBubble startSec={typingIndicatorStart} endSec={typingIndicatorEnd} sent={false} />
                 )}
-                <MessageBubble msg={m} appearSec={appearSec} first={first} last={last} />
-                {lastSentIndex === i && deliveredStartSec != null && (
+                <MessageBubble msg={msg} appearSec={appearSec} first={first} last={last} typingDuration={typingDuration} />
+                {deliveredStartSec != null && lastSent && lastSent.idx === idx && (
                   <DeliveredBelow startSec={deliveredStartSec} />
                 )}
               </React.Fragment>
             );
           })}
-          {/* Delivered now appears inline under last outgoing message */}
         </div>
-        {/* Persistent keyboard after first outgoing message */}
         {keyboardStart != null && (
-          <Keyboard startSec={keyboardStart} />
+          <Keyboard startSec={keyboardStart} endSec={keyboardEnd} />
         )}
       </div>
     </AbsoluteFill>
