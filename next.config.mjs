@@ -1,5 +1,4 @@
 /** @type {import('next').NextConfig} */
-import webpack from "webpack";
 
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
@@ -12,7 +11,7 @@ const nextConfig = {
       "./node_modules/@sparticuz/chromium/**/*",
     ],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     config.module.rules.push({ test: /\.d\.ts$/, use: "ignore-loader" });
     if (isServer) {
       // Use a direct import for webpack's IgnorePlugin
