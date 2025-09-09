@@ -20,6 +20,19 @@ const nextConfig = {
           resourceRegExp: /^@remotion\/compositor-/,
         })
       );
+
+      // Prevent Webpack from trying to bundle platform-specific native compositor binaries that are optional.
+      config.resolve = config.resolve || {};
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        '@remotion/compositor-win32-x64-msvc': false,
+        '@remotion/compositor-darwin-x64': false,
+        '@remotion/compositor-darwin-arm64': false,
+        '@remotion/compositor-linux-x64-gnu': false,
+        '@remotion/compositor-linux-x64-musl': false,
+        '@remotion/compositor-linux-arm64-gnu': false,
+        '@remotion/compositor-linux-arm64-musl': false,
+      };
     }
     return config;
   },
