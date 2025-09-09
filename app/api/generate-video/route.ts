@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawn } from 'child_process';
-// Inline Remotion rendering (fallback) imports so Next's file tracing includes these deps
-import { bundle } from '@remotion/bundler';
-import { getCompositions, renderMedia } from '@remotion/renderer';
 
 // Force dynamic to avoid caching & ensure Node runtime
 export const dynamic = 'force-dynamic';
@@ -140,11 +137,14 @@ export async function POST(request: NextRequest) {
       if (!existsSync(entry)) {
         throw new Error(`Remotion entry not found at ${entry}`);
       }
+      // Dynamic require so that build only pulls these when necessary
+      const { bundle } = require('@remotion/bundler');
+      const { getCompositions, renderMedia } = require('@remotion/renderer');
       const bundleLocation = await bundle(entry);
       console.log('[API] Inline fallback: bundle at', bundleLocation);
       const props = JSON.parse(readFileSync(propsPath, 'utf-8'));
-      const comps = await getCompositions(bundleLocation, { inputProps: props });
-      const comp = comps.find(c => c.id === 'MessageConversation');
+  const comps: any[] = await getCompositions(bundleLocation, { inputProps: props });
+  const comp = comps.find((c: any) => c.id === 'MessageConversation');
       if (!comp) throw new Error('Composition MessageConversation not found');
       const msgCount = (props.messages || []).length;
       const perMessage = 2; const tail = 4;
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
         inputProps: props,
         concurrency: 2,
         dumpBrowserLogs: false,
-        onProgress: (p) => {
+        onProgress: (p: any) => {
           if (p.renderedFrames % 30 === 0) {
             console.log(`[INLINE RENDER] ${p.renderedFrames}/${durationInFrames} ${(p.progress*100).toFixed(1)}%`);
           }
