@@ -146,7 +146,7 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-background px-4 py-10">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-black tracking-tight leading-tight">
           CREATE A FAKE <br /> <span className="text-blue-600">iMESSAGE VIDEO</span>
         </h1>
@@ -234,7 +234,7 @@ export default function EditorPage() {
                 <h3 className="font-semibold">Preview</h3>
                 <Badge variant="outline" className="bg-blue-600/10 text-blue-600 border-blue-600/30">{messages.length} msgs</Badge>
               </div>
-              <div className="relative mx-auto w-[300px] md:w-[340px] aspect-[390/844]">
+              <div className="relative mx-auto w-[300px] md:w-[340px] aspect-[390/744]">
                 <div className="absolute inset-0 rounded-[40px] border border-black/20 bg-gradient-to-br from-slate-900 to-slate-800 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)] p-3 flex flex-col">
                   <div className="relative flex-1 rounded-[32px] bg-white overflow-hidden flex flex-col">
                     <div className="h-14 pt-2 px-4 flex flex-col items-center justify-start bg-gradient-to-b from-white to-white/80 border-b border-slate-200">

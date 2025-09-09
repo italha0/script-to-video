@@ -18,13 +18,15 @@ const TYPING_GAP = 0.15; // gap between typing indicator end and bubble appear
 const DELIVERED_DELAY = 0.6; // seconds after last outgoing message finishes typing
 // Keyboard + typing effect configuration
 const KEYBOARD_HEIGHT = 300; 
+const KEYBOARD_DISAPPEAR_FRAMES = 12; // frames for slide out animation
 const KEYBOARD_LEAD = 0.8; // seconds keyboard appears before first outgoing message typing begins
 const KEYBOARD_TRAIL = 0.3; // seconds keyboard stays after last outgoing finishes
 const TYPE_SPEED = 14; // characters per second (sender typing speed)
+const SEND_GAP = 0.18; // gap between finish typing and bubble appearing (press send)
 
 const fontStack = 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean; last: boolean; typingDuration?: number; }>= ({ msg, appearSec, first, last, typingDuration }) => {
+const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean; last: boolean; }>= ({ msg, appearSec, first, last }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const appearFrame = Math.round(appearSec * fps);
@@ -32,13 +34,8 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
   const progress = spring({ frame: frame - appearFrame, fps, config:{ damping: 12, mass:0.9, stiffness:170 } });
   const translateY = interpolate(progress, [0,1],[24,0]);
   const scale = interpolate(progress, [0,1],[0.8,1]);
-  // Live typing effect for sent (outgoing) messages using provided typingDuration
-  let displayText = msg.text;
-  if (msg.sent && typingDuration && typingDuration > 0) {
-    const secondsSince = (frame - appearFrame) / fps;
-    const charsTyped = interpolate(secondsSince, [0, typingDuration], [0, msg.text.length], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-    displayText = msg.text.slice(0, Math.floor(charsTyped));
-  }
+  // Outgoing bubble now appears fully formed (typing moved to keyboard input)
+  const displayText = msg.text;
   const bubbleStyle: React.CSSProperties = {
     maxWidth: '78%',
     padding: '8px 14px',
@@ -85,7 +82,7 @@ const TypingBubble: React.FC<{ startSec: number; endSec: number; sent: boolean }
   );
 };
 
-const Keyboard: React.FC<{ startSec: number; endSec?: number }> = ({ startSec, endSec }) => {
+const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?: string }> = ({ startSec, endSec, currentInputText }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const startFrame = Math.round(startSec * fps);
@@ -116,11 +113,16 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number }> = ({ startSec, e
     const isSpace = k==='space';
     return <div key={k} style={{ flex:isSpace?4:1, background:'#fff', borderRadius:6, padding:'10px 6px', textAlign:'center', fontSize:14, fontWeight:500, boxShadow:'0 1px 0 rgba(0,0,0,0.25)', margin:'0 3px' }}>{isSpace? '': k}</div>;
   };
+  const caretBlink = (frame / fps) % 1 < 0.5;
+  const showCaret = true;
+  const inputDisplay = currentInputText && currentInputText.length>0
+    ? <span>{currentInputText}{showCaret && caretBlink ? <span style={{borderLeft:'2px solid #007AFF', marginLeft:2}} />: null}</span>
+    : <span style={{ opacity:0.4 }}>iMessage{showCaret && caretBlink ? <span style={{borderLeft:'2px solid #007AFF', marginLeft:2}} />: null}</span>;
   return (
     <div style={{ position:'absolute', left:0, right:0, bottom:0, transform:`translateY(${translateY}px)`, background:'#D1D4DA', borderTop:'1px solid #B4B7BD', fontFamily:fontStack }}>
       <div style={{ display:'flex', alignItems:'center', padding:'6px 8px', gap:8, background:'#F2F2F7' }}>
         <div style={{ width:32, height:32, borderRadius:16, background:'#C7C7CC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>📷</div>
-        <div style={{ flex:1, background:'#FFFFFF', borderRadius:16, padding:'6px 12px', color:'#8E8E93', fontSize:16 }}>iMessage</div>
+        <div style={{ flex:1, background:'#FFFFFF', borderRadius:16, padding:'6px 12px', color:'#000', fontSize:16, minHeight:32, display:'flex', alignItems:'center' }}>{inputDisplay}</div>
         <div style={{ width:32, height:32, borderRadius:16, background:'#C7C7CC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎤</div>
       </div>
       <div style={{ padding:'4px 6px 8px' }}>
@@ -182,19 +184,23 @@ const DeliveredBelow: React.FC<{ startSec: number }> = ({ startSec }) => {
 };
 
 export const MessageConversation: React.FC<MessageConversationProps> = ({ messages, typingBeforeIndices, contactName, batteryLevel }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   // Precompute a dynamic timeline for all messages.
   type TimelineEntry = {
     idx: number;
     msg: Message;
-    appearSec: number; // when bubble mounts
-    typingDuration: number; // for outgoing messages
-    endSec: number; // when this message is finished (after typing if outgoing)
+  appearSec: number; // when bubble mounts (after typing for outgoing)
+  typingStart?: number;
+  typingEnd?: number;
+  typingDuration: number; // only for outgoing
+  endSec: number; // timeline anchor (bubble appear)
     typingIndicatorStart?: number; // for incoming typing indicator
     typingIndicatorEnd?: number;   // end of indicator (before gap)
   };
 
   const entries: TimelineEntry[] = [];
-  let prevEnd = 0; // end time of previous message
+  let prevEnd = 0; // end time of previous sequence
   for (let i=0;i<messages.length;i++) {
     const m = messages[i];
     // Should we show a typing indicator before this message (incoming after an outgoing)?
@@ -206,40 +212,81 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
     let typingIndicatorStart: number | undefined;
     let typingIndicatorEnd: number | undefined;
     let appearSec: number;
-    if (showIndicator) {
-      typingIndicatorStart = base;
-      // indicator duration (visible) is TYPING_DURATION - TYPING_GAP
-      typingIndicatorEnd = typingIndicatorStart + (TYPING_DURATION - TYPING_GAP);
-      appearSec = base + TYPING_DURATION; // bubble appears after full TYPING_DURATION
-    } else {
-      appearSec = base;
-    }
+    let typingStart: number | undefined;
+    let typingEnd: number | undefined;
     let typingDuration = 0;
     if (m.sent) {
       typingDuration = m.text.length / TYPE_SPEED;
+      typingStart = base;
+      typingEnd = typingStart + typingDuration;
+      appearSec = typingEnd + SEND_GAP; // bubble after send
+    } else {
+      if (showIndicator) {
+        typingIndicatorStart = base;
+        typingIndicatorEnd = typingIndicatorStart + (TYPING_DURATION - TYPING_GAP);
+        appearSec = base + TYPING_DURATION;
+      } else {
+        appearSec = base;
+      }
     }
-    const endSec = m.sent ? appearSec + typingDuration : appearSec; // incoming instantaneous
-    entries.push({ idx:i, msg:m, appearSec, typingDuration, endSec, typingIndicatorStart, typingIndicatorEnd });
+    const endSec = appearSec;
+    entries.push({ idx:i, msg:m, appearSec, typingStart, typingEnd, typingDuration, endSec, typingIndicatorStart, typingIndicatorEnd });
     prevEnd = endSec;
   }
 
   // Keyboard timings: from just before first outgoing begins to shortly after last outgoing finished
   const firstSent = entries.find(e=> e.msg.sent);
   const lastSent = [...entries].reverse().find(e=> e.msg.sent);
-  const keyboardStart = firstSent ? Math.max(0, firstSent.appearSec - KEYBOARD_LEAD) : null;
-  const keyboardEnd = lastSent ? lastSent.endSec + KEYBOARD_TRAIL : undefined;
+  const keyboardStart = firstSent ? Math.max(0, (firstSent.typingStart ?? firstSent.appearSec) - KEYBOARD_LEAD) : null;
+  const keyboardEnd = lastSent ? (lastSent.typingEnd ?? lastSent.appearSec) + KEYBOARD_TRAIL : undefined;
+  const deliveredStartSec = lastSent ? lastSent.appearSec + DELIVERED_DELAY : null;
 
-  // Delivered label starts after last outgoing finished typing + delay
-  const deliveredStartSec = lastSent ? lastSent.endSec + DELIVERED_DELAY : null;
+  // Derive current input text
+  const currentSec = frame / fps;
+  let currentInputText = '';
+  if (keyboardStart != null && currentSec >= keyboardStart && (!keyboardEnd || currentSec <= keyboardEnd)) {
+    const active = entries.find(e => e.msg.sent && e.typingStart !== undefined && e.typingEnd !== undefined && currentSec >= e.typingStart && currentSec < e.typingEnd);
+    if (active && active.typingStart !== undefined) {
+      const elapsed = currentSec - active.typingStart;
+      const chars = Math.min(active.msg.text.length, Math.floor(elapsed * TYPE_SPEED));
+      currentInputText = active.msg.text.slice(0, chars);
+    } else {
+      const sending = entries.find(e => e.msg.sent && e.typingEnd !== undefined && currentSec >= e.typingEnd && currentSec < e.appearSec);
+      if (sending) currentInputText = sending.msg.text;
+    }
+  }
+
+  // Compute dynamic bottom padding based on keyboard slide animation
+  let keyboardVisibleHeight = 0;
+  if (keyboardStart != null) {
+    const ks = Math.round(keyboardStart * fps);
+    if (frame >= ks) {
+      if (keyboardEnd == null || frame < Math.round(keyboardEnd * fps) - KEYBOARD_DISAPPEAR_FRAMES) {
+        // Appearing or steady
+        const sinceStart = frame - ks;
+        const appearProgress = spring({ frame: sinceStart, fps, config:{ damping:16, mass:1, stiffness:180 } });
+        const slideIn = interpolate(appearProgress, [0,1],[KEYBOARD_HEIGHT,0]);
+        keyboardVisibleHeight = KEYBOARD_HEIGHT - slideIn;
+      } else {
+        // Disappearing
+        const ke = Math.round((keyboardEnd as number) * fps);
+        const untilEnd = ke - frame;
+        const outProgress = 1 - untilEnd / KEYBOARD_DISAPPEAR_FRAMES;
+        const eased = spring({ frame: Math.round(outProgress * KEYBOARD_DISAPPEAR_FRAMES), fps, config:{ damping:18, mass:0.9, stiffness:140 } });
+        const slideOut = interpolate(eased, [0,1],[0, KEYBOARD_HEIGHT]);
+        keyboardVisibleHeight = KEYBOARD_HEIGHT - slideOut;
+      }
+    }
+  }
 
   return (
     <AbsoluteFill style={{ background:'#000', fontFamily:fontStack, display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ width:360, height:780, background:'#FFFFFF', borderRadius:48, position:'relative', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.4)', border:'6px solid #000' }}>
   <StatusBar batteryLevel={batteryLevel} />
   <NavigationHeader contactName={contactName} />
-        <div style={{ position:'absolute', top:96, left:0, right:0, bottom:0, padding:'0 12px', display:'flex', flexDirection:'column' }}>
+  <div style={{ position:'absolute', top:96, left:0, right:0, bottom:0, padding:'0 12px', paddingBottom: 12 + keyboardVisibleHeight, display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box' }}>
           {entries.map(entry=>{
-            const { msg, idx, appearSec, typingDuration, typingIndicatorStart, typingIndicatorEnd } = entry;
+            const { msg, idx, appearSec, typingIndicatorStart, typingIndicatorEnd } = entry;
             const prev = entries[idx-1]?.msg;
             const next = entries[idx+1]?.msg;
             const first = !prev || prev.sent !== msg.sent;
@@ -249,7 +296,7 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
                 {typingIndicatorStart !== undefined && typingIndicatorEnd !== undefined && (
                   <TypingBubble startSec={typingIndicatorStart} endSec={typingIndicatorEnd} sent={false} />
                 )}
-                <MessageBubble msg={msg} appearSec={appearSec} first={first} last={last} typingDuration={typingDuration} />
+                <MessageBubble msg={msg} appearSec={appearSec} first={first} last={last} />
                 {deliveredStartSec != null && lastSent && lastSent.idx === idx && (
                   <DeliveredBelow startSec={deliveredStartSec} />
                 )}
@@ -258,7 +305,7 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
           })}
         </div>
         {keyboardStart != null && (
-          <Keyboard startSec={keyboardStart} endSec={keyboardEnd} />
+          <Keyboard startSec={keyboardStart} endSec={keyboardEnd} currentInputText={currentInputText} />
         )}
       </div>
     </AbsoluteFill>
