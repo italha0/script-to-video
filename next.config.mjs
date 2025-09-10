@@ -33,6 +33,24 @@ const nextConfig = {
         '@remotion/compositor-linux-arm64-gnu': false,
         '@remotion/compositor-linux-arm64-musl': false,
       };
+
+      // Treat Remotion packages as runtime externals so Next's server Webpack does not try to bundle them.
+      const remotionPkgs = [
+        '@remotion/bundler',
+        '@remotion/cli',
+        '@remotion/renderer',
+        'remotion'
+      ];
+      const originalExternals = config.externals || [];
+      config.externals = [
+        ...originalExternals,
+        ( { request }, callback ) => {
+          if (remotionPkgs.includes(request)) {
+            return callback(null, 'commonjs ' + request);
+          }
+          callback();
+        }
+      ];
     }
     return config;
   },

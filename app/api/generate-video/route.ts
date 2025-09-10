@@ -104,69 +104,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
-    if (scriptExists) {
-      const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
-      console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
-      const child = spawn(process.execPath, args, {
-        cwd: process.cwd(),
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
-
-      await new Promise<void>((resolve, reject) => {
-        child.stdout.on('data', (d) => {
-          const line = d.toString();
-          childStdout += line;
-          console.log('[Renderer STDOUT]', line.trim());
-        });
-        child.stderr.on('data', (d) => {
-          const line = d.toString();
-          childStderr += line;
-          console.warn('[Renderer STDERR]', line.trim());
-        });
-        child.on('exit', (code) => {
-          if (code === 0) return resolve();
-          hadError = true;
-          reject(new Error(`Renderer exited with code ${code}`));
-        });
-        child.on('error', (err) => reject(err));
-      });
-    } else {
-      // Inline fallback rendering path (no child process) for environments where the script isn't traced.
-      console.log('[API] Inline fallback: bundling Remotion entry...');
-      const entry = join(process.cwd(), 'remotion', 'index.ts');
-      if (!existsSync(entry)) {
-        throw new Error(`Remotion entry not found at ${entry}`);
-      }
-      // Dynamic require so that build only pulls these when necessary
-      const { bundle } = require('@remotion/bundler');
-      const { getCompositions, renderMedia } = require('@remotion/renderer');
-      const bundleLocation = await bundle(entry);
-      console.log('[API] Inline fallback: bundle at', bundleLocation);
-      const props = JSON.parse(readFileSync(propsPath, 'utf-8'));
-  const comps: any[] = await getCompositions(bundleLocation, { inputProps: props });
-  const comp = comps.find((c: any) => c.id === 'MessageConversation');
-      if (!comp) throw new Error('Composition MessageConversation not found');
-      const msgCount = (props.messages || []).length;
-      const perMessage = 2; const tail = 4;
-      const desired = Math.round((msgCount * perMessage + tail) * comp.fps);
-      const durationInFrames = Math.max(comp.durationInFrames, desired);
-      console.log('[API] Inline fallback: rendering with duration', durationInFrames);
-      await renderMedia({
-        composition: { ...comp, durationInFrames },
-        serveUrl: bundleLocation,
-        codec: 'h264',
-        outputLocation: outputPath,
-        inputProps: props,
-        concurrency: 2,
-        dumpBrowserLogs: false,
-        onProgress: (p: any) => {
-          if (p.renderedFrames % 30 === 0) {
-            console.log(`[INLINE RENDER] ${p.renderedFrames}/${durationInFrames} ${(p.progress*100).toFixed(1)}%`);
-          }
-        }
-      });
-      console.log('[API] Inline fallback: render complete');
+    if (!scriptExists) {
+      throw new Error('Renderer script missing (scripts/render-video.cjs). Cannot render video.');
     }
+
+    const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
+    console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
+    const child = spawn(process.execPath, args, {
+      cwd: process.cwd(),
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      child.stdout.on('data', (d) => {
+        const line = d.toString();
+        childStdout += line;
+        console.log('[Renderer STDOUT]', line.trim());
+      });
+      child.stderr.on('data', (d) => {
+        const line = d.toString();
+        childStderr += line;
+        console.warn('[Renderer STDERR]', line.trim());
+      });
+      child.on('exit', (code) => {
+        if (code === 0) return resolve();
+        hadError = true;
+        reject(new Error(`Renderer exited with code ${code}`));
+      });
+      child.on('error', (err) => reject(err));
+    });
 
     if (!existsSync(outputPath)) {
       throw new Error('Render finished but output file missing');
