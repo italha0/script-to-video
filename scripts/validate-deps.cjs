@@ -34,7 +34,9 @@ const requiredModules = [
   '@sparticuz/chromium',
   'remotion',
   'remotion/version',
-  'remotion/no-react'
+  'remotion/no-react',
+  'debug',
+  'ms'
 ];
 
 console.log('[DEP-CHECK] Validating required modules...');
