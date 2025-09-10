@@ -22,6 +22,14 @@ try {
 }
 
 try {
+  console.log('[MODULE-TEST] Testing ws...');
+  const ws = require('ws');
+  console.log('✅ ws - OK');
+} catch (error) {
+  console.error('❌ ws - FAILED:', error.message);
+}
+
+try {
   console.log('[MODULE-TEST] Testing @remotion/renderer...');
   const renderer = require('@remotion/renderer');
   console.log('✅ @remotion/renderer - OK');

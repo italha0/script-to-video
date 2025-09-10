@@ -4,6 +4,19 @@
 */
 const { readFileSync } = require('fs');
 const path = require('path');
+
+// Add dependency validation at the start
+console.log('[RENDER] Validating critical dependencies...');
+const criticalDeps = ['ws', 'remotion/version', 'isexe', 'shebang-regex'];
+for (const dep of criticalDeps) {
+  try {
+    require.resolve(dep);
+    console.log(`[RENDER] ✅ ${dep}`);
+  } catch (error) {
+    console.error(`[RENDER] ❌ ${dep} - MISSING:`, error.message);
+  }
+}
+
 // No bundling at runtime – we rely on prebundled assets created during build.
 const { getCompositions, renderMedia } = require('@remotion/renderer');
 

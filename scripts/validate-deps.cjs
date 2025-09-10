@@ -9,6 +9,7 @@ const requiredModules = [
   'shebang-regex', 
   'shebang-command',
   'which',
+  'ws',
   'cross-spawn',
   'execa',
   'get-stream',
