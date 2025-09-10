@@ -21,6 +21,7 @@ const nextConfig = {
 
       // The headless browser for rendering
       "./node_modules/@sparticuz/chromium/**/*",
+  "./node_modules/execa/**/*",
 
   // Core runtime-only packages now (prebundled output replaces bundler/studio/webcodecs heavy deps)
   "./node_modules/remotion/dist/**/*",
