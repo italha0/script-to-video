@@ -28,6 +28,7 @@ const nextConfig = {
   "./node_modules/@remotion/media-parser/**/*",
   "./node_modules/@remotion/licensing/**/*",
   "./node_modules/@remotion/webcodecs/**/*",
+  "./node_modules/@remotion/studio-shared/**/*",
 
       // --- NEW & CRITICAL ADDITIONS ---
 

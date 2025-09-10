@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[API] Processing', messages.length, 'messages with', characters.length, 'characters');
-
     // Transform data for Remotion
     // Determine outgoing vs incoming.
     // In the redesigned editor we use ids 'them' and 'you'. Outgoing (right side / blue) should be 'you'.
@@ -201,6 +200,9 @@ export async function POST(request: NextRequest) {
       } else if (error.message.includes('ENOENT') || error.message.includes('not found')) {
         statusCode = 404;
         errorMessage = 'Required files not found (remotion bundle or assets). Verify outputFileTracingIncludes paths.';
+      } else if (error.message.includes('@remotion/studio-shared')) {
+        statusCode = 500;
+        errorMessage = 'Missing @remotion/studio-shared. Ensure dependency installed and traced.';
       } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
         statusCode = 408;
         errorMessage = 'Video generation timed out. Please try again.';
