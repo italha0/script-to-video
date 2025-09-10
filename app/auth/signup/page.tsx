@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
@@ -18,6 +18,17 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get("plan")
+  const postVerifyRedirect = plan ? `/pricing?plan=${encodeURIComponent(plan)}` : "/editor"
+
+  // If already signed in, bounce away
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) router.replace("/editor")
+    })
+  }, [router])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,11 +49,13 @@ export default function SignUpPage() {
     }
 
     try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fakevideo-beige.vercel.app'
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/editor`,
+          // Must be an allowed redirect in Supabase Auth settings
+          emailRedirectTo: `${siteUrl}${postVerifyRedirect}`,
         },
       })
       if (error) throw error

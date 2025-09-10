@@ -246,14 +246,14 @@ export default function EditorPage() {
               ) : (
                 <>
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Generate conversation with AI
+                  Generate Video
                 </>
               )}
             </Button>
           </div>
 
           {/* Right Column - Preview (matches Remotion video) */}
-          <div className="mt-8 lg:mt-0 lg:sticky lg:top-10">
+          <div className="mt-8 lg:mt-0 lg:fixed lg:top-10 lg:right-0 lg:left-[50rem]">
             <div className="relative mx-auto" style={{ width:'100%', maxWidth:360 }}>
               <div style={{
                 width:'100%',
@@ -265,8 +265,10 @@ export default function EditorPage() {
                 boxShadow:'0 8px 24px rgba(0,0,0,0.4)',
                 border:'6px solid #000'
               }}>
+                {/* Top overlay to fully mask any underlying bubbles (covers status + nav area) */}
+                <div style={{ position:'absolute', top:0, left:0, right:0, height:96, background:'#F2F2F7', zIndex:15, pointerEvents:'none' }} />
                 {/* Status Bar */}
-                <div style={{ position:'absolute', top:0, left:0, right:0, height:44, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize:15, fontWeight:600 }}>
+                <div style={{ position:'absolute', top:0, left:0, right:0, height:44, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize:15, fontWeight:600, zIndex:30 }}>
                   <div>9:41</div>
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     <div style={{ display:'flex', alignItems:'flex-end', gap:2 }}>
@@ -286,12 +288,12 @@ export default function EditorPage() {
                   </div>
                 </div>
                 {/* Navigation Header */}
-                <div style={{ position:'absolute', top:44, left:0, right:0, height:52, background:'#F2F2F7', borderBottom:'1px solid #C7C7CC', display:'flex', alignItems:'center', padding:'0 12px', fontSize:17 }}>
+                <div style={{ position:'absolute', top:44, left:0, right:0, height:52, background:'#F2F2F7', borderBottom:'1px solid #C7C7CC', display:'flex', alignItems:'center', padding:'0 12px', fontSize:17, zIndex:20 }}>
                   <div style={{ fontSize:17, color:'#007AFF' }}>Back</div>
                   <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', fontSize:17, fontWeight:600 }}>{contactName || 'Contact'}</div>
                 </div>
                 {/* Messages (static final state) with reserved space for keyboard */}
-                <div style={{ position:'absolute', top:96, left:0, right:0, bottom:300, padding:'0 12px 4px', display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box' }}>
+                <div style={{ position:'absolute', top:96, left:0, right:0, bottom:300, padding:'12px 12px 4px', display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box', zIndex:10 }}>
                   {messages.length === 0 ? (
                     <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'#8E8E93', fontSize:14 }}>
                       Your conversation will appear here...
@@ -350,9 +352,6 @@ export default function EditorPage() {
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="text-center mt-4">
-              <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium tracking-tight">Low-res preview</span>
             </div>
           </div>
         </div>

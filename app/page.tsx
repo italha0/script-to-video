@@ -28,8 +28,8 @@ export default function DashboardHome() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
   }, [])
-
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Creator"
+  
   return (
     <div className="min-h-screen bg-background text-foreground flex">
       {/* Sidebar */}
