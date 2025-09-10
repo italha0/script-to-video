@@ -27,7 +27,8 @@ const requiredModules = [
   '@remotion/renderer',
   '@sparticuz/chromium',
   'remotion',
-  'remotion/version'
+  'remotion/version',
+  'remotion/no-react'
 ];
 
 console.log('[DEP-CHECK] Validating required modules...');
