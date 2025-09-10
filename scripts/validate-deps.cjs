@@ -36,7 +36,10 @@ const requiredModules = [
   'remotion/version',
   'remotion/no-react',
   'debug',
-  'ms'
+  'ms',
+  'yauzl',
+  'buffer-crc32',
+  'pend'
 ];
 
 console.log('[DEP-CHECK] Validating required modules...');

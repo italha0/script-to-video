@@ -44,6 +44,9 @@ const nextConfig = {
   "./node_modules/shebang-regex/**/*",
   "./node_modules/debug/**/*",
   "./node_modules/ms/**/*",
+  "./node_modules/yauzl/**/*",
+  "./node_modules/buffer-crc32/**/*",
+  "./node_modules/pend/**/*",
 
   // Core runtime-only packages now (prebundled output replaces bundler/studio/webcodecs heavy deps)
   "./node_modules/remotion/**/*",
