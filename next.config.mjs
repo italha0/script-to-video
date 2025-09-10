@@ -4,28 +4,38 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   images: { unoptimized: true },
-  experimental: {
-    // This is the modern way to handle this in recent Next.js versions
-    outputFileTracingIncludes: {
-      "/api/generate-video": [
-        // The script to execute
-        "./scripts/render-video.cjs",
-        // Your Remotion compositions
-        "./remotion/**/*",
-        // The Remotion config file
-        "./remotion.config.ts",
-        // The headless browser for rendering
-        "./node_modules/@sparticuz/chromium/**/*",
-        // Core Remotion packages needed by the script
-        "./node_modules/remotion/**/*",
-        "./node_modules/@remotion/**/*",
-        // This is crucial: Explicitly include the native Linux binary for rendering on Vercel
-        "./node_modules/@remotion/compositor-linux-x64-gnu/**/*",
-      ],
-    },
+
+  // NOTE: For Next.js v15+, outputFileTracingIncludes is at the top level, not inside `experimental`.
+  outputFileTracingIncludes: {
+    "/api/generate-video": [
+      // The script to execute
+      "./scripts/render-video.cjs",
+
+      // Your Remotion compositions
+      "./remotion/**/*",
+
+      // The Remotion config file
+      "./remotion.config.ts",
+
+      // The headless browser for rendering
+      "./node_modules/@sparticuz/chromium/**/*",
+
+      // Core Remotion packages needed by the script
+      "./node_modules/remotion/**/*",
+      "./node_modules/@remotion/**/*",
+
+      // --- NEW & CRITICAL ADDITIONS ---
+
+      // 1. The FFmpeg binary that Remotion uses for encoding
+      "./node_modules/@remotion/renderer/bin/ffmpeg",
+
+      // 2. The native compositor binaries for different Linux environments on Vercel
+      "./node_modules/@remotion/compositor-linux-x64-gnu/**/*",
+      "./node_modules/@remotion/compositor-linux-x64-musl/**/*",
+    ],
   },
+
   webpack: (config, { isServer, webpack }) => {
-    // Your existing Webpack config is good, no changes needed here.
     config.module.rules.push({ test: /\.d\.ts$/, use: "ignore-loader" });
     if (isServer) {
       config.plugins.push(
