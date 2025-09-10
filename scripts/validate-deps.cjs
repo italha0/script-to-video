@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 /**
- * Dependency validator for production deployment
+ *  'remotion',
+  'remotion/version',
+  'remotion/no-react',
+  'debug'
+];
+
+console.log('\n[DEP-CHECK] Validating required modules...');dency validator for production deployment
  * This script checks if all required dependencies for video generation are available
  */
 
