@@ -134,10 +134,23 @@ export async function POST(request: NextRequest) {
     }
 
     const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
+    // If we have a prebundled serveUrl marker, expose via env so script can reuse
+    const prebundledMarker = join(process.cwd(), 'prebundled', 'serveUrl.txt');
+    const extraEnv = { ...process.env };
+    if (existsSync(prebundledMarker)) {
+      try {
+        const serveUrl = readFileSync(prebundledMarker, 'utf-8').trim();
+        extraEnv.PREBUNDLED_SERVE_URL = serveUrl;
+        console.log('[API] Using prebundled serveUrl in child:', serveUrl);
+      } catch (e) {
+        console.warn('[API] Could not read prebundled serveUrl marker', e);
+      }
+    }
     console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
     const child = spawn(process.execPath, args, {
       cwd: process.cwd(),
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: extraEnv
     });
 
     await new Promise<void>((resolve, reject) => {

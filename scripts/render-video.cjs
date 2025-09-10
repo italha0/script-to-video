@@ -4,7 +4,7 @@
 */
 const { readFileSync } = require('fs');
 const path = require('path');
-const { bundle } = require('@remotion/bundler');
+let bundle; // lazy require only if needed
 const { getCompositions, renderMedia } = require('@remotion/renderer');
 
 async function run() {
@@ -32,9 +32,27 @@ async function run() {
   } else {
     console.log('[RENDER] REMOTION_BROWSER_EXECUTABLE already set');
   }
-  const entry = path.join(process.cwd(), 'remotion', 'index.ts');
-  const bundleLocation = await bundle(entry);
-  console.log('[RENDER] Bundled at', bundleLocation);
+  // Try to use pre-bundled serveUrl produced at build time
+  let bundleLocation = process.env.PREBUNDLED_SERVE_URL || null;
+  if (bundleLocation) {
+    console.log('[RENDER] PREBUNDLED_SERVE_URL provided:', bundleLocation);
+  }
+  const prebundledMarker = path.join(process.cwd(), 'prebundled', 'serveUrl.txt');
+  if (!bundleLocation && require('fs').existsSync(prebundledMarker)) {
+    try {
+      bundleLocation = require('fs').readFileSync(prebundledMarker, 'utf-8').trim();
+      console.log('[RENDER] Using pre-bundled serveUrl:', bundleLocation);
+    } catch (e) {
+      console.warn('[RENDER] Failed reading prebundled marker, falling back to bundling', e.message);
+    }
+  }
+  if (!bundleLocation) {
+    console.log('[RENDER] No prebundle found – bundling now (slower).');
+    bundle = require('@remotion/bundler').bundle;
+    const entry = path.join(process.cwd(), 'remotion', 'index.ts');
+    bundleLocation = await bundle(entry);
+    console.log('[RENDER] Bundled at', bundleLocation);
+  }
   const props = JSON.parse(readFileSync(propsPath, 'utf-8'));
   console.log('[RENDER] Messages count:', (props.messages || []).length);
   const comps = await getCompositions(bundleLocation, { inputProps: props });

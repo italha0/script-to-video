@@ -16,6 +16,8 @@ const nextConfig = {
 
       // The Remotion config file
       "./remotion.config.ts",
+  // Pre-bundled output marker + directory
+  "./prebundled/**/*",
 
       // The headless browser for rendering
       "./node_modules/@sparticuz/chromium/**/*",
