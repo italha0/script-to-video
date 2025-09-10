@@ -9,6 +9,9 @@ const nextConfig = {
       "./scripts/render-video.cjs",
       "./remotion/**/*",
       "./node_modules/@sparticuz/chromium/**/*",
+  // Ensure Remotion packages are included when externalized so child process can require them
+  "./node_modules/remotion/**/*",
+  "./node_modules/@remotion/**/*",
     ],
   },
   webpack: (config, { isServer, webpack }) => {
@@ -41,6 +44,7 @@ const nextConfig = {
         '@remotion/renderer',
         'remotion'
       ];
+      
       const originalExternals = config.externals || [];
       config.externals = [
         ...originalExternals,
