@@ -36,41 +36,24 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer, webpack }) => {
-    config.module.rules.push({ test: /\.d\.ts$/, use: "ignore-loader" });
+    // Ignore TS declaration files so they don't bloat the bundle
+    config.module.rules.push({ test: /\.d\.ts$/, use: 'ignore-loader' });
     if (isServer) {
-      config.plugins.push(
-        new webpack.IgnorePlugin({
-          resourceRegExp: /^@remotion\/compositor-/,
-        })
-      );
+      // Prevent optional native compositor variants from being pulled in (we only trace Linux ones explicitly)
+      config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^@remotion\/compositor-/ }));
       config.resolve = config.resolve || {};
       config.resolve.alias = {
         ...(config.resolve.alias || {}),
-        "@remotion/compositor-win32-x64-msvc": false,
-        "@remotion/compositor-darwin-x64": false,
-        "@remotion/compositor-darwin-arm64": false,
-        "@remotion/compositor-linux-x64-gnu": false,
-        "@remotion/compositor-linux-x64-musl": false,
-        "@remotion/compositor-linux-arm64-gnu": false,
-        "@remotion/compositor-linux-arm64-musl": false,
+        '@remotion/compositor-win32-x64-msvc': false,
+        '@remotion/compositor-darwin-x64': false,
+        '@remotion/compositor-darwin-arm64': false,
+        '@remotion/compositor-linux-arm64-gnu': false,
+        '@remotion/compositor-linux-arm64-musl': false,
       };
-      const remotionPkgs = [
-        "@remotion/bundler",
-        "@remotion/cli",
-        "@remotion/renderer",
-        "remotion",
-      ];
-
-      const originalExternals = config.externals || [];
-      config.externals = [
-        ...originalExternals,
-        ({ request }, callback) => {
-          if (remotionPkgs.includes(request)) {
-            return callback(null, "commonjs " + request);
-          }
-          callback();
-        },
-      ];
+      // NOTE: Previously we marked Remotion packages as externals. That prevented Next.js
+      // from tracing their internal files leading to MODULE_NOT_FOUND in the serverless
+      // function. We now keep them bundled/traced so outputFileTracingIncludes + automatic
+      // tracing can capture all required files.
     }
     return config;
   },
