@@ -1,0 +1,27 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[functions]
+  node_bundler = "esbuild"
+  
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  NPM_FLAGS = "--production=false"
+
+# Optimize function bundling
+[functions.settings]
+  "*" = { 
+    node_bundler = "nft",
+    included_files = [
+      "node_modules/ws/**",
+      "node_modules/@remotion/renderer/**",
+      "node_modules/@sparticuz/chromium/**",
+      "node_modules/remotion/**",
+      "scripts/**",
+      "prebundled/**"
+    ]
+  }

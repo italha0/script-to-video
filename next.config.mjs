@@ -24,6 +24,8 @@ const nextConfig = {
   "./node_modules/execa/**/*",
   // Execa transitive deps required at runtime (not always captured by static tracing)
   "./node_modules/cross-spawn/**/*",
+  "./node_modules/execa/**/*",
+  "./node_modules/extract-zip/**/*",
   "./node_modules/get-stream/**/*",
   "./node_modules/human-signals/**/*",
   "./node_modules/is-stream/**/*",
@@ -32,24 +34,19 @@ const nextConfig = {
   "./node_modules/npm-run-path/**/*",
   "./node_modules/onetime/**/*",
   "./node_modules/signal-exit/**/*",
+  "./node_modules/source-map/**/*",
   "./node_modules/strip-final-newline/**/*",
   "./node_modules/which/**/*",
   "./node_modules/ws/**/*",
-  "./node_modules/bufferutil/**/*",
-  "./node_modules/utf-8-validate/**/*",
   "./node_modules/isexe/**/*",
   "./node_modules/path-key/**/*",
   "./node_modules/shebang-command/**/*",
   "./node_modules/shebang-regex/**/*",
 
   // Core runtime-only packages now (prebundled output replaces bundler/studio/webcodecs heavy deps)
-  "./node_modules/remotion/**/*",
-  "./node_modules/remotion/version.js",
   "./node_modules/remotion/dist/cjs/**/*",
-  "./node_modules/@remotion/bundler/**/*",
+  "./node_modules/remotion/version.js",
   "./node_modules/@remotion/renderer/**/*",
-  "./node_modules/@remotion/cli/**/*",
-  "./node_modules/@remotion/player/**/*",
   "./node_modules/@remotion/studio-shared/**/*",
   "./node_modules/@remotion/compositor-linux-x64-gnu/**/*",
   "./node_modules/@remotion/compositor-linux-x64-musl/**/*",
@@ -72,6 +69,7 @@ const nextConfig = {
     if (isServer) {
       // Prevent optional native compositor variants from being pulled in (we only trace Linux ones explicitly)
       config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^@remotion\/compositor-/ }));
+      
       config.resolve = config.resolve || {};
       config.resolve.alias = {
         ...(config.resolve.alias || {}),

@@ -13,7 +13,7 @@ for (const dep of criticalDeps) {
     require.resolve(dep);
     console.log(`[RENDER] ✅ ${dep}`);
   } catch (error) {
-    console.error(`[RENDER] ❌ ${dep} - MISSING:`, error.message);
+    console.warn(`[RENDER] ⚠️ ${dep} - Will attempt to continue:`, error.message);
   }
 }
 
