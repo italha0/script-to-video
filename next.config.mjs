@@ -22,6 +22,16 @@ const nextConfig = {
       // The headless browser for rendering
       "./node_modules/@sparticuz/chromium/**/*",
   "./node_modules/execa/**/*",
+  // Execa transitive deps required at runtime (not always captured by static tracing)
+  "./node_modules/cross-spawn/**/*",
+  "./node_modules/get-stream/**/*",
+  "./node_modules/human-signals/**/*",
+  "./node_modules/is-stream/**/*",
+  "./node_modules/merge-stream/**/*",
+  "./node_modules/npm-run-path/**/*",
+  "./node_modules/onetime/**/*",
+  "./node_modules/signal-exit/**/*",
+  "./node_modules/strip-final-newline/**/*",
 
   // Core runtime-only packages now (prebundled output replaces bundler/studio/webcodecs heavy deps)
   "./node_modules/remotion/dist/**/*",
