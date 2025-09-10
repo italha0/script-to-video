@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, writeFileSync } from 'fs';
+import os from 'os';
 import { join } from 'path';
 import { spawn } from 'child_process';
 
@@ -67,11 +68,28 @@ export async function POST(request: NextRequest) {
 
     console.log('[API] Transformed messages for Remotion:', remotionMessages);
 
-    // Ensure output directory exists
-    const outputDir = join(process.cwd(), 'out');
-    if (!existsSync(outputDir)) {
-      mkdirSync(outputDir, { recursive: true });
-      console.log('[API] Created output directory:', outputDir);
+    // Choose a writable directory. In Vercel serverless functions the filesystem is read-only
+    // except for /tmp, so we must place temp artifacts there. Locally we keep using the repo folder.
+  const writableRoot = process.env.VERCEL ? os.tmpdir() : process.cwd();
+  let outputDir = join(writableRoot, 'out');
+    try {
+      if (!existsSync(outputDir)) {
+        mkdirSync(outputDir, { recursive: true });
+        console.log('[API] Created output directory:', outputDir);
+      }
+    } catch (dirErr) {
+      console.error('[API] Failed to ensure output directory. Falling back to os.tmpdir()', dirErr);
+      // Last resort – try tmp directly
+      const fallback = os.tmpdir();
+      const fbOut = join(fallback, 'out');
+      if (!existsSync(fbOut)) {
+        mkdirSync(fbOut, { recursive: true });
+      }
+      console.log('[API] Using fallback output directory:', fbOut);
+      outputDir = fbOut;
+      (global as any).__videoOutputFallback = true; // mark for diagnostics
+      // redefine for subsequent logic
+      (outputPath as any) = null; // just to silence TS if reused before assignment
     }
 
     // Create unique output path
@@ -112,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
     if (!scriptExists) {
-  throw new Error('Renderer script missing (scripts/render-video.cjs). Cannot render video. (Did outputFileTracingIncludes capture it?)');
+      throw new Error('Renderer script missing (scripts/render-video.cjs). Cannot render video. (Did outputFileTracingIncludes capture it?)');
     }
 
     const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
@@ -173,9 +191,15 @@ export async function POST(request: NextRequest) {
       });
       
   // Handle specific error types
-      if (error.message.includes('ENOENT') || error.message.includes('not found')) {
+      if (error.message.includes('Renderer script missing')) {
         statusCode = 404;
-        errorMessage = 'Required files not found. In production ensure outputFileTracingIncludes includes remotion + scripts.';
+        errorMessage = 'Renderer script missing. Ensure outputFileTracingIncludes includes scripts/render-video.cjs';
+      } else if (error.message.includes('ENOENT') && error.message.includes('/tmp')) {
+        statusCode = 500;
+        errorMessage = 'Temp directory issue. /tmp should be writable but was not. Check serverless permissions.';
+      } else if (error.message.includes('ENOENT') || error.message.includes('not found')) {
+        statusCode = 404;
+        errorMessage = 'Required files not found (remotion bundle or assets). Verify outputFileTracingIncludes paths.';
       } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
         statusCode = 408;
         errorMessage = 'Video generation timed out. Please try again.';
