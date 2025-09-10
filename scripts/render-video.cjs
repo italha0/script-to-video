@@ -4,7 +4,7 @@
 */
 const { readFileSync } = require('fs');
 const path = require('path');
-let bundle; // lazy require only if needed
+// No bundling at runtime – we rely on prebundled assets created during build.
 const { getCompositions, renderMedia } = require('@remotion/renderer');
 
 async function run() {
@@ -47,11 +47,21 @@ async function run() {
     }
   }
   if (!bundleLocation) {
-    console.log('[RENDER] No prebundle found – bundling now (slower).');
-    bundle = require('@remotion/bundler').bundle;
-    const entry = path.join(process.cwd(), 'remotion', 'index.ts');
-    bundleLocation = await bundle(entry);
-    console.log('[RENDER] Bundled at', bundleLocation);
+    if (process.env.VERCEL) {
+      console.error('[RENDER] No prebundled serveUrl available in production. Ensure build ran prebundle script.');
+      process.exit(1);
+    } else {
+      console.log('[RENDER] No prebundle found (local dev). Bundling on-the-fly...');
+      try {
+        const { bundle } = require('@remotion/bundler');
+        const entry = path.join(process.cwd(), 'remotion', 'index.ts');
+        bundleLocation = await bundle(entry);
+        console.log('[RENDER] Local bundle created at', bundleLocation);
+      } catch (e) {
+        console.error('[RENDER] Failed to bundle locally. Install @remotion/bundler or run prebundle.', e);
+        process.exit(1);
+      }
+    }
   }
   const props = JSON.parse(readFileSync(propsPath, 'utf-8'));
   console.log('[RENDER] Messages count:', (props.messages || []).length);

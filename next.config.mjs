@@ -22,16 +22,12 @@ const nextConfig = {
       // The headless browser for rendering
       "./node_modules/@sparticuz/chromium/**/*",
 
-      // Core Remotion packages needed by the script
-      "./node_modules/remotion/**/*",
-      "./node_modules/@remotion/**/*",
-  // Explicitly ensure bundler + internals are traced (some subpackages are dynamically required)
-  "./node_modules/@remotion/bundler/**/*",
-  "./node_modules/@remotion/media-parser/**/*",
-  "./node_modules/@remotion/licensing/**/*",
-  "./node_modules/@remotion/webcodecs/**/*",
-  "./node_modules/@remotion/studio-shared/**/*",
-  "./node_modules/webpack/**/*",
+  // Core runtime-only packages now (prebundled output replaces bundler/studio/webcodecs heavy deps)
+  "./node_modules/remotion/dist/**/*",
+  "./node_modules/@remotion/renderer/**/*",
+  "./node_modules/@remotion/compositor-linux-x64-gnu/**/*",
+  "./node_modules/@remotion/compositor-linux-x64-musl/**/*",
+  "./node_modules/@sparticuz/chromium/**/*",
 
       // --- NEW & CRITICAL ADDITIONS ---
 

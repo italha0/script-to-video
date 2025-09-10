@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
     if (!scriptExists) {
-      throw new Error('Renderer script missing (scripts/render-video.cjs). Cannot render video. (Did outputFileTracingIncludes capture it?)');
+      throw new Error('Renderer script missing (scripts/render-video.cjs).');
     }
 
     const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
@@ -204,15 +204,18 @@ export async function POST(request: NextRequest) {
       });
       
   // Handle specific error types
-      if (error.message.includes('Renderer script missing')) {
+      if (error.message.includes('prebundled serveUrl')) {
+        statusCode = 500;
+        errorMessage = 'Missing prebundled Remotion bundle. Build step must run prebundle script.';
+      } else if (error.message.includes('Renderer script missing')) {
         statusCode = 404;
-        errorMessage = 'Renderer script missing. Ensure outputFileTracingIncludes includes scripts/render-video.cjs';
+        errorMessage = 'Renderer script missing. Ensure tracing includes scripts/render-video.cjs';
       } else if (error.message.includes('ENOENT') && error.message.includes('/tmp')) {
         statusCode = 500;
         errorMessage = 'Temp directory issue. /tmp should be writable but was not. Check serverless permissions.';
       } else if (error.message.includes('ENOENT') || error.message.includes('not found')) {
         statusCode = 404;
-        errorMessage = 'Required files not found (remotion bundle or assets). Verify outputFileTracingIncludes paths.';
+        errorMessage = 'Required files not found (prebundled bundle or assets). Verify tracing paths.';
       } else if (error.message.includes('@remotion/studio-shared')) {
         statusCode = 500;
         errorMessage = 'Missing @remotion/studio-shared. Ensure dependency installed and traced.';
