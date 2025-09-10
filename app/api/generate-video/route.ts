@@ -203,6 +203,9 @@ export async function POST(request: NextRequest) {
       } else if (error.message.includes('@remotion/studio-shared')) {
         statusCode = 500;
         errorMessage = 'Missing @remotion/studio-shared. Ensure dependency installed and traced.';
+      } else if (error.message.includes("Cannot find module 'webpack'")) {
+        statusCode = 500;
+        errorMessage = 'Missing webpack at runtime. Added as dependency – redeploy to pick it up.';
       } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
         statusCode = 408;
         errorMessage = 'Video generation timed out. Please try again.';

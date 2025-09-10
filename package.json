@@ -47,6 +47,7 @@
   "@remotion/player": "4.0.345",
   "@remotion/renderer": "4.0.345",
   "@remotion/studio-shared": "4.0.345",
+  "webpack": "5.91.0",
     "@sparticuz/chromium": "^138.0.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.57.4",
