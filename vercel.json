@@ -1,0 +1,21 @@
+{
+  "functions": {
+    "app/api/generate-video/route.ts": {
+      "maxDuration": 300,
+      "memory": 3008
+    }
+  },
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "tracing": {
+    "include": [
+      "scripts/**/*",
+      "remotion/**/*",
+      "prebundled/**/*",
+      "node_modules/isexe/**/*",
+      "node_modules/which/**/*",
+      "node_modules/@remotion/**/*",
+      "node_modules/@sparticuz/**/*"
+    ]
+  }
+}
