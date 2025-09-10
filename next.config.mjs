@@ -33,6 +33,7 @@ const nextConfig = {
   "./node_modules/signal-exit/**/*",
   "./node_modules/strip-final-newline/**/*",
   "./node_modules/which/**/*",
+  "./node_modules/isexe/**/*",
   "./node_modules/path-key/**/*",
   "./node_modules/shebang-command/**/*",
 
