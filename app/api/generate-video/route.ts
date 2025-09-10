@@ -124,15 +124,6 @@ export async function POST(request: NextRequest) {
       remotionRenderer: existsSync(join(process.cwd(), 'node_modules', '@remotion', 'renderer')),
       remotionBundler: existsSync(join(process.cwd(), 'node_modules', '@remotion', 'bundler'))
     });
-    try {
-      // Probe if the bundler main file is resolvable. This ensures outputFileTracing captured it.
-      // We only require lightly (no usage) to catch MODULE_NOT_FOUND early with clearer message.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      require('@remotion/bundler');
-      console.log('[API] @remotion/bundler is resolvable');
-    } catch (bundlerErr) {
-      console.error('[API] Cannot resolve @remotion/bundler at runtime. Likely tracing issue.', bundlerErr);
-    }
     console.log('[API] Running on Vercel?', !!process.env.VERCEL, 'Node ENV:', process.env.NODE_ENV);
     if (process.env.REMOTION_BROWSER_EXECUTABLE) {
       console.log('[API] Using custom REMOTION_BROWSER_EXECUTABLE');

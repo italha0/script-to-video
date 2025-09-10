@@ -23,6 +23,11 @@ const nextConfig = {
       // Core Remotion packages needed by the script
       "./node_modules/remotion/**/*",
       "./node_modules/@remotion/**/*",
+  // Explicitly ensure bundler + internals are traced (some subpackages are dynamically required)
+  "./node_modules/@remotion/bundler/**/*",
+  "./node_modules/@remotion/media-parser/**/*",
+  "./node_modules/@remotion/licensing/**/*",
+  "./node_modules/@remotion/webcodecs/**/*",
 
       // --- NEW & CRITICAL ADDITIONS ---
 
