@@ -18,7 +18,7 @@ interface ToolDef {
 }
 // Single tool only (updated preview image path). Place your screenshot at /public/screenshots/fake-text-preview.png
 const TOOLS: ToolDef[] = [
-  { id: "fake-text", title: "Fake Text Messages", description: "Use AI Text to Speech to bring text messages to life", icon: MessageCircleMore, href: "/editor", colorClass: "bg-[#40e0d0]", special: true, previewImg: "/screenshots/fake-text-preview.png" }
+  { id: "fake-text", title: "Fake Text Messages", description: "Use AI Text to Speech to bring text messages to life", icon: MessageCircleMore, href: "/editor", colorClass: "bg-gradient-to-r from-[#c8c9ff] to-[#9fa2ff]", special: true, previewImg: "/fake-text-preview.png" }
 ]
 
 export default function DashboardHome() {
