@@ -7,7 +7,7 @@ const path = require('path');
 
 // Add dependency validation at the start
 console.log('[RENDER] Validating critical dependencies...');
-const criticalDeps = ['ws', 'remotion/version', 'remotion/no-react', 'isexe', 'shebang-regex', 'debug', 'ms', 'yauzl', 'buffer-crc32', 'pend'];
+const criticalDeps = ['ws', 'remotion/version', 'remotion/no-react', 'isexe', 'shebang-regex', 'debug', 'ms', 'yauzl', 'buffer-crc32', 'pend', '@remotion/streaming'];
 for (const dep of criticalDeps) {
   try {
     require.resolve(dep);

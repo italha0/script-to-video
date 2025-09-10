@@ -32,6 +32,7 @@ const requiredModules = [
   'path-key',
   '@remotion/renderer',
   '@sparticuz/chromium',
+  '@remotion/streaming',
   'remotion',
   'remotion/version',
   'remotion/no-react',

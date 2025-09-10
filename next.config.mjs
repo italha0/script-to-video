@@ -55,6 +55,7 @@ const nextConfig = {
   "./node_modules/remotion/dist/cjs/**/*",
   "./node_modules/@remotion/renderer/**/*",
   "./node_modules/@remotion/studio-shared/**/*",
+  "./node_modules/@remotion/streaming/**/*",
   "./node_modules/@remotion/compositor-linux-x64-gnu/**/*",
   "./node_modules/@remotion/compositor-linux-x64-musl/**/*",
   "./node_modules/@sparticuz/chromium/**/*",
