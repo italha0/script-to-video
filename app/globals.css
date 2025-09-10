@@ -3,83 +3,62 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+  ClipGoat Light Theme / Pink Accent Design System
+  Light-themed UI with vibrant pink/magenta accent color
+*/
 :root {
-  --background: oklch(1 0 0); /* Pure white */
-  --foreground: oklch(0.35 0 0); /* Dark gray #475569 */
-  --card: oklch(0.97 0 0); /* Light gray #f1f5f9 */
-  --card-foreground: oklch(0.35 0 0); /* Dark gray */
-  --popover: oklch(1 0 0); /* White */
-  --popover-foreground: oklch(0.35 0 0); /* Dark gray */
-  /* Updated primary colors to new blue #0f95f5 */
-  --primary: oklch(0.58 0.22 240); /* New blue #0f95f5 */
-  --primary-foreground: oklch(1 0 0); /* White */
-  --secondary: oklch(0.68 0.18 240); /* Lighter version of new blue */
-  --secondary-foreground: oklch(1 0 0); /* White */
-  --muted: oklch(0.97 0 0); /* Light gray */
-  --muted-foreground: oklch(0.35 0 0); /* Dark gray */
-  /* Updated accent color to match new blue theme */
-  --accent: oklch(0.68 0.18 240); /* New blue accent */
-  --accent-foreground: oklch(1 0 0); /* White */
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.92 0 0); /* Light border */
-  --input: oklch(1 0 0); /* White input background */
-  /* Updated ring color to new blue */
-  --ring: oklch(0.58 0.22 240 / 0.5); /* New blue ring with opacity */
-  --chart-1: oklch(0.58 0.22 240);
-  --chart-2: oklch(0.68 0.18 240);
-  --chart-3: oklch(0.6 0.2 30);
-  --chart-4: oklch(0.5 0.25 350);
-  --chart-5: oklch(0.4 0 0);
-  --radius: 0.5rem; /* Updated radius */
-  --sidebar: oklch(0.97 0 0);
-  --sidebar-foreground: oklch(0.35 0 0);
-  /* Updated sidebar colors to new blue theme */
-  --sidebar-primary: oklch(0.58 0.22 240);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.68 0.18 240);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.92 0 0);
-  --sidebar-ring: oklch(0.58 0.22 240 / 0.5);
-}
+  /* Core surfaces */
+  --background: #f9f9fb;              /* Light lavender background */
+  --background-light: #f9f9fb;        /* Same as background */
+  --card: #ffffff;                    /* Pure white cards */
+  --popover: #ffffff;                 /* Popovers */
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  /* Updated dark mode primary to lighter version of new blue */
-  --primary: oklch(0.72 0.18 240); /* Lighter new blue for dark mode */
-  --primary-foreground: oklch(0.145 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  /* Updated dark mode accent to new blue */
-  --accent: oklch(0.72 0.18 240);
-  --accent-foreground: oklch(0.145 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  /* Updated dark mode ring to new blue */
-  --ring: oklch(0.72 0.18 240 / 0.5);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  /* Updated dark mode sidebar colors to new blue */
-  --sidebar-primary: oklch(0.72 0.18 240);
-  --sidebar-primary-foreground: oklch(0.145 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.72 0.18 240 / 0.5);
+  /* Text */
+  --foreground: #1f2937;              /* Dark charcoal gray for primary text */
+  --foreground-muted: #6b7280;        /* Medium gray for secondary text */
+  --card-foreground: #1f2937;
+  --popover-foreground: #1f2937;
+
+  /* Brand / accent */
+  --primary: #e83d84;                 /* Vibrant pink/magenta */
+  --primary-hover: #c12b6d;           /* Slightly darker pink */
+  --primary-foreground: #ffffff;      /* White text on primary */
+  --accent: #f3f4f6;                  /* Light gray accent */
+  --accent-foreground: #1f2937;
+  --secondary: #f3f4f6;               /* Light gray secondary */
+  --secondary-foreground: #1f2937;
+
+  /* UI States */
+  --muted: #f3f4f6;                   /* Light gray muted surface */
+  --muted-foreground: #6b7280;        /* Medium gray muted text */
+  --destructive: #dc2626;             /* Standard red */
+  --destructive-foreground: #ffffff;
+
+  /* Borders & Inputs */
+  --border: #e5e7eb;                  /* Light gray border */
+  --input: #f3f4f6;                   /* Light gray input background */
+  --ring: #e83d84;                    /* Pink focus ring */
+
+  /* Data viz placeholders */
+  --chart-1: #e83d84;
+  --chart-2: #6366f1;
+  --chart-3: #ec4899;
+  --chart-4: #10b981;
+  --chart-5: #f59e0b;
+
+  /* Radius scale */
+  --radius: 0.5rem; /* 8px base (md) */
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1f2937;
+  --sidebar-primary: #e83d84;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3f4f6;
+  --sidebar-accent-foreground: #1f2937;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #e83d84;
 }
 
 @theme inline {
@@ -99,6 +78,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-primary-hover: var(--primary-hover);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -129,5 +110,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #f9f9fb;
   }
 }

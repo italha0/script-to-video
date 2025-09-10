@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Plus, Video, Loader2, Save, FolderOpen, LogOut, Trash2, ArrowLeft, Sparkles } from "lucide-react"
+import { Plus, Video, Loader2, Save, FolderOpen, LogOut, Trash2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -132,23 +132,23 @@ export default function EditorPage() {
       const res = await fetch("/api/generate-video", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ characters, messages, isPro: false }) })
       if (!res.ok) {
         let msg = "Failed to generate video"
-        try { const e = await res.json(); msg = e.details || e.error || msg } catch { }
+        try { const e = await res.json(); msg = e.details || e.error || msg } catch {}
         throw new Error(msg)
       }
-      const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `chat-video-${Date.now()}.mp4`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+      const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`chat-video-${Date.now()}.mp4`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
       toast({ title: "Video ready", description: "Download started" })
-    } catch (e: any) {
+    } catch (e:any) {
       toast({ title: "Generation failed", description: e.message, variant: "destructive" })
     } finally { setIsGeneratingVideo(false) }
   }
-
+  
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6 py-8 lg:py-10">
+      <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground transition-colors mb-8">
           <ArrowLeft className="w-4 h-4" />
@@ -156,8 +156,8 @@ export default function EditorPage() {
         </Link>
 
         {/* Page Title */}
-        <div className="mb-8 lg:mb-10">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground mb-4 leading-tight">
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground mb-3">
             CREATE A FAKE<br />
             iMESSAGE VIDEO
           </h1>
@@ -167,19 +167,19 @@ export default function EditorPage() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-[1fr_420px] gap-20 xl:gap-48">
+        <div className="grid lg:grid-cols-[1fr_420px] gap-12">
           {/* Left Column - Controls */}
-          <div className="flex flex-col gap-4 p-6 xl:p-8 2xl:gap-6 rounded-xl border border-border bg-card text-card-foreground shadow-sm w-full  space-y-8">
+          <div className="space-y-8">
             {/* Name Section */}
             <div className="space-y-3">
               <Label className="text-sm font-semibold text-foreground-muted">Name</Label>
               <div className="bg-input border rounded-lg flex items-center p-2 gap-3">
                 <div className="w-11 h-11 rounded-full bg-gray-300 flex items-center justify-center font-medium text-gray-600 text-sm">
-                  {contactName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() || "JD"}
+                  {contactName.split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase() || "JD"}
                 </div>
                 <Input
                   value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
+                  onChange={(e)=>setContactName(e.target.value)}
                   className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-base"
                   placeholder="Contact name"
                 />
@@ -193,31 +193,31 @@ export default function EditorPage() {
                 {messages.map((m, idx) => {
                   const isThem = m.characterId === "them";
                   return (
-                    <div key={m.id} className={`bg-white border rounded-lg p-3 space-y-3 relative pl-4 after:absolute after:inset-y-0 after:left-0 after:w-1 after:rounded-l-md after:${m.characterId === 'you' ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                    <div key={m.id} className="bg-white border rounded-lg p-3 space-y-3">
                       <Textarea
                         value={m.text}
-                        onChange={(e) => updateMessageText(m.id, e.target.value)}
-                        autoFocus={idx === messages.length - 1}
+                        onChange={(e)=>updateMessageText(m.id, e.target.value)}
+                        autoFocus={idx === messages.length -1}
                         placeholder={isThem ? "Their message..." : "Your message..."}
                         className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 min-h-[60px] text-sm"
                       />
                       <div className="flex items-center justify-between">
                         <div className="inline-flex p-1 bg-gray-200 rounded-full">
                           <button
-                            onClick={() => toggleMessageSpeaker(m.id, "them")}
-                            className={`px-3 py-1 text-xs font-medium rounded-full transition ${isThem ? "bg-gray-800 text-white shadow" : "text-gray-600 hover:text-gray-800"}`}
+                            onClick={()=>toggleMessageSpeaker(m.id, "them")}
+                            className={`px-3 py-1 text-xs font-medium rounded-full transition ${isThem?"bg-gray-800 text-white shadow":"text-gray-600 hover:text-gray-800"}`}
                           >
                             Them
                           </button>
                           <button
-                            onClick={() => toggleMessageSpeaker(m.id, "you")}
-                            className={`px-3 py-1 text-xs font-medium rounded-full transition ${!isThem ? "bg-gray-800 text-white shadow" : "text-gray-600 hover:text-gray-800"}`}
+                            onClick={()=>toggleMessageSpeaker(m.id, "you")}
+                            className={`px-3 py-1 text-xs font-medium rounded-full transition ${!isThem?"bg-gray-800 text-white shadow":"text-gray-600 hover:text-gray-800"}`}
                           >
                             You
                           </button>
                         </div>
-                        <button
-                          onClick={() => deleteMessage(m.id)}
+                        <button 
+                          onClick={()=>deleteMessage(m.id)} 
                           className="text-red-400/70 hover:text-red-400 p-1 rounded-md hover:bg-red-500/10 transition"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -235,17 +235,17 @@ export default function EditorPage() {
             {/* Generate Video Button */}
             <Button
               onClick={downloadFramesJson}
-              disabled={messages.length === 0 || isGeneratingVideo}
-              className="w-full h-12 text-base font-medium relative overflow-hidden bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 hover:opacity-90 transition text-white shadow-lg"
+              disabled={messages.length===0 || isGeneratingVideo}
+              className="w-full h-12 text-base font-medium"
             >
               {isGeneratingVideo ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Generating conversation...
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin"/>
+                  Generate conversation with AI
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5 mr-2" />
+                  <Video className="w-5 h-5 mr-2"/>
                   Generate conversation with AI
                 </>
               )}
@@ -255,8 +255,8 @@ export default function EditorPage() {
           {/* Right Column - Preview */}
           <div className="sticky top-10">
             {/* Phone Mockup */}
-            <div className="bg-zinc-800 rounded-[40px] p-3 shadow-2xl w-[350px] max-h-[700px]">
-              <div className="bg-white rounded-[32px] overflow-hidden aspect-[9/16] flex flex-col">
+            <div className="bg-zinc-800 rounded-[40px] p-3 shadow-2xl">
+              <div className="bg-white rounded-[32px] overflow-hidden aspect-[375/812]">
                 {/* iPhone Status Bar */}
                 <div className="h-14 pt-2 px-4 flex flex-col items-center justify-start bg-gradient-to-b from-white to-white/85">
                   <div className="w-12 h-2 rounded-full bg-slate-300 mb-1" />
@@ -266,7 +266,7 @@ export default function EditorPage() {
                     <span className="text-[#007AFF] text-sm">JD</span>
                   </div>
                 </div>
-
+                
                 {/* Messages Container */}
                 <div className="flex-1 px-3 pb-4 pt-3 space-y-1.5 overflow-y-auto min-h-[600px]">
                   {messages.length === 0 ? (
@@ -274,21 +274,21 @@ export default function EditorPage() {
                       Your conversation will appear here...
                     </div>
                   ) : (
-                    messages.map((m, i) => {
+                    messages.map((m,i)=>{
                       const isOwn = m.characterId === "you"
-                      const prev = messages[i - 1]
-                      const next = messages[i + 1]
+                      const prev = messages[i-1]
+                      const next = messages[i+1]
                       const prevSame = prev && prev.characterId === m.characterId
                       const nextSame = next && next.characterId === m.characterId
                       const base = "text-[14px] leading-snug px-3 py-2 inline-block shadow-sm"
-                      const ownColors = "bg-emerald-500 text-white"
+                      const ownColors = "bg-[#007AFF] text-white"
                       const otherColors = "bg-[#E5E5EA] text-black"
-                      const radiusOwn = `rounded-2xl ${prevSame ? "rounded-tr-md" : ""} ${nextSame ? "rounded-br-md" : ""}`
-                      const radiusOther = `rounded-2xl ${prevSame ? "rounded-tl-md" : ""} ${nextSame ? "rounded-bl-md" : ""}`
-
+                      const radiusOwn = `rounded-2xl ${prevSame?"rounded-tr-md":""} ${nextSame?"rounded-br-md":""}`
+                      const radiusOther = `rounded-2xl ${prevSame?"rounded-tl-md":""} ${nextSame?"rounded-bl-md":""}`
+                      
                       return (
-                        <div key={m.id} className={`flex w-full ${isOwn ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[78%] ${isOwn ? ownColors : otherColors} ${isOwn ? radiusOwn : radiusOther} ${base}`}>
+                        <div key={m.id} className={`flex w-full ${isOwn?"justify-end":"justify-start"}`}>
+                          <div className={`max-w-[78%] ${isOwn?ownColors:otherColors} ${isOwn?radiusOwn:radiusOther} ${base}`}>
                             {m.text || <span className="opacity-40">(empty)</span>}
                           </div>
                         </div>
@@ -298,16 +298,56 @@ export default function EditorPage() {
                 </div>
               </div>
             </div>
-
+            
             {/* Low-res preview text */}
             <div className="text-center mt-4">
-              <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium tracking-tight">
+              <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium">
                 Low-res preview
               </span>
             </div>
           </div>
         </div>
 
+        {/* Save / Load Section */}
+        <div className="mt-16 space-y-4">
+          <h3 className="font-semibold text-xs tracking-wide text-foreground-muted uppercase">Save / Load (optional)</h3>
+          <div className="flex flex-wrap gap-2 items-center">
+            <Input placeholder="Script title" value={scriptTitle} onChange={e=>setScriptTitle(e.target.value)} className="max-w-xs" />
+            <Button size="sm" onClick={saveScript} disabled={!scriptTitle.trim() || isSaving}>
+              {isSaving? <Loader2 className="w-4 h-4 animate-spin"/>: <Save className="w-4 h-4"/>}
+            </Button>
+            <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <FolderOpen className="w-4 h-4 mr-1"/>Load
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader><DialogTitle>Saved Scripts</DialogTitle></DialogHeader>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {isLoadingScripts ? (
+                    <div className="text-center py-4 text-sm text-foreground-muted">Loading...</div>
+                  ) : savedScripts.length===0 ? (
+                    <div className="text-center py-4 text-sm text-foreground-muted">None</div>
+                  ) : savedScripts.map(s => (
+                    <Button key={s.id} variant="outline" className="w-full justify-start text-left" onClick={()=>loadScript(s)}>
+                      <div>
+                        <div className="font-medium">{s.title}</div>
+                        <div className="text-xs text-foreground-muted">{s.messages.length} messages • {new Date(s.updated_at).toLocaleDateString()}</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+            {user && (
+              <Button size="sm" variant="ghost" onClick={handleSignOut} className="ml-auto text-red-400 hover:text-red-300">
+                <LogOut className="w-4 h-4 mr-1"/>
+                Sign out
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

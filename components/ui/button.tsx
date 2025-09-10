@@ -4,21 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+// Clipgoat-style variants (dark-first, purple accent, subtle depth)
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-ring/60 focus-visible:ring-[3px] focus-visible:border-transparent aria-invalid:ring-destructive/30 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        // Primary: solid purple, hover lighter purple, subtle glow
+        default: "bg-primary text-primary-foreground shadow-[0_2px_8px_-2px_rgba(138,43,226,0.55)] hover:bg-primary-hover hover:shadow-[0_4px_18px_-4px_rgba(138,43,226,0.65)]",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        // Outline: muted text, border, hover card surface + foreground text
+        outline: "border border-border bg-transparent text-foreground-muted hover:bg-card hover:text-foreground shadow-[0_0_0_1px_var(--border)]",
+        secondary: "bg-background-light text-foreground hover:bg-background/70",
+        // Ghost: transparent, muted text, hover card surface
+        ghost: "text-foreground-muted hover:text-foreground hover:bg-card",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

@@ -39,46 +39,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6">
+    <div className="flex min-h-screen w-full items-center justify-center p-6 bg-background">
       <div className="w-full max-w-sm">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your ChatVideo account</CardDescription>
+        <Card className="bg-background-light/70 backdrop-blur border-border/70">
+          <CardHeader className="text-center space-y-3">
+            <CardTitle className="text-2xl font-semibold">Welcome back</CardTitle>
+            <CardDescription className="text-foreground-muted">Sign in to your ChatVideo account</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <Input id="email" type="email" placeholder="you@example.com" required value={email} onChange={(e)=>setEmail(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <Input id="password" type="password" required value={password} onChange={(e)=>setPassword(e.target.value)} />
               </div>
-              {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
+              {error && <div className="text-xs rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-red-400">{error}</div>}
+              <Button type="submit" className="w-full" disabled={isLoading}>{isLoading?"Signing in...":"Sign in"}</Button>
             </form>
-            <div className="mt-6 text-center text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link href="/auth/signup" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                Sign up
-              </Link>
+            <div className="mt-6 text-center text-xs text-foreground-muted">
+              Don't have an account? <Link href="/auth/signup" className="text-primary hover:text-primary-hover font-medium">Sign up</Link>
             </div>
           </CardContent>
         </Card>
