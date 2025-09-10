@@ -40,8 +40,14 @@ const nextConfig = {
   "./node_modules/shebang-regex/**/*",
 
   // Core runtime-only packages now (prebundled output replaces bundler/studio/webcodecs heavy deps)
-  "./node_modules/remotion/dist/**/*",
+  "./node_modules/remotion/**/*",
+  "./node_modules/remotion/version.js",
+  "./node_modules/remotion/dist/cjs/**/*",
+  "./node_modules/@remotion/bundler/**/*",
   "./node_modules/@remotion/renderer/**/*",
+  "./node_modules/@remotion/cli/**/*",
+  "./node_modules/@remotion/player/**/*",
+  "./node_modules/@remotion/studio-shared/**/*",
   "./node_modules/@remotion/compositor-linux-x64-gnu/**/*",
   "./node_modules/@remotion/compositor-linux-x64-musl/**/*",
   "./node_modules/@sparticuz/chromium/**/*",

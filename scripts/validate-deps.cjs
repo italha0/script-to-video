@@ -21,7 +21,9 @@ const requiredModules = [
   'strip-final-newline',
   'path-key',
   '@remotion/renderer',
-  '@sparticuz/chromium'
+  '@sparticuz/chromium',
+  'remotion',
+  'remotion/version'
 ];
 
 console.log('[DEP-CHECK] Validating required modules...');
