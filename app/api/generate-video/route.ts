@@ -97,7 +97,14 @@ export async function POST(request: NextRequest) {
 
     // Helpful log for serverless environment path resolution
     console.log('[API] CWD:', process.cwd());
-    console.log('[API] Files expected to exist:', rendererScript, join(process.cwd(), 'remotion', 'index.ts'));
+    const remotionEntry = join(process.cwd(), 'remotion', 'index.ts');
+    console.log('[API] Files expected to exist:', rendererScript, remotionEntry);
+    console.log('[API] Exists check:', {
+      rendererScript: existsSync(rendererScript),
+      remotionEntry: existsSync(remotionEntry),
+      remotionPkg: existsSync(join(process.cwd(), 'node_modules', 'remotion')),
+      remotionRenderer: existsSync(join(process.cwd(), 'node_modules', '@remotion', 'renderer'))
+    });
     console.log('[API] Running on Vercel?', !!process.env.VERCEL, 'Node ENV:', process.env.NODE_ENV);
     if (process.env.REMOTION_BROWSER_EXECUTABLE) {
       console.log('[API] Using custom REMOTION_BROWSER_EXECUTABLE');
@@ -105,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
     if (!scriptExists) {
-      throw new Error('Renderer script missing (scripts/render-video.cjs). Cannot render video.');
+  throw new Error('Renderer script missing (scripts/render-video.cjs). Cannot render video. (Did outputFileTracingIncludes capture it?)');
     }
 
     const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];

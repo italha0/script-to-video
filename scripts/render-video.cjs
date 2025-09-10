@@ -16,6 +16,22 @@ async function run() {
   console.log('[RENDER] Starting render');
   console.log('[RENDER] Node version:', process.version);
   console.log('[RENDER] Platform:', process.platform, 'Arch:', process.arch);
+
+  // Try to set a Chromium executable path for serverless (Vercel) if not provided
+  if (!process.env.REMOTION_BROWSER_EXECUTABLE) {
+    try {
+      const chromium = require('@sparticuz/chromium');
+      const execPath = await chromium.executablePath();
+      process.env.REMOTION_BROWSER_EXECUTABLE = execPath;
+      // Also set Puppeteer fallback env var
+      process.env.PUPPETEER_EXECUTABLE_PATH = execPath;
+      console.log('[RENDER] Using serverless Chromium at', execPath);
+    } catch (e) {
+      console.warn('[RENDER] Could not resolve @sparticuz/chromium executable', e?.message || e);
+    }
+  } else {
+    console.log('[RENDER] REMOTION_BROWSER_EXECUTABLE already set');
+  }
   const entry = path.join(process.cwd(), 'remotion', 'index.ts');
   const bundleLocation = await bundle(entry);
   console.log('[RENDER] Bundled at', bundleLocation);
@@ -42,7 +58,7 @@ async function run() {
     codec: 'h264',
     outputLocation: outputPath,
     inputProps: props,
-    concurrency: 2,
+  concurrency: process.env.VERCEL ? 1 : 2, // lower concurrency in serverless envs
     dumpBrowserLogs: false,
     onProgress: (p) => {
       if (p.renderedFrames % 30 === 0) {
