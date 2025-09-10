@@ -167,9 +167,9 @@ export default function EditorPage() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-[1fr_420px] gap-20 xl:gap-48">
+        <div className="lg:grid lg:grid-cols-[1fr_420px] gap-12 xl:gap-32">
           {/* Left Column - Controls */}
-          <div className="flex flex-col gap-4 p-6 xl:p-8 2xl:gap-6 rounded-xl border border-border bg-card text-card-foreground shadow-sm w-full  space-y-8">
+          <div className="flex flex-col gap-4 p-0 lg:p-6 xl:p-8 2xl:gap-6 w-full space-y-8 lg:rounded-xl lg:border lg:border-border lg:bg-card lg:text-card-foreground lg:shadow-sm">
             {/* Name Section */}
             <div className="space-y-3">
               <Label className="text-sm font-semibold text-foreground-muted">Name</Label>
@@ -226,7 +226,7 @@ export default function EditorPage() {
                     </div>
                   )
                 })}
-                <Button onClick={addMessage} variant="outline" className="w-full border-dashed text-sm">
+                <Button onClick={addMessage} variant="outline" className="w-full border-dashed text-sm  lg:inline-flex">
                   <Plus className="w-4 h-4 mr-2" /> Add Message
                 </Button>
               </div>
@@ -236,7 +236,7 @@ export default function EditorPage() {
             <Button
               onClick={downloadFramesJson}
               disabled={messages.length === 0 || isGeneratingVideo}
-              className="w-full h-12 text-base font-medium relative overflow-hidden bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 hover:opacity-90 transition text-white shadow-lg"
+              className="hidden lg:inline-flex w-full h-12 text-base font-medium relative overflow-hidden bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 hover:opacity-90 transition text-white shadow-lg"
             >
               {isGeneratingVideo ? (
                 <>
@@ -252,60 +252,130 @@ export default function EditorPage() {
             </Button>
           </div>
 
-          {/* Right Column - Preview */}
-          <div className="sticky top-10">
-            {/* Phone Mockup */}
-            <div className="bg-zinc-800 rounded-[40px] p-3 shadow-2xl w-[350px] max-h-[700px]">
-              <div className="bg-white rounded-[32px] overflow-hidden aspect-[9/16] flex flex-col">
-                {/* iPhone Status Bar */}
-                <div className="h-14 pt-2 px-4 flex flex-col items-center justify-start bg-gradient-to-b from-white to-white/85">
-                  <div className="w-12 h-2 rounded-full bg-slate-300 mb-1" />
-                  <div className="flex items-center w-full justify-between text-[13px] font-medium text-slate-600">
-                    <span className="text-[#007AFF] font-semibold text-sm">&lt; Back</span>
-                    <span className="text-[15px] font-semibold text-slate-800 truncate max-w-[140px]">{contactName || "Contact"}</span>
-                    <span className="text-[#007AFF] text-sm">JD</span>
+          {/* Right Column - Preview (matches Remotion video) */}
+          <div className="mt-8 lg:mt-0 lg:sticky lg:top-10">
+            <div className="relative mx-auto" style={{ width:'100%', maxWidth:360 }}>
+              <div style={{
+                width:'100%',
+                height:700,
+                background:'#FFFFFF',
+                borderRadius:48,
+                position:'relative',
+                overflow:'hidden',
+                boxShadow:'0 8px 24px rgba(0,0,0,0.4)',
+                border:'6px solid #000'
+              }}>
+                {/* Status Bar */}
+                <div style={{ position:'absolute', top:0, left:0, right:0, height:44, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize:15, fontWeight:600 }}>
+                  <div>9:41</div>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <div style={{ display:'flex', alignItems:'flex-end', gap:2 }}>
+                      {[4,7,10,13].map((h,i)=>(<div key={i} style={{ width:3, height:h, background:'#000', borderRadius:1 }} />))}
+                    </div>
+                    <div style={{ position:'relative', width:18, height:14 }}>
+                      <svg viewBox="0 0 20 14" width={18} height={14}>
+                        <path d="M10 13c.9 0 1.6-.7 1.6-1.6S10.9 9.8 10 9.8 8.4 10.5 8.4 11.4 9.1 13 10 13Z" fill="#000" />
+                        <path d="M3.3 6.6a9.2 9.2 0 0 1 13.4 0l-1.2 1.2a7.5 7.5 0 0 0-11 0L3.3 6.6Z" fill="#000" />
+                        <path d="M6.2 9.3a5.3 5.3 0 0 1 7.6 0l-1.2 1.2a3.6 3.6 0 0 0-5.2 0l-1.2-1.2Z" fill="#000" />
+                      </svg>
+                    </div>
+                    <div style={{ position:'relative', width:28, height:14, border:'2px solid #000', borderRadius:4, display:'flex', alignItems:'center', padding:'0 3px', boxSizing:'border-box' }}>
+                      <div style={{ position:'absolute', top:3, right:-5, width:3, height:8, background:'#000', borderRadius:1 }} />
+                      <div style={{ width:'100%', height:6, background:'#000', borderRadius:2 }} />
+                    </div>
                   </div>
                 </div>
-
-                {/* Messages Container */}
-                <div className="flex-1 px-3 pb-4 pt-3 space-y-1.5 overflow-y-auto min-h-[600px]">
+                {/* Navigation Header */}
+                <div style={{ position:'absolute', top:44, left:0, right:0, height:52, background:'#F2F2F7', borderBottom:'1px solid #C7C7CC', display:'flex', alignItems:'center', padding:'0 12px', fontSize:17 }}>
+                  <div style={{ fontSize:17, color:'#007AFF' }}>Back</div>
+                  <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', fontSize:17, fontWeight:600 }}>{contactName || 'Contact'}</div>
+                </div>
+                {/* Messages (static final state) with reserved space for keyboard */}
+                <div style={{ position:'absolute', top:96, left:0, right:0, bottom:300, padding:'0 12px 4px', display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box' }}>
                   {messages.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+                    <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:'#8E8E93', fontSize:14 }}>
                       Your conversation will appear here...
                     </div>
                   ) : (
-                    messages.map((m, i) => {
-                      const isOwn = m.characterId === "you"
-                      const prev = messages[i - 1]
-                      const next = messages[i + 1]
-                      const prevSame = prev && prev.characterId === m.characterId
-                      const nextSame = next && next.characterId === m.characterId
-                      const base = "text-[14px] leading-snug px-3 py-2 inline-block shadow-sm"
-                      const ownColors = "bg-emerald-500 text-white"
-                      const otherColors = "bg-[#E5E5EA] text-black"
-                      const radiusOwn = `rounded-2xl ${prevSame ? "rounded-tr-md" : ""} ${nextSame ? "rounded-br-md" : ""}`
-                      const radiusOther = `rounded-2xl ${prevSame ? "rounded-tl-md" : ""} ${nextSame ? "rounded-bl-md" : ""}`
-
+                    messages.map((m,i)=>{
+                      const sent = m.characterId === 'you';
+                      const prev = messages[i-1];
+                      const next = messages[i+1];
+                      const first = !prev || prev.characterId !== m.characterId;
+                      const last = !next || next.characterId !== m.characterId;
+                      const bubbleStyle: React.CSSProperties = {
+                        maxWidth:'78%',
+                        padding:'8px 14px',
+                        backgroundColor: sent ? '#007AFF' : '#E5E5EA',
+                        color: sent ? '#fff' : '#000',
+                        fontSize:17,
+                        lineHeight:1.25,
+                        fontFamily:'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                        wordWrap:'break-word',
+                        borderTopLeftRadius: sent ? 18 : (first ? 18 : 6),
+                        borderTopRightRadius: sent ? (first ? 18 : 6) : 18,
+                        borderBottomLeftRadius: sent ? 18 : (last ? 18 : 6),
+                        borderBottomRightRadius: sent ? (last ? 18 : 6) : 18,
+                        boxShadow: sent ? '0 1px 1px rgba(0,0,0,.25)' : '0 1px 1px rgba(0,0,0,.15)',
+                        letterSpacing:-0.2
+                      };
                       return (
-                        <div key={m.id} className={`flex w-full ${isOwn ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[78%] ${isOwn ? ownColors : otherColors} ${isOwn ? radiusOwn : radiusOther} ${base}`}>
-                            {m.text || <span className="opacity-40">(empty)</span>}
-                          </div>
+                        <div key={m.id} style={{ display:'flex', justifyContent: sent ? 'flex-end':'flex-start', marginBottom:6 }}>
+                          <div style={bubbleStyle}>{m.text || <span style={{ opacity:0.4 }}>(empty)</span>}</div>
                         </div>
-                      )
+                      );
                     })
                   )}
                 </div>
+                {/* Static Keyboard */}
+                <div style={{ position:'absolute', left:0, right:0, bottom:0, background:'#D1D4DA', borderTop:'1px solid #B4B7BD', fontFamily:'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', height:300 }}>
+                  <div style={{ display:'flex', alignItems:'center', padding:'6px 8px', gap:8, background:'#F2F2F7' }}>
+                    <div style={{ width:32, height:32, borderRadius:16, background:'#C7C7CC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>📷</div>
+                    <div style={{ flex:1, background:'#FFFFFF', borderRadius:16, padding:'6px 12px', color:'#000', fontSize:16, minHeight:32, display:'flex', alignItems:'center' }}>iMessage</div>
+                    <div style={{ width:32, height:32, borderRadius:16, background:'#C7C7CC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎤</div>
+                  </div>
+                  <div style={{ padding:'4px 6px 8px' }}>
+                    {[['Q','W','E','R','T','Y','U','I','O','P'], ['A','S','D','F','G','H','J','K','L'], ['⇧','Z','X','C','V','B','N','M','⌫'], ['123','😀','space','return']].map((row,i)=>(
+                      <div key={i} style={{ display:'flex', justifyContent:'center', marginBottom:i===3?0:6 }}>
+                        {row.map(k=>{
+                          const isSpace = k==='space';
+                          return (
+                            <div key={k} style={{ flex:isSpace?4:1, background:'#fff', color:'#000', borderRadius:6, padding:'10px 6px', textAlign:'center', fontSize:14, fontWeight:500, boxShadow:'0 1px 0 rgba(0,0,0,0.25)', margin:'0 3px' }}>
+                              {isSpace? '' : k}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Low-res preview text */}
             <div className="text-center mt-4">
-              <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium tracking-tight">
-                Low-res preview
-              </span>
+              <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium tracking-tight">Low-res preview</span>
             </div>
           </div>
+        </div>
+
+        {/* Spacer for mobile bottom bar */}
+        <div className="h-24 lg:hidden" />
+
+        {/* Mobile bottom action bar */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70 px-4 py-3 p-2.5 flex gap-3 items-center pb-[env(safe-area-inset-bottom)]">
+         
+          <Button onClick={downloadFramesJson} disabled={messages.length===0 || isGeneratingVideo} className="flex-1 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 hover:opacity-90 text-white font-medium h-11">
+            {isGeneratingVideo ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate
+              </>
+            )}
+          </Button>
         </div>
 
       </div>

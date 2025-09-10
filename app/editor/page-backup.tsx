@@ -152,7 +152,7 @@ export default function EditorPage() {
         </h1>
         <p className="text-muted-foreground mt-2 mb-8">Type in any story you’d like to be told in the video</p>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-center !justify-center">
           {/* Left: Form */}
           <div className="space-y-8">
             {/* Contact Name */}
