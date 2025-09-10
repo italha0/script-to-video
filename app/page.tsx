@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -38,20 +37,14 @@ export default function DashboardHome() {
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_14px_-4px_rgba(138,43,226,0.6)]">
             <MessageSquare className="w-4 h-4 text-primary-foreground" />
           </div>
-          <span className="font-semibold">ClipGOAT</span>
+          <span className="font-semibold">Mockvideo</span>
         </div>
         <Button className="w-full text-sm font-medium shadow-none" size="sm">
           + Create new
         </Button>
-        <Link href="/editor" className="group block rounded-xl border border-border/60 bg-background/60 px-4 py-3 text-sm font-medium hover:border-primary/50 hover:shadow-[0_0_0_1px_rgba(138,43,226,0.4)] transition-colors">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="w-4 h-4 text-primary" />
-            <span>Content Publisher</span>
-          </div>
-        </Link>
         <div className="rounded-xl p-4 bg-gradient-to-br from-pink-50 to-purple-50 border border-primary/20 flex flex-col gap-3">
           <div className="text-sm font-semibold text-foreground">Get more credits</div>
-          <p className="text-xs leading-relaxed text-foreground-muted">Get access to all features on ClipGOAT and create more viral clips</p>
+          <p className="text-xs leading-relaxed text-foreground-muted">Get access to all features on Mockvideo and create more viral clips</p>
           <Button size="sm" className="bg-primary hover:bg-primary-hover text-primary-foreground shadow-none">Upgrade Now</Button>
         </div>
         <Link href="#" className="rounded-xl border border-border/60 bg-background/60 px-4 py-3 text-sm font-medium hover:border-primary/50">
@@ -60,9 +53,8 @@ export default function DashboardHome() {
         <Link href="#" className="rounded-xl border border-border/60 bg-background/60 px-4 py-3 text-sm font-medium hover:border-primary/50">
           Join our Discord
         </Link>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <div className="text-[10px] px-2 py-1 rounded-md bg-background/60 border border-border/60 text-foreground-muted">0 credits</div>
-          <Button size="sm" variant="outline" className="text-xs h-7 px-3" onClick={()=>supabase.auth.signOut()}>
+        <div className="mt-auto flex items-center justify-end gap-2 pt-2">
+          <Button size="lg" variant="outline" className="text-sm h-7 px-3 py-5 bg-primary text-white" onClick={()=>supabase.auth.signOut()}>
             <LogOut className="w-3.5 h-3.5 mr-1" />
             Sign out
           </Button>
