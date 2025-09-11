@@ -27,6 +27,9 @@ function getSupabaseServiceRole() {
 
 export async function POST(req: NextRequest) {
 	try {
+		if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+			return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
+		}
 		if (!process.env.REDIS_URL) {
 			return NextResponse.json({ error: 'Server not configured (REDIS_URL missing)' }, { status: 500 });
 		}

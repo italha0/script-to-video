@@ -20,6 +20,9 @@ function getSupabaseServiceRole() {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
+    }
     const body: RequestBody = await request.json();
     const { characters, messages } = body;
     if (!characters || !messages || messages.length === 0) {
