@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
     const contactCharacter = characters.find((c) => c.id === 'them') || characters[0];
     const inputProps = { messages: remotionMessages, contactName: contactCharacter?.name || 'Contact' };
 
-    if (!process.env.REDIS_URL) {
+    const queueEnabled = process.env.RENDER_QUEUE_ENABLED === 'true';
+    if (queueEnabled && !process.env.REDIS_URL) {
       return NextResponse.json({ error: 'Server not configured (REDIS_URL missing)' }, { status: 500 });
     }
 
@@ -61,18 +62,19 @@ export async function POST(request: NextRequest) {
     });
     if (error) return NextResponse.json({ error: 'DB insert failed', details: error.message }, { status: 500 });
 
-    // Try enqueue; fail fast to avoid 504s
-    try {
-      const queue = getRenderQueue();
-      const enqueue = queue.add('render', { jobId });
-      // race with a small timeout so Netlify/Lambda doesn't hang if Redis is unreachable
-      await Promise.race([
-        enqueue,
-        new Promise((_, r) => setTimeout(() => r(new Error('enqueue-timeout')), 2000)),
-      ]);
-    } catch (e: any) {
-      // Log only; we still return 202 and rely on worker polling fallback
-      console.error('[API] Enqueue failed, will rely on polling worker', e?.message || e);
+    if (queueEnabled) {
+      // Try enqueue; fail fast to avoid 504s
+      try {
+        const queue = getRenderQueue();
+        const enqueue = queue.add('render', { jobId });
+        await Promise.race([
+          enqueue,
+          new Promise((_, r) => setTimeout(() => r(new Error('enqueue-timeout')), 2000)),
+        ]);
+      } catch (e: any) {
+        // Log only; we still return 202 and rely on worker polling fallback
+        console.error('[API] Enqueue failed, will rely on polling worker', e?.message || e);
+      }
     }
 
     return NextResponse.json(

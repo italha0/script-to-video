@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
 		if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 			return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
 		}
-		if (!process.env.REDIS_URL) {
+		const queueEnabled = process.env.RENDER_QUEUE_ENABLED === 'true';
+		if (queueEnabled && !process.env.REDIS_URL) {
 			return NextResponse.json({ error: 'Server not configured (REDIS_URL missing)' }, { status: 500 });
 		}
 		const body: RenderRequestBody = await req.json();
@@ -59,16 +60,18 @@ export async function POST(req: NextRequest) {
 		if (error) {
 			return NextResponse.json({ error: 'DB insert failed', details: error.message }, { status: 500 });
 		}
-		// enqueue job - fail fast to avoid API timeouts when Redis is down
-		try {
-			const queue = getRenderQueue();
-			const enqueue = queue.add('render', { jobId });
-			await Promise.race([
-				enqueue,
-				new Promise((_, r) => setTimeout(() => r(new Error('enqueue-timeout')), 2000)),
-			]);
-		} catch (e) {
-			console.error('[API] Enqueue failed, will rely on polling worker');
+		// enqueue job - only if enabled
+		if (queueEnabled) {
+			try {
+				const queue = getRenderQueue();
+				const enqueue = queue.add('render', { jobId });
+				await Promise.race([
+					enqueue,
+					new Promise((_, r) => setTimeout(() => r(new Error('enqueue-timeout')), 2000)),
+				]);
+			} catch (e) {
+				console.error('[API] Enqueue failed, will rely on polling worker');
+			}
 		}
 		return NextResponse.json({ jobId });
 	} catch (e: any) {
