@@ -1,3 +1,6 @@
+// Allow running outside Docker: load .env if present
+try { require('dotenv').config(); } catch {}
+
 const { Worker, QueueEvents } = require('bullmq');
 const { readFileSync, existsSync, mkdirSync } = require('fs');
 const { join } = require('path');
@@ -10,7 +13,14 @@ const fetch = require('node-fetch');
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!SUPABASE_URL || !SERVICE_KEY) { console.error('Missing Supabase env vars'); process.exit(1); }
-if (!process.env.REDIS_URL) { console.error('Missing REDIS_URL'); process.exit(1); }
+const QUEUE_ENABLED = process.env.RENDER_QUEUE_ENABLED === 'true';
+
+// Debug: print which project and role we're using (do not log secrets)
+try {
+  const role = JSON.parse(Buffer.from(SERVICE_KEY.split('.')[1], 'base64').toString('utf8')).role;
+  console.log('[WORKER] Supabase URL:', SUPABASE_URL);
+  console.log('[WORKER] Supabase key role:', role);
+} catch { /* ignore */ }
 
 async function fetchJob(jobId){
   const r = await fetch(`${SUPABASE_URL}/rest/v1/video_renders?id=eq.${jobId}&select=*`, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
@@ -60,22 +70,44 @@ async function processRender(jobId){
   const sasUrl = generateSASUrl(blobName, 60);
   await updateJob(jobId,{ status:'done', url: sasUrl });
 }
-const worker = new Worker(RENDER_QUEUE_NAME, async (job)=>{ const { jobId } = job.data; try { await processRender(jobId); return { success:true }; } catch(e){ console.error('[WORKER] Job failed', jobId, e); await updateJob(jobId,{ status:'error', error_message: e.message }); throw e; } }, { connection:{ url: process.env.REDIS_URL, maxRetriesPerRequest: 1, connectTimeout: 2000 }});
-new QueueEvents(RENDER_QUEUE_NAME,{ connection:{ url: process.env.REDIS_URL, maxRetriesPerRequest: 1, connectTimeout: 2000 }});
+let worker = null;
+if (QUEUE_ENABLED) {
+  if (!process.env.REDIS_URL) {
+    console.warn('[WORKER] RENDER_QUEUE_ENABLED is true but REDIS_URL is missing. Queue processing disabled.');
+  } else {
+    worker = new Worker(RENDER_QUEUE_NAME, async (job)=>{ const { jobId } = job.data; try { await processRender(jobId); return { success:true }; } catch(e){ console.error('[WORKER] Job failed', jobId, e); await updateJob(jobId,{ status:'error', error_message: e.message }); throw e; } }, { connection:{ url: process.env.REDIS_URL, maxRetriesPerRequest: 1, connectTimeout: 2000 }});
+    new QueueEvents(RENDER_QUEUE_NAME,{ connection:{ url: process.env.REDIS_URL, maxRetriesPerRequest: 1, connectTimeout: 2000 }});
+    worker.on('completed',(job)=> console.log('Job completed', job.id));
+    worker.on('failed',(job,err)=> console.log('Job failed', job?.id, err?.message));
+    console.log('[WORKER] Queue worker started');
+  }
+}
 
 // Polling fallback: pick up pending jobs even if Redis is unavailable or enqueue failed.
 async function pollingSweep(){
   try{
-    const since = new Date(Date.now() - 10*60*1000).toISOString();
-    const url = `${SUPABASE_URL}/rest/v1/video_renders?status=eq.pending&select=id&created_at=gte.${since}`;
+    const url = `${SUPABASE_URL}/rest/v1/video_renders?select=id&status=eq.pending&order=created_at.asc&limit=5`;
     const r = await fetch(url, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
+    if (!r.ok) {
+      const txt = await r.text().catch(()=> '');
+      console.error('[WORKER] polling fetch failed', r.status, txt);
+      return;
+    }
     const rows = await r.json();
+    console.log(`[WORKER] sweep: ${Array.isArray(rows)? rows.length: 0} pending`);
     for (const row of rows){
+      console.log('[WORKER] processing pending job', row.id);
       try { await processRender(row.id); } catch(e){ console.error('[WORKER] Fallback processing failed', row.id, e?.message||e); }
+    }
+    if (!rows || rows.length === 0) {
+      // Extra debug: fetch a few recent rows to validate visibility and statuses
+      const sampleUrl = `${SUPABASE_URL}/rest/v1/video_renders?select=id,status,created_at&order=created_at.desc&limit=3`;
+      const s = await fetch(sampleUrl, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
+      const sample = s.ok ? await s.json() : [];
+      console.log('[WORKER] recent rows (id,status):', Array.isArray(sample) ? sample.map(r=> `${r.id}:${r.status}`).join(', ') : 'n/a');
     }
   } catch (e){ console.error('[WORKER] polling sweep error', e?.message||e); }
 }
 setInterval(pollingSweep, 15000);
-worker.on('completed',(job)=> console.log('Job completed', job.id));
-worker.on('failed',(job,err)=> console.log('Job failed', job?.id, err?.message));
-console.log('[WORKER] Started');
+pollingSweep();
+console.log('[WORKER] Polling fallback active');
