@@ -129,17 +129,58 @@ export default function EditorPage() {
     if (messages.length === 0) { toast({ title: "No messages", variant: "destructive" }); return }
     setIsGeneratingVideo(true)
     try {
-      const res = await fetch("/api/generate-video", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ characters, messages, isPro: false }) })
-      if (!res.ok) {
-        let msg = "Failed to generate video"
+      // Request a render job
+      const res = await fetch('/api/generate-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ characters, messages, isPro: false }),
+      });
+
+      // New flow: API enqueues and returns 202 with a jobId and statusUrl
+      let jobId: string | null = null;
+      let statusUrl: string | null = null;
+
+      const contentType = res.headers.get('content-type') || '';
+      if (res.status === 202 && contentType.includes('application/json')) {
+        const j = await res.json();
+        jobId = j.jobId;
+        statusUrl = j.statusUrl;
+      } else if (res.ok && contentType.startsWith('video/')) {
+        // Back-compat: if server returns video directly
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `chat-video-${Date.now()}.mp4`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        toast({ title: 'Video ready', description: 'Download started' });
+        return;
+      } else {
+        let msg = 'Failed to start render';
         try { const e = await res.json(); msg = e.details || e.error || msg } catch { }
-        throw new Error(msg)
+        throw new Error(msg);
       }
-      const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `chat-video-${Date.now()}.mp4`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
-      toast({ title: "Video ready", description: "Download started" })
+
+  if (!jobId || !statusUrl) {
+        throw new Error('Invalid response from server (no jobId)');
+      }
+
+  // New approach: ask the server to wait and 302-redirect to the SAS URL when ready
+  const downloadUrl = `/api/render/${jobId}/download?maxWaitMs=180000`; // wait up to 3 minutes
+  // Use a hidden iframe to trigger the download without navigating away
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = downloadUrl;
+  document.body.appendChild(iframe);
+  // Clean up the iframe later
+  setTimeout(() => { try { document.body.removeChild(iframe); } catch {} }, 2 * 60 * 1000);
+  toast({ title: 'Rendering started', description: 'Your download will start automatically when ready.' });
+  return;
     } catch (e: any) {
-      toast({ title: "Generation failed", description: e.message, variant: "destructive" })
-    } finally { setIsGeneratingVideo(false) }
+      toast({ title: 'Generation failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setIsGeneratingVideo(false);
+    }
   }
 
   if (isLoading) {

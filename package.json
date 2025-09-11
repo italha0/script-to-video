@@ -8,7 +8,6 @@
     "dev": "next dev --turbopack",
     "lint": "next lint",
     "start": "next start",
-    "capture:frames": "node scripts/capture-frames.js",
     "remotion:preview": "remotion preview remotion/index.ts",
     "remotion:render": "remotion render remotion/index.ts MessageConversation out/video.mp4",
     "remotion:studio": "remotion studio remotion/index.ts",
