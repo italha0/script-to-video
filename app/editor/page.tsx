@@ -166,14 +166,26 @@ export default function EditorPage() {
       }
 
   // New approach: ask the server to wait and 302-redirect to the SAS URL when ready
-  const downloadUrl = `/api/render/${jobId}/download?maxWaitMs=180000`; // wait up to 3 minutes
-  // Use a hidden iframe to trigger the download without navigating away
-  const iframe = document.createElement('iframe');
+      const downloadUrl = `/api/render/${jobId}/download?maxWaitMs=15000`; // keep under provider timeout
+      // Use a hidden iframe to trigger the download without navigating away and reattempt a few times
+      const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = downloadUrl;
   document.body.appendChild(iframe);
-  // Clean up the iframe later
-  setTimeout(() => { try { document.body.removeChild(iframe); } catch {} }, 2 * 60 * 1000);
+      // Re-hit endpoint every 10s for up to 2 minutes until the browser starts a download via redirect
+      let tries = 0;
+      const maxTries = 12; // ~2 minutes
+      const interval = setInterval(() => {
+        tries += 1;
+        if (tries >= maxTries) {
+          clearInterval(interval);
+          return;
+        }
+        // cache-bust to avoid any intermediary caches
+        iframe.src = `${downloadUrl}&t=${Date.now()}`;
+      }, 10_000);
+      // Clean up the iframe later
+      setTimeout(() => { try { clearInterval(interval); document.body.removeChild(iframe); } catch {} }, 2 * 60 * 1000);
   toast({ title: 'Rendering started', description: 'Your download will start automatically when ready.' });
   return;
     } catch (e: any) {
