@@ -1,272 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFileSync, unlinkSync, existsSync, mkdirSync, writeFileSync } from 'fs';
-import os from 'os';
-import { join } from 'path';
-import { spawn } from 'child_process';
+import { randomUUID } from 'crypto';
+import { createServerClient } from '@supabase/ssr';
+import { createClient as createAuthedClient } from '@/lib/supabase/server';
+import { getRenderQueue } from '@/lib/queue';
 
 // Force dynamic to avoid caching & ensure Node runtime
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-interface Character {
-  id: string;
-  name: string;
-  color: string;
-  avatar?: string;
-}
+interface Character { id: string; name: string; color: string; avatar?: string }
+interface Message { id: string; characterId: string; text: string; timestamp: number }
+interface RequestBody { characters: Character[]; messages: Message[]; isPro?: boolean }
 
-interface Message {
-  id: string;
-  characterId: string;
-  text: string;
-  timestamp: number;
-}
-
-interface RequestBody {
-  characters: Character[];
-  messages: Message[];
-  isPro: boolean;
+function getSupabaseServiceRole() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createServerClient(url, key, { cookies: { getAll() { return []; }, setAll() {} } });
 }
 
 export async function POST(request: NextRequest) {
-  let propsPath: string | null = null;
-  let outputPath: string | null = null;
-  let hadError = false;
-  let childStdout = '';
-  let childStderr = '';
-
   try {
-    console.log('[API] Starting video generation (programmatic renderer)...');
-    
     const body: RequestBody = await request.json();
-    const { characters, messages, isPro } = body;
-
+    const { characters, messages } = body;
     if (!characters || !messages || messages.length === 0) {
-      console.log('[API] Invalid request - no characters or messages');
-      return NextResponse.json(
-        { error: 'Invalid request: characters and messages are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid request: characters and messages are required' }, { status: 400 });
     }
-
-    console.log('[API] Processing', messages.length, 'messages with', characters.length, 'characters');
-    // Transform data for Remotion
-    // Determine outgoing vs incoming.
-    // In the redesigned editor we use ids 'them' and 'you'. Outgoing (right side / blue) should be 'you'.
-    // Fallback: if legacy numeric ids, treat first character as 'them'.
-    const hasYouId = characters.some(c=>c.id==='you');
+    // Transform to Remotion props (same mapping as before)
+    const hasYouId = characters.some((c) => c.id === 'you');
     const remotionMessages = messages.map((msg, index) => {
       const isOutgoing = hasYouId ? msg.characterId === 'you' : (characters[1] ? msg.characterId === characters[1].id : false);
-      return {
-        id: index + 1,
-        text: msg.text,
-        sent: isOutgoing,
-        time: `0:${String(index * 2).padStart(2, '0')}`
-      };
+      return { id: index + 1, text: msg.text, sent: isOutgoing, time: `0:${String(index * 2).padStart(2, '0')}` };
     });
+    const contactCharacter = characters.find((c) => c.id === 'them') || characters[0];
+    const inputProps = { messages: remotionMessages, contactName: contactCharacter?.name || 'Contact' };
 
-    console.log('[API] Transformed messages for Remotion:', remotionMessages);
-
-    // Choose a writable directory. In Vercel serverless functions the filesystem is read-only
-    // except for /tmp, so we must place temp artifacts there. Locally we keep using the repo folder.
-  const writableRoot = process.env.VERCEL ? os.tmpdir() : process.cwd();
-  let outputDir = join(writableRoot, 'out');
-    try {
-      if (!existsSync(outputDir)) {
-        mkdirSync(outputDir, { recursive: true });
-        console.log('[API] Created output directory:', outputDir);
-      }
-    } catch (dirErr) {
-      console.error('[API] Failed to ensure output directory. Falling back to os.tmpdir()', dirErr);
-      // Last resort – try tmp directly
-      const fallback = os.tmpdir();
-      const fbOut = join(fallback, 'out');
-      if (!existsSync(fbOut)) {
-        mkdirSync(fbOut, { recursive: true });
-      }
-      console.log('[API] Using fallback output directory:', fbOut);
-      outputDir = fbOut;
-      (global as any).__videoOutputFallback = true; // mark for diagnostics
-      // redefine for subsequent logic
-      (outputPath as any) = null; // just to silence TS if reused before assignment
+    if (!process.env.REDIS_URL) {
+      return NextResponse.json({ error: 'Server not configured (REDIS_URL missing)' }, { status: 500 });
     }
 
-    // Create unique output path
-    const timestamp = Date.now();
-    outputPath = join(outputDir, `video-${timestamp}.mp4`);
-    propsPath = join(outputDir, `props-${timestamp}.json`);
+    // Resolve user (optional)
+    const authed = await createAuthedClient();
+    const { data: userData } = await authed.auth.getUser();
+    const userId = userData?.user?.id ?? null;
 
-    // Write props to temporary file
-  const contactCharacter = characters.find(c=> c.id === 'them') || characters[0];
-  const propsData = { messages: remotionMessages, contactName: contactCharacter?.name || 'Contact' };
-    writeFileSync(propsPath, JSON.stringify(propsData, null, 2));
-
-    console.log('[API] Props file created at:', propsPath);
-    console.log('[API] Output path:', outputPath);
-    console.log('[API] Props data:', JSON.stringify(propsData, null, 2));
-
-    // Use external Node script to perform Remotion rendering to avoid React context issues in Next API route
-    const rendererScript = join(process.cwd(), 'scripts', 'render-video.cjs');
-    const scriptExists = existsSync(rendererScript);
-    if (!scriptExists) {
-      console.warn('[API] External renderer script missing; will attempt inline rendering fallback.');
-    }
-
-    // Helpful log for serverless environment path resolution
-    console.log('[API] CWD:', process.cwd());
-    const remotionEntry = join(process.cwd(), 'remotion', 'index.ts');
-    console.log('[API] Files expected to exist:', rendererScript, remotionEntry);
-    console.log('[API] Exists check:', {
-      rendererScript: existsSync(rendererScript),
-      remotionEntry: existsSync(remotionEntry),
-      remotionPkg: existsSync(join(process.cwd(), 'node_modules', 'remotion')),
-      remotionRenderer: existsSync(join(process.cwd(), 'node_modules', '@remotion', 'renderer')),
-      remotionBundler: existsSync(join(process.cwd(), 'node_modules', '@remotion', 'bundler'))
+    // Create DB record and enqueue
+    const jobId = randomUUID();
+    const now = new Date().toISOString();
+    const supabase = getSupabaseServiceRole();
+    const { error } = await supabase.from('video_renders').insert({
+      id: jobId,
+      user_id: userId,
+      status: 'pending',
+      composition_id: 'MessageConversation',
+      input_props: inputProps,
+      created_at: now,
+      updated_at: now,
     });
-    console.log('[API] Running on Vercel?', !!process.env.VERCEL, 'Node ENV:', process.env.NODE_ENV);
-    if (process.env.REMOTION_BROWSER_EXECUTABLE) {
-      console.log('[API] Using custom REMOTION_BROWSER_EXECUTABLE');
-    }
+    if (error) return NextResponse.json({ error: 'DB insert failed', details: error.message }, { status: 500 });
 
-    // Build arguments: script propsPath outputPath compositionId fpsOverride(optional) messagesLength
-    if (!scriptExists) {
-      throw new Error('Renderer script missing (scripts/render-video.cjs).');
-    }
-
-    const args = [rendererScript, propsPath, outputPath, 'MessageConversation'];
-    // If we have a prebundled serveUrl marker, expose via env so script can reuse
-    const prebundledMarker = join(process.cwd(), 'prebundled', 'serveUrl.txt');
-    const extraEnv = { ...process.env };
-    if (existsSync(prebundledMarker)) {
-      try {
-        const serveUrl = readFileSync(prebundledMarker, 'utf-8').trim();
-        extraEnv.PREBUNDLED_SERVE_URL = serveUrl;
-        console.log('[API] Using prebundled serveUrl in child:', serveUrl);
-      } catch (e) {
-        console.warn('[API] Could not read prebundled serveUrl marker', e);
-      }
-    }
-    console.log('[API] Spawning renderer:', process.execPath, args.join(' '));
-    const child = spawn(process.execPath, args, {
-      cwd: process.cwd(),
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: extraEnv
-    });
-
-    await new Promise<void>((resolve, reject) => {
-      child.stdout.on('data', (d) => {
-        const line = d.toString();
-        childStdout += line;
-        console.log('[Renderer STDOUT]', line.trim());
-      });
-      child.stderr.on('data', (d) => {
-        const line = d.toString();
-        childStderr += line;
-        console.warn('[Renderer STDERR]', line.trim());
-      });
-      child.on('exit', (code) => {
-        if (code === 0) return resolve();
-        hadError = true;
-        reject(new Error(`Renderer exited with code ${code}`));
-      });
-      child.on('error', (err) => reject(err));
-    });
-
-    if (!existsSync(outputPath)) {
-      throw new Error('Render finished but output file missing');
-    }
-
-    const videoBuffer = readFileSync(outputPath);
-    console.log('[API] Render complete. Size:', videoBuffer.length);
-
-    return new NextResponse(videoBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': 'video/mp4',
-        'Content-Disposition': `attachment; filename="chat-video-${timestamp}.mp4"`,
-        'Content-Length': String(videoBuffer.length),
-      }
-    });
-
-  } catch (error) {
-    console.error('[API] Video generation failed:', error);
-    console.error('[API] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    
-    let errorMessage = 'Unknown error occurred';
-    let statusCode = 500;
-    
-    if (error instanceof Error) {
-      errorMessage = error.message;
-      console.error('[API] Error details:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
-      
-  // Handle specific error types
-      if (error.message.includes('prebundled serveUrl')) {
-        statusCode = 500;
-        errorMessage = 'Missing prebundled Remotion bundle. Build step must run prebundle script.';
-      } else if (error.message.includes('Renderer script missing')) {
-        statusCode = 404;
-        errorMessage = 'Renderer script missing. Ensure tracing includes scripts/render-video.cjs';
-      } else if (error.message.includes('ENOENT') && error.message.includes('/tmp')) {
-        statusCode = 500;
-        errorMessage = 'Temp directory issue. /tmp should be writable but was not. Check serverless permissions.';
-      } else if (error.message.includes('ENOENT') || error.message.includes('not found')) {
-        statusCode = 404;
-        errorMessage = 'Required files not found (prebundled bundle or assets). Verify tracing paths.';
-      } else if (error.message.includes('@remotion/studio-shared')) {
-        statusCode = 500;
-        errorMessage = 'Missing @remotion/studio-shared. Ensure dependency installed and traced.';
-      } else if (error.message.includes("Cannot find module 'webpack'")) {
-        statusCode = 500;
-        errorMessage = 'Missing webpack at runtime. Added as dependency – redeploy to pick it up.';
-      } else if (error.message.includes("Cannot find module 'execa'")) {
-        statusCode = 500;
-        errorMessage = 'Missing execa. Added to dependencies; redeploy to include it.';
-      } else if (error.message.includes("Cannot find module 'cross-spawn'")) {
-        statusCode = 500;
-        errorMessage = 'Missing cross-spawn (execa peer). Added to dependencies; redeploy to include it.';
-      } else if (error.message.includes("Cannot find module 'which'")) {
-        statusCode = 500;
-        errorMessage = 'Missing which (cross-spawn dependency). Added to dependencies; redeploy.';
-      } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
-        statusCode = 408;
-        errorMessage = 'Video generation timed out. Please try again.';
-  }
-    }
+    const queue = getRenderQueue();
+    await queue.add('render', { jobId });
 
     return NextResponse.json(
-      { 
-        error: 'Video generation failed', 
-        details: errorMessage,
-        fullError: error instanceof Error ? error.message : String(error),
-        stdout: childStdout || undefined,
-        stderr: childStderr || undefined,
-        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : '') : undefined,
-        timestamp: new Date().toISOString()
-      },
-      { status: statusCode }
+      { jobId, statusUrl: `/api/render/${jobId}/status` },
+      { status: 202 }
     );
-  } finally {
-    // Clean up temporary files
-    if (propsPath) {
-      try {
-        unlinkSync(propsPath);
-        console.log('[API] Props file cleaned up');
-      } catch (cleanupError) {
-        console.warn('[API] Could not clean up props file:', cleanupError);
-      }
-    }
-    
-    if (outputPath && !hadError) { // keep output if there was an error for inspection
-      try {
-        unlinkSync(outputPath);
-        console.log('[API] Video file cleaned up');
-      } catch (cleanupError) {
-        console.warn('[API] Could not clean up video file:', cleanupError);
-      }
-    }
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });
   }
 }
