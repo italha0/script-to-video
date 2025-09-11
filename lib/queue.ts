@@ -14,7 +14,15 @@ export function getRenderQueue() {
       throw new Error('REDIS_URL env var required for queue');
     }
     queue = new Queue(RENDER_QUEUE_NAME, {
-      connection: { url: process.env.REDIS_URL },
+      // Make Redis fail fast so API routes don't hang and cause 504s
+      connection: {
+        url: process.env.REDIS_URL,
+        connectTimeout: 2000,
+        maxRetriesPerRequest: 1,
+        // enableReadyCheck keeps initial handshake short; with TLS via rediss:// it's auto-negotiated
+        enableReadyCheck: true,
+        keepAlive: 0,
+      },
       defaultJobOptions: {
         removeOnComplete: 1000,
         removeOnFail: 1000,

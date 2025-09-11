@@ -60,8 +60,22 @@ async function processRender(jobId){
   const sasUrl = generateSASUrl(blobName, 60);
   await updateJob(jobId,{ status:'done', url: sasUrl });
 }
-const worker = new Worker(RENDER_QUEUE_NAME, async (job)=>{ const { jobId } = job.data; try { await processRender(jobId); return { success:true }; } catch(e){ console.error('[WORKER] Job failed', jobId, e); await updateJob(jobId,{ status:'error', error_message: e.message }); throw e; } }, { connection:{ url: process.env.REDIS_URL }});
-new QueueEvents(RENDER_QUEUE_NAME,{ connection:{ url: process.env.REDIS_URL }});
+const worker = new Worker(RENDER_QUEUE_NAME, async (job)=>{ const { jobId } = job.data; try { await processRender(jobId); return { success:true }; } catch(e){ console.error('[WORKER] Job failed', jobId, e); await updateJob(jobId,{ status:'error', error_message: e.message }); throw e; } }, { connection:{ url: process.env.REDIS_URL, maxRetriesPerRequest: 1, connectTimeout: 2000 }});
+new QueueEvents(RENDER_QUEUE_NAME,{ connection:{ url: process.env.REDIS_URL, maxRetriesPerRequest: 1, connectTimeout: 2000 }});
+
+// Polling fallback: pick up pending jobs even if Redis is unavailable or enqueue failed.
+async function pollingSweep(){
+  try{
+    const since = new Date(Date.now() - 10*60*1000).toISOString();
+    const url = `${SUPABASE_URL}/rest/v1/video_renders?status=eq.pending&select=id&created_at=gte.${since}`;
+    const r = await fetch(url, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
+    const rows = await r.json();
+    for (const row of rows){
+      try { await processRender(row.id); } catch(e){ console.error('[WORKER] Fallback processing failed', row.id, e?.message||e); }
+    }
+  } catch (e){ console.error('[WORKER] polling sweep error', e?.message||e); }
+}
+setInterval(pollingSweep, 15000);
 worker.on('completed',(job)=> console.log('Job completed', job.id));
 worker.on('failed',(job,err)=> console.log('Job failed', job?.id, err?.message));
 console.log('[WORKER] Started');

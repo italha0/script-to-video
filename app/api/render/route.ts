@@ -59,9 +59,17 @@ export async function POST(req: NextRequest) {
 		if (error) {
 			return NextResponse.json({ error: 'DB insert failed', details: error.message }, { status: 500 });
 		}
-		// enqueue job
-		const queue = getRenderQueue();
-		await queue.add('render', { jobId });
+		// enqueue job - fail fast to avoid API timeouts when Redis is down
+		try {
+			const queue = getRenderQueue();
+			const enqueue = queue.add('render', { jobId });
+			await Promise.race([
+				enqueue,
+				new Promise((_, r) => setTimeout(() => r(new Error('enqueue-timeout')), 2000)),
+			]);
+		} catch (e) {
+			console.error('[API] Enqueue failed, will rely on polling worker');
+		}
 		return NextResponse.json({ jobId });
 	} catch (e: any) {
 		return NextResponse.json({ error: e.message || 'Unknown error' }, { status: 500 });

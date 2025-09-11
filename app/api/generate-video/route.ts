@@ -61,8 +61,19 @@ export async function POST(request: NextRequest) {
     });
     if (error) return NextResponse.json({ error: 'DB insert failed', details: error.message }, { status: 500 });
 
-    const queue = getRenderQueue();
-    await queue.add('render', { jobId });
+    // Try enqueue; fail fast to avoid 504s
+    try {
+      const queue = getRenderQueue();
+      const enqueue = queue.add('render', { jobId });
+      // race with a small timeout so Netlify/Lambda doesn't hang if Redis is unreachable
+      await Promise.race([
+        enqueue,
+        new Promise((_, r) => setTimeout(() => r(new Error('enqueue-timeout')), 2000)),
+      ]);
+    } catch (e: any) {
+      // Log only; we still return 202 and rely on worker polling fallback
+      console.error('[API] Enqueue failed, will rely on polling worker', e?.message || e);
+    }
 
     return NextResponse.json(
       { jobId, statusUrl: `/api/render/${jobId}/status` },
