@@ -1,0 +1,42 @@
+FROM node:20-bullseye
+
+# Install system dependencies for Chromium / Remotion
+RUN apt-get update && apt-get install -y \
+	wget \
+	ca-certificates \
+	fonts-liberation \
+	libasound2 \
+	libatk1.0-0 \
+	libatk-bridge2.0-0 \
+	libatspi2.0-0 \
+	libdrm2 \
+	libgbm1 \
+	libgtk-3-0 \
+	libnss3 \
+	libx11-xcb1 \
+	libxcomposite1 \
+	libxdamage1 \
+	libxfixes3 \
+	libxrandr2 \
+	libxss1 \
+	libxtst6 \
+	xvfb \
+	&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml* package-lock.json* yarn.lock* ./
+
+# Install deps (prefer pnpm if lockfile present)
+RUN if [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm install --frozen-lockfile; \
+	else npm install --production; fi
+
+COPY . .
+
+# Prebundle Remotion (writing to prebundled/serveUrl.txt)
+RUN npm run prebundle || echo "Prebundle failed (ensure remotion deps installed)" && ls -R prebundled || true
+
+ENV NODE_ENV=production \
+	REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium \
+	PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+CMD ["node", "worker/worker.cjs"]
