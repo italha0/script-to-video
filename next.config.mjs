@@ -4,7 +4,13 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   images: { unoptimized: true },
-  allowedDevOrigins: ['*'], // Allow all origins in development for Replit
+  allowedDevOrigins: ['*', '*.replit.dev', '*.repl.co', 'localhost', '127.0.0.1'], // Allow all origins in development for Replit
+  
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['*', '*.replit.dev', '*.repl.co', 'localhost', '127.0.0.1']
+    }
+  },
 
   // NOTE: For Next.js v15+, outputFileTracingIncludes is at the top level, not inside `experimental`.
   outputFileTracingIncludes: {

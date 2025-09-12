@@ -5,7 +5,7 @@
   "scripts": {
   "build": "node scripts/prebundle-remotion.cjs || echo prebundle:skipped && next build",
     "prebundle": "node scripts/prebundle-remotion.cjs",
-    "dev": "next dev --turbopack -H 0.0.0.0 -p 5000",
+    "dev": "next dev -H 0.0.0.0 -p 5000",
     "lint": "next lint",
     "start": "next start",
     "remotion:preview": "remotion preview remotion/index.ts",
