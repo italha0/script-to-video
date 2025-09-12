@@ -166,28 +166,28 @@ export default function EditorPage() {
       }
 
   // New approach: ask the server to wait and 302-redirect to the SAS URL when ready
-      const downloadUrl = `/api/render/${jobId}/download?maxWaitMs=15000`; // keep under provider timeout
-      // Use a hidden iframe to trigger the download without navigating away and reattempt a few times
-      const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = downloadUrl;
-  document.body.appendChild(iframe);
-      // Re-hit endpoint every 10s for up to 2 minutes until the browser starts a download via redirect
-      let tries = 0;
-      const maxTries = 12; // ~2 minutes
-      const interval = setInterval(() => {
-        tries += 1;
-        if (tries >= maxTries) {
-          clearInterval(interval);
-          return;
+      // Poll status directly to avoid serverless timeouts; download as soon as URL is available
+      toast({ title: 'Rendering started', description: 'We\'ll download it automatically when done.' });
+      const pollStart = Date.now();
+      const backoff = (n: number) => Math.min(1000 + n * 500, 5000);
+      let n = 0;
+      for (;;) {
+        const s = await fetch(`/api/render/${jobId}/status`, { cache: 'no-store' });
+        if (s.ok) {
+          const { status, url, error } = await s.json();
+          if (status === 'done' && url) {
+            // Navigate to SAS URL to trigger download regardless of how long it took
+            window.location.href = url;
+            toast({ title: 'Video ready', description: 'Download starting...' });
+            return;
+          }
+          if (status === 'error') {
+            throw new Error(error || 'Render failed');
+          }
         }
-        // cache-bust to avoid any intermediary caches
-        iframe.src = `${downloadUrl}&t=${Date.now()}`;
-      }, 10_000);
-      // Clean up the iframe later
-      setTimeout(() => { try { clearInterval(interval); document.body.removeChild(iframe); } catch {} }, 2 * 60 * 1000);
-  toast({ title: 'Rendering started', description: 'Your download will start automatically when ready.' });
-  return;
+        n += 1;
+        await new Promise(r => setTimeout(r, backoff(n)));
+      }
     } catch (e: any) {
       toast({ title: 'Generation failed', description: e.message, variant: 'destructive' });
     } finally {
