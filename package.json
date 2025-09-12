@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/prebundle-remotion.cjs && next build",
+  "build": "node scripts/prebundle-remotion.cjs || echo prebundle:skipped && next build",
     "prebundle": "node scripts/prebundle-remotion.cjs",
     "dev": "next dev --turbopack",
     "lint": "next lint",
@@ -15,6 +15,7 @@
     "worker": "node worker/worker.cjs"
   },
   "dependencies": {
+  "@esbuild/linux-x64": "^0.23.0",
     "@azure/storage-blob": "^12.28.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
@@ -66,6 +67,7 @@
     "dotenv": "^16.4.5",
     "embla-carousel-react": "8.5.1",
     "execa": "5.1.1",
+  "esbuild": "^0.23.0",
     "extract-zip": "^2.0.1",
     "geist": "latest",
     "get-stream": "^6.0.0",
