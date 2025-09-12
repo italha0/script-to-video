@@ -2,6 +2,7 @@
   "installCommand": "npm install --include=optional",
   "build": {
     "env": {
+      "NODE_VERSION": "20",
       "PNPM_HOME": "/vercel/.cache/pnpm",
       "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
       "NPM_CONFIG_FUND": "false",
