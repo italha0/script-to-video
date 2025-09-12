@@ -14,16 +14,17 @@ function getSupabaseServiceRole() {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export async function GET(req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ jobId: string }> | { jobId: string } }) {
   try {
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
     }
 
-    const supabase = getSupabaseServiceRole();
+  const supabase = getSupabaseServiceRole();
+  const { jobId } = await ctx.params;
 
     // Allow caller to override wait window (bounded)
-    const url = new URL(req.url);
+  const url = new URL(req.url);
   // Hard cap to stay under provider function timeouts (override with env)
   const HARD_CAP = Number.parseInt(process.env.API_DOWNLOAD_MAX_WAIT_MS || '10000'); // 10s default
   const qMax = Number(url.searchParams.get('maxWaitMs'));
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: { jobId: strin
       const { data, error } = await supabase
         .from('video_renders')
         .select('status, url')
-        .eq('id', params.jobId)
+  .eq('id', jobId)
         .maybeSingle();
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest, { params }: { params: { jobId: strin
 
     // Timed out waiting — advise client to retry soon and provide status endpoint
   const res = NextResponse.json(
-      { status: lastStatus || 'pending', statusUrl: `/api/render/${params.jobId}/status` },
+  { status: lastStatus || 'pending', statusUrl: `/api/render/${jobId}/status` },
       { status: 202 },
     );
     res.headers.set('Retry-After', '3');

@@ -12,10 +12,11 @@ function getSupabaseServiceRole() {
 	});
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ jobId: string }> | { jobId: string } }) {
 	try {
 		const supabase = getSupabaseServiceRole();
-		const { data, error } = await supabase.from('video_renders').select('status, url').eq('id', params.jobId).maybeSingle();
+		const { jobId } = await ctx.params;
+		const { data, error } = await supabase.from('video_renders').select('status, url').eq('id', jobId).maybeSingle();
 		if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 		if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 		return NextResponse.json(data);

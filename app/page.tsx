@@ -32,7 +32,7 @@ export default function DashboardHome() {
   return (
     <div className="min-h-screen bg-background text-foreground flex">
       {/* Sidebar */}
-      <aside className="hidden md:flex flex-col min-w-[16rem] md:max-w-[300px] shrink-0 border-r border-border/60 bg-background-light/40 backdrop-blur p-4 gap-4">
+      <aside className="hidden md:flex flex-col min-w-[16rem] md:w-[300px] shrink-0 border-r border-border/60 bg-background-light/40 backdrop-blur p-4 gap-4">
         <div className="flex items-center gap-2 px-1 pb-2">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_14px_-4px_rgba(138,43,226,0.6)]">
             <MessageSquare className="w-4 h-4 text-primary-foreground" />
