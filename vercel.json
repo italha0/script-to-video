@@ -1,9 +1,12 @@
 {
+  "installCommand": "npm install --include=optional",
   "build": {
     "env": {
       "PNPM_HOME": "/vercel/.cache/pnpm",
       "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
-      "NPM_CONFIG_FUND": "false"
+      "NPM_CONFIG_FUND": "false",
+      "NPM_CONFIG_OPTIONAL": "true",
+      "npm_config_optional": "true"
     }
   }
 }
