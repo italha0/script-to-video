@@ -12,10 +12,9 @@
     "remotion:render": "remotion render remotion/index.ts MessageConversation out/video.mp4",
     "remotion:studio": "remotion studio remotion/index.ts",
     "render:script": "node scripts/render-video.cjs out/props-test.json out/test.mp4 MessageConversation",
-  "worker": "node worker/worker.cjs"
+    "worker": "node worker/worker.cjs"
   },
   "dependencies": {
-  "dotenv": "^16.4.5",
     "@azure/storage-blob": "^12.28.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
@@ -64,6 +63,7 @@
     "cross-spawn": "^7.0.6",
     "date-fns": "4.1.0",
     "debug": "^4.4.1",
+    "dotenv": "^16.4.5",
     "embla-carousel-react": "8.5.1",
     "execa": "5.1.1",
     "extract-zip": "^2.0.1",
