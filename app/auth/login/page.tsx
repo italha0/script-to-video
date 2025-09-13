@@ -18,7 +18,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get("redirect") || "/editor"
+  // Safely validate redirect parameter to prevent open redirects
+  const redirectParam = searchParams.get("redirect")
+  const redirectTo = (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) 
+    ? redirectParam 
+    : "/editor"
 
   // If already authenticated, skip showing the form and listen for auth changes
   useEffect(() => {

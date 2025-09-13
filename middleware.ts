@@ -1,6 +1,7 @@
 import { updateSession } from "@/lib/supabase/middleware"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
+import { createServerClient } from "@supabase/ssr"
 
 // Extend middleware to preserve original destination when redirecting to login
 export async function middleware(request: NextRequest) {
@@ -12,13 +13,30 @@ export async function middleware(request: NextRequest) {
   // updateSession intentionally doesn't redirect authenticated users away from /auth/*.
 
   // If user is already authenticated and visits an auth route, redirect to editor.
-  // We detect authentication heuristically: presence of the sb-access-token cookie.
-  const hasSession = request.cookies.get("sb-access-token") || request.cookies.get("sb:token")
-  if (hasSession && request.nextUrl.pathname.startsWith("/auth")) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/editor"
-    url.search = ""
-    return NextResponse.redirect(url)
+  // Use server-validated auth check instead of cookie heuristics to prevent loops with expired tokens
+  if (request.nextUrl.pathname.startsWith("/auth")) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll() {
+            // No-op for middleware validation check
+          },
+        },
+      },
+    )
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/editor"
+      url.search = ""
+      return NextResponse.redirect(url)
+    }
   }
 
   return response

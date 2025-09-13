@@ -35,8 +35,10 @@ export async function updateSession(request: NextRequest) {
   if (!user && (request.nextUrl.pathname.startsWith("/editor") || request.nextUrl.pathname.startsWith("/dashboard"))) {
     const url = request.nextUrl.clone()
     const redirect = request.nextUrl.pathname + (request.nextUrl.search || "")
+    // Validate redirect parameter to ensure it's an internal path
+    const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/editor"
     url.pathname = "/auth/login"
-    url.search = `redirect=${encodeURIComponent(redirect)}`
+    url.search = `redirect=${encodeURIComponent(safeRedirect)}`
     return NextResponse.redirect(url)
   }
 
