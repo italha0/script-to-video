@@ -137,14 +137,14 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
   const caretBlink = (frame / fps) % 1 < 0.5;
   const showCaret = true;
   const inputDisplay = currentInputText && currentInputText.length>0
-    ? <span>{currentInputText}{showCaret && caretBlink ? <span style={{borderLeft:'2px solid #007AFF', marginLeft:2}} />: null}</span>
-    : <span style={{ opacity:0.4 }}>iMessage{showCaret && caretBlink ? <span style={{borderLeft:'2px solid #007AFF', marginLeft:2}} />: null}</span>;
+    ? <span>{currentInputText}{showCaret && caretBlink ? <span style={{borderLeft: `2px solid ${theme.colors.sent}`, marginLeft:2}} />: null}</span>
+    : <span style={{ opacity:0.4 }}>Type a message{showCaret && caretBlink ? <span style={{borderLeft: `2px solid ${theme.colors.sent}`, marginLeft:2}} />: null}</span>;
   return (
     <div style={{ position:'absolute', left:0, right:0, bottom:0, transform:`translateY(${translateY}px)`, background: theme.colors.keyboardBackground, borderTop: `1px solid ${theme.colors.keyboardBorder}`, fontFamily: theme.bubble.fontFamily }}>
-      <div style={{ display:'flex', alignItems:'center', padding:'6px 8px', gap:8, background:'#F2F2F7' }}>
-        <div style={{ width:32, height:32, borderRadius:16, background:'#C7C7CC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>📷</div>
+      <div style={{ display:'flex', alignItems:'center', padding:'6px 8px', gap:8, background: theme.colors.headerBackground }}>
+        <div style={{ width:32, height:32, borderRadius:16, background: theme.colors.keyboardKeyActive, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>📷</div>
         <div style={{ flex:1, background: theme.colors.inputBackground, borderRadius:16, padding:'6px 12px', color: theme.colors.inputText, fontSize:16, minHeight:32, display:'flex', alignItems:'center' }}>{inputDisplay}</div>
-        <div style={{ width:32, height:32, borderRadius:16, background:'#C7C7CC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎤</div>
+        <div style={{ width:32, height:32, borderRadius:16, background: theme.colors.keyboardKeyActive, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎤</div>
       </div>
       <div style={{ padding:'4px 6px 8px' }}>
         {keyRows.map((row,i)=>(<div key={i} style={{ display:'flex', justifyContent:'center', marginBottom:i===keyRows.length-1?0:6 }}>{row.map(renderKey)}</div>))}
@@ -161,14 +161,14 @@ const StatusBar: React.FC<{ batteryLevel?: number; theme: ChatTheme }> = ({ batt
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
         {/* Signal Bars */}
         <div style={{ display:'flex', alignItems:'flex-end', gap:2 }}>
-          {[4,7,10,13].map((h,i)=>(<div key={i} style={{ width:3, height:h, background:'#000', borderRadius:1 }} />))}
+          {[4,7,10,13].map((h,i)=>(<div key={i} style={{ width:3, height:h, background: theme.colors.statusBar, borderRadius:1 }} />))}
         </div>
         {/* Wi-Fi (simple) */}
         <div style={{ position:'relative', width:18, height:14 }}>
           <svg viewBox="0 0 20 14" width={18} height={14}>
-            <path d="M10 13c.9 0 1.6-.7 1.6-1.6S10.9 9.8 10 9.8 8.4 10.5 8.4 11.4 9.1 13 10 13Z" fill="#000" />
-            <path d="M3.3 6.6a9.2 9.2 0 0 1 13.4 0l-1.2 1.2a7.5 7.5 0 0 0-11 0L3.3 6.6Z" fill="#000" />
-            <path d="M6.2 9.3a5.3 5.3 0 0 1 7.6 0l-1.2 1.2a3.6 3.6 0 0 0-5.2 0l-1.2-1.2Z" fill="#000" />
+            <path d="M10 13c.9 0 1.6-.7 1.6-1.6S10.9 9.8 10 9.8 8.4 10.5 8.4 11.4 9.1 13 10 13Z" fill={theme.colors.statusBar} />
+            <path d="M3.3 6.6a9.2 9.2 0 0 1 13.4 0l-1.2 1.2a7.5 7.5 0 0 0-11 0L3.3 6.6Z" fill={theme.colors.statusBar} />
+            <path d="M6.2 9.3a5.3 5.3 0 0 1 7.6 0l-1.2 1.2a3.6 3.6 0 0 0-5.2 0l-1.2-1.2Z" fill={theme.colors.statusBar} />
           </svg>
         </div>
         {/* Battery */}

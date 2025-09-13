@@ -14,6 +14,7 @@ export const RemotionRoot: React.FC = () => {
         height={844}
         defaultProps={{
           contactName: 'Alex',
+          theme: 'imessage',
           messages: [
             { id: 1, text: "oh no.", sent: false, time: "0:00" },
             { id: 2, text: "i thought you meant.", sent: false, time: "0:02" },

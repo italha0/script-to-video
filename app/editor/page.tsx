@@ -54,6 +54,7 @@ export default function EditorPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isLoadingScripts, setIsLoadingScripts] = useState(false)
   const [showLoadDialog, setShowLoadDialog] = useState(false)
+  const [selectedTheme, setSelectedTheme] = useState("imessage")
 
   const { toast } = useToast()
   const router = useRouter()
@@ -133,7 +134,7 @@ export default function EditorPage() {
       const res = await fetch('/api/generate-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ characters, messages, isPro: false }),
+        body: JSON.stringify({ characters, messages, isPro: false, theme: selectedTheme, contactName }),
       });
 
       // New flow: API enqueues and returns 202 with a jobId and statusUrl
@@ -211,11 +212,11 @@ export default function EditorPage() {
         {/* Page Title */}
         <div className="mb-8 lg:mb-10">
           <h1 className="text-4xl font-bold tracking-tight text-foreground mb-4 leading-tight">
-            CREATE A FAKE<br />
-            iMESSAGE VIDEO
+            CREATE A VIRAL<br />
+            CHAT VIDEO
           </h1>
           <p className="text-base text-foreground-muted max-w-2xl">
-            Type in any story you'd like to be told in the video
+            Choose your style - iMessage, WhatsApp, or Snapchat - and create engaging chat videos
           </p>
         </div>
 
@@ -236,6 +237,31 @@ export default function EditorPage() {
                   className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-base"
                   placeholder="Contact name"
                 />
+              </div>
+            </div>
+
+            {/* Theme Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-foreground-muted">Chat Style</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'imessage', name: 'iMessage', color: 'bg-blue-500', accent: 'border-blue-500' },
+                  { id: 'whatsapp', name: 'WhatsApp', color: 'bg-green-500', accent: 'border-green-500' },
+                  { id: 'snapchat', name: 'Snapchat', color: 'bg-yellow-400', accent: 'border-yellow-400' }
+                ].map((theme) => (
+                  <button
+                    key={theme.id}
+                    onClick={() => setSelectedTheme(theme.id)}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedTheme === theme.id 
+                        ? `${theme.accent} bg-white shadow-sm` 
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full ${theme.color} mx-auto mb-1`} />
+                    <div className="text-xs font-medium text-gray-700">{theme.name}</div>
+                  </button>
+                ))}
               </div>
             </div>
 

@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
 
 interface Character { id: string; name: string; color: string; avatar?: string }
 interface Message { id: string; characterId: string; text: string; timestamp: number }
-interface RequestBody { characters: Character[]; messages: Message[]; isPro?: boolean }
+interface RequestBody { characters: Character[]; messages: Message[]; isPro?: boolean; theme?: string; contactName?: string }
 
 function getSupabaseServiceRole() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -24,7 +24,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
     }
     const body: RequestBody = await request.json();
-    const { characters, messages } = body;
+    const { characters, messages, theme = 'imessage', contactName } = body;
+    
+    // Validate theme parameter
+    const validThemes = ['imessage', 'whatsapp', 'snapchat'];
+    const selectedTheme = validThemes.includes(theme) ? theme : 'imessage';
+    if (theme !== selectedTheme) {
+      console.warn(`Invalid theme "${theme}" provided, falling back to imessage`);
+    }
     if (!characters || !messages || messages.length === 0) {
       return NextResponse.json({ error: 'Invalid request: characters and messages are required' }, { status: 400 });
     }
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
       return { id: index + 1, text: msg.text, sent: isOutgoing, time: `0:${String(index * 2).padStart(2, '0')}` };
     });
     const contactCharacter = characters.find((c) => c.id === 'them') || characters[0];
-    const inputProps = { messages: remotionMessages, contactName: contactCharacter?.name || 'Contact' };
+    const inputProps = { messages: remotionMessages, contactName: contactName || contactCharacter?.name || 'Contact', theme: selectedTheme };
 
     const queueEnabled = process.env.RENDER_QUEUE_ENABLED === 'true';
     if (queueEnabled && !process.env.REDIS_URL) {
