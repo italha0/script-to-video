@@ -25,8 +25,10 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
+  // Try to get user - this properly validates the session server-side
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser()
 
   // Redirect unauthenticated users from protected routes and preserve original destination

@@ -20,12 +20,27 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "/editor"
 
-  // If already authenticated, skip showing the form
+  // If already authenticated, skip showing the form and listen for auth changes
   useEffect(() => {
     const supabase = createClient()
+    
+    // Check initial auth state
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace(redirectTo)
+      if (user) {
+        // Give a small delay to ensure proper session handling
+        setTimeout(() => router.replace(redirectTo), 100)
+      }
     })
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Successful login, redirect after short delay
+        setTimeout(() => router.replace(redirectTo), 100)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [redirectTo, router])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -35,15 +50,14 @@ export default function LoginPage() {
     setError(null)
 
     try {
-  const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) throw error
-  // Only allow relative redirects within the site for safety
-  let target = redirectTo.startsWith("/") ? redirectTo : "/editor"
-  if (target.startsWith("/auth")) target = "/editor" // avoid bouncing back to auth pages
-  router.replace(target)
+      
+      // Don't manually redirect here - let the auth state change handler do it
+      // The onAuthStateChange listener will handle the redirect
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
