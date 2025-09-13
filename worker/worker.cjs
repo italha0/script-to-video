@@ -6,8 +6,8 @@ const { readFileSync, existsSync, mkdirSync } = require('fs');
 const { join } = require('path');
 const os = require('os');
 const { getCompositions, renderMedia } = require('@remotion/renderer');
-const { uploadToAzureBlob, generateSASUrl } = require('../lib/azure-blob.js');
-const { RENDER_QUEUE_NAME } = require('../lib/queue.js');
+const { uploadToAzureBlob, generateSASUrl } = require('../lib/dist/azure-blob.js');
+const { RENDER_QUEUE_NAME } = require('../lib/dist/queue.js');
 const fetch = require('node-fetch');
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -33,20 +33,37 @@ async function updateJob(jobId, patch){
 async function processRender(jobId){
   const record = await fetchJob(jobId);
   if (!record) throw new Error('Record not found');
-  if (record.status !== 'pending') return;
-  await updateJob(jobId, { status:'processing' });
+  if (record.status !== 'pending' && record.status !== 'processing') return;
+  
+  // Only update to processing if it's pending (avoid race conditions)
+  if (record.status === 'pending') {
+    await updateJob(jobId, { status:'processing' });
+  }
   const compositionId = record.composition_id || 'MessageConversation';
   const inputProps = record.input_props || {};
-  // Ensure a Chromium executable is available
+  // Use system Chromium instead of bundled Chrome Headless Shell
   if (!process.env.REMOTION_BROWSER_EXECUTABLE) {
+    // Try system chromium first
     try {
-      const chromium = require('@sparticuz/chromium');
-      const execPath = await chromium.executablePath();
-      process.env.REMOTION_BROWSER_EXECUTABLE = execPath;
-      process.env.PUPPETEER_EXECUTABLE_PATH = execPath;
-      console.log('[WORKER] Using serverless Chromium at', execPath);
+      const { exec } = require('child_process');
+      const { promisify } = require('util');
+      const execAsync = promisify(exec);
+      const { stdout: chromiumPath } = await execAsync('which chromium');
+      process.env.REMOTION_BROWSER_EXECUTABLE = chromiumPath.trim();
+      process.env.PUPPETEER_EXECUTABLE_PATH = chromiumPath.trim();
+      console.log('[WORKER] Using system Chromium at', chromiumPath.trim());
     } catch (e) {
-      console.warn('[WORKER] Could not resolve @sparticuz/chromium executable', e?.message || e);
+      console.warn('[WORKER] Could not find system chromium, falling back to serverless', e?.message || e);
+      // Fallback to serverless chromium
+      try {
+        const chromium = require('@sparticuz/chromium');
+        const execPath = await chromium.executablePath();
+        process.env.REMOTION_BROWSER_EXECUTABLE = execPath;
+        process.env.PUPPETEER_EXECUTABLE_PATH = execPath;
+        console.log('[WORKER] Using serverless Chromium at', execPath);
+      } catch (e2) {
+        console.error('[WORKER] Could not resolve any Chromium executable', e2?.message || e2);
+      }
     }
   }
   const marker = join(process.cwd(),'prebundled','serveUrl.txt');
@@ -65,7 +82,30 @@ async function processRender(jobId){
   const outDir = join(workDir,'renders');
   if (!existsSync(outDir)) mkdirSync(outDir,{ recursive:true });
   const outputPath = join(outDir, `${jobId}.mp4`);
-  await renderMedia({ composition:{ ...comp, durationInFrames }, serveUrl, codec:'h264', outputLocation: outputPath, inputProps, concurrency:2 });
+  const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE;
+  await renderMedia({ 
+    composition:{ ...comp, durationInFrames }, 
+    serveUrl, 
+    codec:'h264', 
+    outputLocation: outputPath, 
+    inputProps, 
+    concurrency:1,
+    browserExecutable,
+    chromiumOptions: {
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-extensions',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ]
+    }
+  });
   const blobName = await uploadToAzureBlob(outputPath, `${jobId}.mp4`);
   const sasUrl = generateSASUrl(blobName, 60);
   await updateJob(jobId,{ status:'done', url: sasUrl });
@@ -86,7 +126,7 @@ if (QUEUE_ENABLED) {
 // Polling fallback: pick up pending jobs even if Redis is unavailable or enqueue failed.
 async function pollingSweep(){
   try{
-    const url = `${SUPABASE_URL}/rest/v1/video_renders?select=id&status=eq.pending&order=created_at.asc&limit=5`;
+    const url = `${SUPABASE_URL}/rest/v1/video_renders?select=id&status=in.(pending,processing)&order=created_at.asc&limit=5`;
     const r = await fetch(url, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
     if (!r.ok) {
       const txt = await r.text().catch(()=> '');
