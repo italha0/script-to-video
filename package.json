@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-  "build": "node scripts/prebundle-remotion.cjs || echo prebundle:skipped && next build",
+    "build": "node scripts/prebundle-remotion.cjs || echo prebundle:skipped && next build",
     "prebundle": "node scripts/prebundle-remotion.cjs",
     "dev": "next dev",
     "lint": "next lint",
@@ -45,15 +45,16 @@
     "date-fns": "4.1.0",
     "debug": "^4.4.1",
     "dotenv": "^16.4.5",
+    "esbuild": "^0.23.0",
     "execa": "5.1.1",
-  "esbuild": "^0.23.0",
     "extract-zip": "^2.0.1",
+    "framer-motion": "^12.23.12",
     "geist": "latest",
     "get-stream": "^6.0.0",
     "human-signals": "^2.1.0",
-  "lightningcss": "^1.25.1",
     "is-stream": "^2.0.0",
     "isexe": "2.0.0",
+    "lightningcss": "^1.25.1",
     "lucide-react": "^0.454.0",
     "merge-stream": "^2.0.0",
     "mimic-fn": "^2.1.0",
@@ -81,7 +82,8 @@
     "which": "^4.0.0",
     "ws": "^8.18.0",
     "yauzl": "^3.2.0",
-    "zod": "3.25.67"
+    "zod": "3.25.67",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
