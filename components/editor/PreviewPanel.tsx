@@ -62,8 +62,8 @@ export function PreviewPanel() {
       >
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">Preview</h2>
-          <p className="text-gray-400 text-sm">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Preview</h2>
+          <p className="text-muted-foreground text-sm">
             See how your video will look
           </p>
         </div>

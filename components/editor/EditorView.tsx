@@ -16,7 +16,7 @@ export function EditorView() {
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-96 border-r border-gray-800 bg-gray-950 overflow-y-auto"
+        className="w-96 border-r border-border bg-card overflow-y-auto"
       >
         <ControlPanel />
       </motion.div>
@@ -26,7 +26,7 @@ export function EditorView() {
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="flex-1 flex items-center justify-center bg-gray-900"
+        className="flex-1 flex items-center justify-center bg-background"
       >
         <PreviewPanel />
       </motion.div>
