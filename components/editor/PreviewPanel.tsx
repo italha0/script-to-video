@@ -4,8 +4,8 @@ import { motion } from "framer-motion"
 import { Player } from "@remotion/player"
 import { MessageConversation } from "@/remotion/MessageConversation"
 import { useAppStore } from "@/lib/store"
-import { Smartphone, Play } from "lucide-react"
-import { useState, useMemo } from "react"
+import { Smartphone, Play, Pause } from "lucide-react"
+import { useState, useMemo, useRef, useCallback } from "react"
 
 export function PreviewPanel() {
   const { 
@@ -16,6 +16,7 @@ export function PreviewPanel() {
   } = useAppStore()
   
   const [isPlaying, setIsPlaying] = useState(false)
+  const playerRef = useRef<any>(null)
 
   const inputProps = useMemo(() => ({
     messages: messages.map((m, index) => ({
@@ -34,6 +35,22 @@ export function PreviewPanel() {
   }), [messages, characters, contactName, selectedTheme])
 
   const durationInFrames = Math.max(300, messages.length * 120) // At least 10 seconds, +4 seconds per message
+
+  const handlePlayPause = useCallback(() => {
+    if (playerRef.current) {
+      if (isPlaying) {
+        playerRef.current.pause()
+        setIsPlaying(false)
+      } else {
+        playerRef.current.play()
+        setIsPlaying(true)
+      }
+    }
+  }, [isPlaying])
+
+  const handlePlayerPlayStateChange = useCallback((playing: boolean) => {
+    setIsPlaying(playing)
+  }, [])
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-8">
@@ -74,6 +91,7 @@ export function PreviewPanel() {
               {messages.length > 0 ? (
                 <div className="w-full h-full">
                   <Player
+                    ref={playerRef}
                     component={MessageConversation}
                     durationInFrames={durationInFrames}
                     fps={30}
@@ -83,6 +101,8 @@ export function PreviewPanel() {
                     controls={false}
                     autoPlay={false}
                     loop
+                    onPlay={() => handlePlayerPlayStateChange(true)}
+                    onPause={() => handlePlayerPlayStateChange(false)}
                     style={{
                       width: '100%',
                       height: '100%',
@@ -101,18 +121,22 @@ export function PreviewPanel() {
             </div>
           </div>
 
-          {/* Play Button Overlay (when not playing) */}
-          {messages.length > 0 && !isPlaying && (
+          {/* Play/Pause Button Overlay */}
+          {messages.length > 0 && (
             <motion.button
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={() => setIsPlaying(true)}
+              onClick={handlePlayPause}
               className="absolute inset-0 flex items-center justify-center"
             >
               <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center shadow-lg">
-                <Play className="w-8 h-8 text-white ml-1" />
+                {isPlaying ? (
+                  <Pause className="w-8 h-8 text-white" />
+                ) : (
+                  <Play className="w-8 h-8 text-white ml-1" />
+                )}
               </div>
             </motion.button>
           )}

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2, Download, Sparkles } from "lucide-react"
 import { useAppStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
+import { useEffect, useRef } from "react"
 
 const themes = [
   { id: 'imessage', name: 'iMessage', color: 'bg-blue-500', accent: 'border-blue-500' },
@@ -31,6 +32,19 @@ export function ControlPanel() {
   } = useAppStore()
   
   const { toast } = useToast()
+  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isMountedRef = useRef(true)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current)
+        pollTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   const handleRender = async () => {
     if (messages.length === 0) {
@@ -92,10 +106,20 @@ export function ControlPanel() {
 
   const pollRenderStatus = async (jobId: string) => {
     const poll = async () => {
+      // Check if component is still mounted
+      if (!isMountedRef.current) {
+        return
+      }
+
       try {
         const response = await fetch(`/api/render/${jobId}/status`)
         if (response.ok) {
           const { status, url, error } = await response.json()
+          
+          // Check again if component is still mounted before updating state
+          if (!isMountedRef.current) {
+            return
+          }
           
           if (status === 'done' && url) {
             setRenderProgress({ status: 'done', downloadUrl: url })
@@ -107,14 +131,19 @@ export function ControlPanel() {
             return
           }
           
-          // Continue polling
-          setTimeout(poll, 2000)
+          // Continue polling only if component is still mounted
+          if (isMountedRef.current) {
+            pollTimeoutRef.current = setTimeout(poll, 2000)
+          }
         }
       } catch (error) {
-        setRenderProgress({ 
-          status: 'error', 
-          error: 'Failed to check render status' 
-        })
+        // Only update state if component is still mounted
+        if (isMountedRef.current) {
+          setRenderProgress({ 
+            status: 'error', 
+            error: 'Failed to check render status' 
+          })
+        }
       }
     }
     

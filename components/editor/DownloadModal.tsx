@@ -19,8 +19,13 @@ export function DownloadModal() {
   }
 
   const handleClose = () => {
-    resetRender()
+    // Only allow closing when done or error, not during rendering
+    if (status === 'done' || status === 'error') {
+      resetRender()
+    }
   }
+
+  const canClose = status === 'done' || status === 'error'
 
   const getStatusIcon = () => {
     switch (status) {
@@ -67,7 +72,7 @@ export function DownloadModal() {
   }
 
   return (
-    <Dialog open={isRendering} onOpenChange={handleClose}>
+    <Dialog open={isRendering} onOpenChange={canClose ? handleClose : undefined}>
       <DialogContent className="sm:max-w-md bg-gray-900 border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-semibold">
@@ -157,13 +162,27 @@ export function DownloadModal() {
               </Button>
             )}
             
-            <Button
-              onClick={handleClose}
-              variant="outline"
-              className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
-            >
-              {status === 'done' ? 'Close' : 'Cancel'}
-            </Button>
+            {/* Only show close/cancel button when appropriate */}
+            {canClose && (
+              <Button
+                onClick={handleClose}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+              >
+                {status === 'done' ? 'Close' : 'Cancel'}
+              </Button>
+            )}
+            
+            {/* Show a disabled button during rendering to indicate process is ongoing */}
+            {!canClose && (
+              <Button
+                disabled
+                variant="outline"
+                className="border-gray-600 text-gray-500 cursor-not-allowed opacity-50"
+              >
+                Processing...
+              </Button>
+            )}
           </motion.div>
         </motion.div>
       </DialogContent>
