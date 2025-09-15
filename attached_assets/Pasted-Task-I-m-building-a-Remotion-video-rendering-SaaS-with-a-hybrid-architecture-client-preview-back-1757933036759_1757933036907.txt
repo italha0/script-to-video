@@ -1,0 +1,87 @@
+Task:
+I’m building a Remotion video rendering SaaS with a hybrid architecture (client preview + backend rendering). I need you to implement the following setup and features:
+
+Architecture Plan (Azure Edition)
+
+Frontend (Next.js + Remotion Player)
+
+Add <Player> for instant preview (no backend load).
+
+Store composition JSON (messages, avatars, colors, timestamps).
+
+On “Download” → send JSON to API.
+
+Match UI/UX and layout structure of https://app.clipgoat.com
+ (replicate its dashboard, preview/editor, side panels, and download flow).
+
+Backend API (Next.js API routes or Express)
+
+/api/render: accepts compositionJson, resolution, preset. Saves job in Supabase (status=pending). Returns jobId.
+
+/api/render/:jobId/status: returns job state { pending | rendering | done | failed, url }.
+
+Worker (Azure VM + Docker + BullMQ)
+
+Worker subscribes to Redis queue.
+
+On job: run @remotion/renderer → render video.
+
+Upload rendered video to Azure Blob Storage.
+
+Update Supabase row with status=done + signed URL.
+
+⚠️ Fix issue: jobs are NOT currently saving to Azure Blob Storage. Ensure upload works with correct container, SAS token, and permissions.
+
+Azure Blob Storage
+
+Create videos container.
+
+Upload videos from worker.
+
+Generate SAS URL (1h expiry).
+
+Frontend Download Flow
+
+On “Download”, call /api/render.
+
+Show progress UI (like Clipgoat).
+
+Poll /api/render/:jobId/status.
+
+Once done, show Download button with signed URL.
+
+Optimizations
+
+Add quota system (Supabase row daily_renders, max 5/day).
+
+Add watermark for free tier users (Remotion layer).
+
+Compress to 720p, ~2 Mbps.
+
+Auto-cleanup old blobs (7 days).
+
+Monitoring
+
+Log jobs in Supabase.
+
+Azure Monitor for VM.
+
+Sentry for worker errors.
+
+Fix Needed
+
+My main blocker: rendered jobs are not being saved to Azure Blob Storage. Debug and fix the worker’s upload flow (likely SAS token, container name, or BlockBlobClient usage issue).
+
+Deliverables
+
+Next.js frontend with Clipgoat-style UI replica.
+
+Fully working API + worker pipeline.
+
+Correct Azure Blob upload logic.
+
+End-to-end download flow.
+
+Dockerfile + docker-compose for worker.
+
+👉 Make sure the code runs end-to-end inside Replit, but deployment target is Azure VM (worker) + Azure Blob Storage + Supabase.
