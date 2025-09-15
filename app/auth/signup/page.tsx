@@ -49,7 +49,7 @@ export default function SignUpPage() {
     }
 
     try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fakevideo-beige.vercel.app'
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mockvideo.app'
       const { error } = await supabase.auth.signUp({
         email,
         password,

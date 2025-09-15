@@ -4,8 +4,6 @@
 
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 /*
   ClipGoat Light Theme / Pink Accent Design System
   Light-themed UI with vibrant pink/magenta accent color
