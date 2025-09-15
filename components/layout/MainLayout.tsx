@@ -45,7 +45,7 @@ export function MainLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="flex h-[calc(100vh-4rem)]">
         <Sidebar />

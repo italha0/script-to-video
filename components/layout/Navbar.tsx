@@ -35,7 +35,7 @@ export function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="h-16 border-b border-gray-800 bg-gray-950 backdrop-blur supports-[backdrop-filter]:bg-gray-950/95 px-4 flex items-center justify-between relative z-50"
+      className="h-16 border-b border-border bg-card backdrop-blur supports-[backdrop-filter]:bg-card/95 px-4 flex items-center justify-between relative z-50"
     >
       {/* Left Section */}
       <div className="flex items-center gap-4">
@@ -43,7 +43,7 @@ export function Navbar() {
           variant="ghost"
           size="icon"
           onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
-          className="text-gray-300 hover:text-white hover:bg-gray-800 md:hidden"
+          className="text-muted-foreground hover:text-foreground hover:bg-accent md:hidden"
         >
           <Menu className="w-5 h-5" />
         </Button>

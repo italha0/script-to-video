@@ -39,7 +39,7 @@ export function Sidebar() {
         variants={sidebarVariants}
         animate={isSidebarCollapsed ? "collapsed" : "expanded"}
         transition={{ duration: 0.3 }}
-        className="hidden md:flex flex-col bg-gray-950 border-r border-gray-800 overflow-hidden relative"
+        className="hidden md:flex flex-col bg-card border-r border-border overflow-hidden relative"
       >
         <div className="p-6 space-y-6 h-full flex flex-col">
           {/* Create New Button */}
