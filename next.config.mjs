@@ -4,12 +4,18 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   images: { unoptimized: true },
-  allowedDevOrigins: ['*', '*.replit.dev', '*.repl.co', 'localhost', '127.0.0.1'], // Allow all origins in development for Replit
   
-  experimental: {
-    serverActions: {
-      allowedOrigins: ['*', '*.replit.dev', '*.repl.co', 'localhost', '127.0.0.1']
-    }
+  async headers() {
+    return [
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET,POST,PUT,DELETE,OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization, X-Requested-With" }
+        ]
+      }
+    ];
   },
 
   // NOTE: For Next.js v15+, outputFileTracingIncludes is at the top level, not inside `experimental`.
