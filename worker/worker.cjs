@@ -15,6 +15,11 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!SUPABASE_URL || !SERVICE_KEY) { console.error('Missing Supabase env vars'); process.exit(1); }
 const QUEUE_ENABLED = process.env.RENDER_QUEUE_ENABLED === 'true';
 
+// Quick Azure sanity hint on startup
+if (!process.env.AZURE_STORAGE_CONNECTION_STRING || !process.env.AZURE_STORAGE_ACCOUNT_NAME || !process.env.AZURE_STORAGE_ACCOUNT_KEY) {
+  console.warn('[WORKER] Azure envs missing (no upload possible): AZURE_STORAGE_CONNECTION_STRING, AZURE_STORAGE_ACCOUNT_NAME, AZURE_STORAGE_ACCOUNT_KEY');
+}
+
 // Debug: print which project and role we're using (do not log secrets)
 try {
   const role = JSON.parse(Buffer.from(SERVICE_KEY.split('.')[1], 'base64').toString('utf8')).role;

@@ -16,10 +16,15 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ jobId: str
 	try {
 		const supabase = getSupabaseServiceRole();
 		const { jobId } = await ctx.params;
-		const { data, error } = await supabase.from('video_renders').select('status, url').eq('id', jobId).maybeSingle();
+		const { data, error } = await supabase
+			.from('video_renders')
+			.select('status, url, error_message')
+			.eq('id', jobId)
+			.maybeSingle();
 		if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 		if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-		return NextResponse.json(data);
+		const { status, url, error_message } = data as { status: string; url: string | null; error_message?: string | null };
+		return NextResponse.json({ status, url, error: error_message || undefined });
 	} catch (e: any) {
 		return NextResponse.json({ error: e.message || 'Unknown error' }, { status: 500 });
 	}
