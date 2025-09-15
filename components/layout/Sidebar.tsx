@@ -87,11 +87,11 @@ export function Sidebar() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="p-4 rounded-xl bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-purple-700/30"
+            className="p-4 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 border border-border"
           >
             <div className="flex items-center gap-2 mb-2">
-              <Star className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-semibold text-white">Go Pro</span>
+              <Star className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm font-semibold text-foreground">Go Pro</span>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
               Unlock unlimited renders and premium features

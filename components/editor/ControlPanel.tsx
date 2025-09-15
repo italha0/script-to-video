@@ -158,8 +158,8 @@ export function ControlPanel() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <h1 className="text-2xl font-bold text-white mb-2">Create Video</h1>
-        <p className="text-gray-400 text-sm">
+        <h1 className="text-2xl font-bold text-foreground mb-2">Create Video</h1>
+        <p className="text-muted-foreground text-sm">
           Design your chat conversation and generate a viral video
         </p>
       </motion.div>
@@ -171,15 +171,15 @@ export function ControlPanel() {
         transition={{ delay: 0.2 }}
         className="space-y-3"
       >
-        <Label className="text-sm font-semibold text-gray-300">Contact Name</Label>
-        <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700">
+        <Label className="text-sm font-semibold text-foreground">Contact Name</Label>
+        <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium text-sm">
             {contactName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() || "C"}
           </div>
           <Input
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
-            className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-white"
+            className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground placeholder:text-muted-foreground"
             placeholder="Enter contact name"
           />
         </div>
@@ -192,7 +192,7 @@ export function ControlPanel() {
         transition={{ delay: 0.3 }}
         className="space-y-3"
       >
-        <Label className="text-sm font-semibold text-gray-300">Chat Style</Label>
+        <Label className="text-sm font-semibold text-foreground">Chat Style</Label>
         <div className="grid grid-cols-3 gap-2">
           {themes.map((theme, index) => (
             <motion.button
@@ -205,12 +205,12 @@ export function ControlPanel() {
               onClick={() => setSelectedTheme(theme.id)}
               className={`p-3 rounded-lg border-2 transition-all ${
                 selectedTheme === theme.id 
-                  ? `${theme.accent} bg-gray-800` 
-                  : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                  ? `${theme.accent} bg-card` 
+                  : 'border-border bg-card hover:border-muted-foreground'
               }`}
             >
               <div className={`w-6 h-6 rounded-full ${theme.color} mx-auto mb-1`} />
-              <div className="text-xs font-medium text-gray-300">{theme.name}</div>
+              <div className="text-xs font-medium text-muted-foreground">{theme.name}</div>
             </motion.button>
           ))}
         </div>
@@ -224,12 +224,12 @@ export function ControlPanel() {
         className="space-y-4 flex-1 overflow-y-auto"
       >
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold text-gray-300">Messages</Label>
+          <Label className="text-sm font-semibold text-foreground">Messages</Label>
           <Button
             onClick={addMessage}
             size="sm"
             variant="outline"
-            className="border-gray-700 text-gray-300 hover:text-white hover:border-gray-600"
+            className="border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground"
           >
             <Plus className="w-4 h-4 mr-1" />
             Add
@@ -246,7 +246,7 @@ export function ControlPanel() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 * index }}
-                className={`p-3 rounded-lg border border-gray-700 bg-gray-800 relative ${
+                className={`p-3 rounded-lg border border-border bg-card relative ${
                   isThem ? 'border-l-4 border-l-blue-500' : 'border-l-4 border-l-green-500'
                 }`}
               >
@@ -254,15 +254,15 @@ export function ControlPanel() {
                   value={message.text}
                   onChange={(e) => updateMessage(message.id, e.target.value)}
                   placeholder={isThem ? "Their message..." : "Your message..."}
-                  className="resize-none border-0 bg-transparent focus-visible:ring-0 shadow-none text-white min-h-[60px] text-sm"
+                  className="resize-none border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground min-h-[60px] text-sm"
                 />
                 
                 <div className="flex items-center justify-between mt-3">
-                  <div className="inline-flex p-1 bg-gray-700 rounded-full">
+                  <div className="inline-flex p-1 bg-muted rounded-full">
                     <button
                       onClick={() => toggleMessageSpeaker(message.id, "them")}
                       className={`px-3 py-1 text-xs font-medium rounded-full transition ${
-                        isThem ? "bg-blue-500 text-white" : "text-gray-300 hover:text-white"
+                        isThem ? "bg-blue-500 text-white" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       Them
@@ -270,7 +270,7 @@ export function ControlPanel() {
                     <button
                       onClick={() => toggleMessageSpeaker(message.id, "you")}
                       className={`px-3 py-1 text-xs font-medium rounded-full transition ${
-                        !isThem ? "bg-green-500 text-white" : "text-gray-300 hover:text-white"
+                        !isThem ? "bg-green-500 text-white" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       You
@@ -281,7 +281,7 @@ export function ControlPanel() {
                     onClick={() => deleteMessage(message.id)}
                     size="icon"
                     variant="ghost"
-                    className="text-red-400 hover:text-red-300 hover:bg-red-900/20 w-8 h-8"
+                    className="text-red-600 hover:text-red-600/80 hover:bg-red-100 w-8 h-8"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -291,7 +291,7 @@ export function ControlPanel() {
           })}
           
           {messages.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <p className="text-sm">No messages yet</p>
               <p className="text-xs mt-1">Click "Add" to create your first message</p>
             </div>
@@ -304,7 +304,7 @@ export function ControlPanel() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="pt-4 border-t border-gray-700"
+        className="pt-4 border-t border-border"
       >
         <Button
           onClick={handleRender}

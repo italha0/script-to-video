@@ -11,11 +11,11 @@ export function SettingsView() {
       className="h-full p-8 overflow-y-auto"
     >
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-6">Settings</h1>
-        <div className="bg-gray-800 rounded-xl p-12 text-center border border-gray-700">
-          <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Settings</h2>
-          <p className="text-gray-400">
+        <h1 className="text-3xl font-bold text-foreground mb-6">Settings</h1>
+        <div className="bg-card rounded-xl p-12 text-center border border-border">
+          <Settings className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Settings</h2>
+          <p className="text-muted-foreground">
             App preferences and configuration options will be available here.
           </p>
         </div>

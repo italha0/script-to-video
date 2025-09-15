@@ -73,7 +73,7 @@ export function DownloadModal() {
 
   return (
     <Dialog open={isRendering} onOpenChange={canClose ? handleClose : undefined}>
-      <DialogContent className="sm:max-w-md bg-gray-900 border-gray-700 text-white">
+      <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-semibold">
             {status === 'done' ? 'Download Ready' : 'Generating Video'}
@@ -108,7 +108,7 @@ export function DownloadModal() {
             </p>
             
             {status !== 'error' && status !== 'done' && (
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 This usually takes 30-60 seconds
               </p>
             )}
@@ -126,9 +126,9 @@ export function DownloadModal() {
               >
                 <Progress 
                   value={getProgressValue()} 
-                  className="w-full h-2 bg-gray-700"
+                  className="w-full h-2 bg-muted"
                 />
-                <p className="text-center text-xs text-gray-400">
+                <p className="text-center text-xs text-muted-foreground">
                   {getProgressValue()}% complete
                 </p>
               </motion.div>
@@ -156,7 +156,7 @@ export function DownloadModal() {
               <Button
                 onClick={handleClose}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+                className="border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground"
               >
                 Try Again
               </Button>
@@ -167,7 +167,7 @@ export function DownloadModal() {
               <Button
                 onClick={handleClose}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+                className="border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground"
               >
                 {status === 'done' ? 'Close' : 'Cancel'}
               </Button>
@@ -178,7 +178,7 @@ export function DownloadModal() {
               <Button
                 disabled
                 variant="outline"
-                className="border-gray-600 text-gray-500 cursor-not-allowed opacity-50"
+                className="border-border text-muted-foreground cursor-not-allowed opacity-50"
               >
                 Processing...
               </Button>

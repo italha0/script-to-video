@@ -68,7 +68,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Initial UI State
   isSidebarCollapsed: false,
   activeTab: 'editor',
-  theme: 'dark',
+  theme: 'light',
   
   // Initial Composition State
   characters: [

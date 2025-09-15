@@ -26,8 +26,8 @@ export default function EditorPage() {
   }, [router, setUser, setActiveTab])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="text-center text-white">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center text-foreground">
         <p>Redirecting to editor...</p>
       </div>
     </div>

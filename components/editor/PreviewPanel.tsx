@@ -76,7 +76,7 @@ export function PreviewPanel() {
         >
           {/* Phone Frame */}
           <div className="relative bg-black rounded-[2.5rem] p-4 shadow-2xl shadow-black/50">
-            <div className="bg-gray-900 rounded-[2rem] overflow-hidden relative" style={{ width: 320, height: 568 }}>
+            <div className="bg-black rounded-[2rem] overflow-hidden relative" style={{ width: 320, height: 568 }}>
               
               {/* Notch */}
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-10" />
@@ -101,8 +101,6 @@ export function PreviewPanel() {
                     controls={false}
                     autoPlay={false}
                     loop
-                    onPlay={() => handlePlayerPlayStateChange(true)}
-                    onPause={() => handlePlayerPlayStateChange(false)}
                     style={{
                       width: '100%',
                       height: '100%',
@@ -111,7 +109,7 @@ export function PreviewPanel() {
                   />
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Smartphone className="w-16 h-16 mb-4 opacity-50" />
                   <p className="text-sm text-center px-8">
                     Add messages to see your video preview
@@ -131,7 +129,7 @@ export function PreviewPanel() {
               onClick={handlePlayPause}
               className="absolute inset-0 flex items-center justify-center"
             >
-              <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 bg-black/20 backdrop-blur rounded-full flex items-center justify-center shadow-lg">
                 {isPlaying ? (
                   <Pause className="w-8 h-8 text-white" />
                 ) : (
@@ -149,17 +147,17 @@ export function PreviewPanel() {
           transition={{ delay: 0.4 }}
           className="grid grid-cols-3 gap-4 text-center"
         >
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-            <div className="text-lg font-bold text-white">{messages.length}</div>
-            <div className="text-xs text-gray-400">Messages</div>
+          <div className="bg-card rounded-lg p-3 border border-border">
+            <div className="text-lg font-bold text-foreground">{messages.length}</div>
+            <div className="text-xs text-muted-foreground">Messages</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-            <div className="text-lg font-bold text-white">{Math.ceil(durationInFrames / 30)}s</div>
-            <div className="text-xs text-gray-400">Duration</div>
+          <div className="bg-card rounded-lg p-3 border border-border">
+            <div className="text-lg font-bold text-foreground">{Math.ceil(durationInFrames / 30)}s</div>
+            <div className="text-xs text-muted-foreground">Duration</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-            <div className="text-lg font-bold text-white capitalize">{selectedTheme}</div>
-            <div className="text-xs text-gray-400">Style</div>
+          <div className="bg-card rounded-lg p-3 border border-border">
+            <div className="text-lg font-bold text-foreground capitalize">{selectedTheme}</div>
+            <div className="text-xs text-muted-foreground">Style</div>
           </div>
         </motion.div>
       </motion.div>
