@@ -43,27 +43,52 @@ async function processRender(jobId){
   const inputProps = record.input_props || {};
   // Use system Chromium instead of bundled Chrome Headless Shell
   if (!process.env.REMOTION_BROWSER_EXECUTABLE) {
-    // Try system chromium first
     try {
       const { exec } = require('child_process');
       const { promisify } = require('util');
       const execAsync = promisify(exec);
-      const { stdout: chromiumPath } = await execAsync('which chromium');
-      process.env.REMOTION_BROWSER_EXECUTABLE = chromiumPath.trim();
-      process.env.PUPPETEER_EXECUTABLE_PATH = chromiumPath.trim();
-      console.log('[WORKER] Using system Chromium at', chromiumPath.trim());
-    } catch (e) {
-      console.warn('[WORKER] Could not find system chromium, falling back to serverless', e?.message || e);
-      // Fallback to serverless chromium
-      try {
-        const chromium = require('@sparticuz/chromium');
-        const execPath = await chromium.executablePath();
-        process.env.REMOTION_BROWSER_EXECUTABLE = execPath;
-        process.env.PUPPETEER_EXECUTABLE_PATH = execPath;
-        console.log('[WORKER] Using serverless Chromium at', execPath);
-      } catch (e2) {
-        console.error('[WORKER] Could not resolve any Chromium executable', e2?.message || e2);
+      let foundPath = '';
+      if (process.platform === 'win32') {
+        try {
+          const { stdout } = await execAsync('where chrome');
+          foundPath = (stdout || '').split(/\r?\n/).find(Boolean) || '';
+        } catch {}
+        if (!foundPath) {
+          try {
+            const { stdout } = await execAsync('where msedge');
+            foundPath = (stdout || '').split(/\r?\n/).find(Boolean) || '';
+          } catch {}
+        }
+      } else {
+        try {
+          const { stdout } = await execAsync('which chromium');
+          foundPath = (stdout || '').trim();
+        } catch {}
+        if (!foundPath) {
+          try {
+            const { stdout } = await execAsync('which google-chrome');
+            foundPath = (stdout || '').trim();
+          } catch {}
+        }
       }
+      if (foundPath) {
+        process.env.REMOTION_BROWSER_EXECUTABLE = foundPath.trim();
+        process.env.PUPPETEER_EXECUTABLE_PATH = foundPath.trim();
+        console.log('[WORKER] Using system Chromium/Chrome at', foundPath.trim());
+      } else {
+        // Fallback to serverless chromium
+        try {
+          const chromium = require('@sparticuz/chromium');
+          const execPath = await chromium.executablePath();
+          process.env.REMOTION_BROWSER_EXECUTABLE = execPath;
+          process.env.PUPPETEER_EXECUTABLE_PATH = execPath;
+          console.log('[WORKER] Using serverless Chromium at', execPath);
+        } catch (e2) {
+          console.error('[WORKER] Could not resolve any Chromium executable', e2?.message || e2);
+        }
+      }
+    } catch (e) {
+      console.warn('[WORKER] Browser executable detection errored', e?.message || e);
     }
   }
   const marker = join(process.cwd(),'prebundled','serveUrl.txt');
@@ -106,7 +131,7 @@ async function processRender(jobId){
       ]
     }
   });
-  const blobName = await uploadToAzureBlob(outputPath, `${jobId}.mp4`);
+  const blobName = await uploadToAzureBlob(outputPath, `${jobId}.mp4`, 'videos', 'chat-video.mp4');
   const sasUrl = generateSASUrl(blobName, 60);
   await updateJob(jobId,{ status:'done', url: sasUrl });
 }
@@ -137,7 +162,12 @@ async function pollingSweep(){
     console.log(`[WORKER] sweep: ${Array.isArray(rows)? rows.length: 0} pending`);
     for (const row of rows){
       console.log('[WORKER] processing pending job', row.id);
-      try { await processRender(row.id); } catch(e){ console.error('[WORKER] Fallback processing failed', row.id, e?.message||e); }
+      try {
+        await processRender(row.id);
+      } catch(e){
+        console.error('[WORKER] Fallback processing failed', row.id, e?.message||e);
+        try { await updateJob(row.id, { status: 'error', error_message: (e && e.message) || String(e) }); } catch {}
+      }
     }
     if (!rows || rows.length === 0) {
       // Extra debug: fetch a few recent rows to validate visibility and statuses

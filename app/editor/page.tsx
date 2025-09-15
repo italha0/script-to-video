@@ -55,12 +55,32 @@ export default function EditorPage() {
   const [isLoadingScripts, setIsLoadingScripts] = useState(false)
   const [showLoadDialog, setShowLoadDialog] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState("imessage")
+  const [isOnline, setIsOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine)
 
   const { toast } = useToast()
   const router = useRouter()
   const supabase = createClient()
 
+  // Simple reachability check for our local API (dev/serverless)
+  const pingServer = async (): Promise<'ok' | 'unreachable' | 'offline'> => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return 'offline'
+    try {
+      const ac = new AbortController()
+      const t = setTimeout(() => ac.abort(), 2500)
+      const res = await fetch('/api/health/queue', { cache: 'no-store', signal: ac.signal })
+      clearTimeout(t)
+      if (res.ok) return 'ok'
+      return 'unreachable'
+    } catch {
+      return 'unreachable'
+    }
+  }
+
   useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
@@ -72,12 +92,20 @@ export default function EditorPage() {
       setUser(session?.user ?? null)
       if (session?.user) loadSavedScripts()
     })
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
   }, [])
 
   const loadSavedScripts = async () => {
     setIsLoadingScripts(true)
     try {
+      if (!isOnline) {
+        toast({ title: "You are offline", description: "Reconnect to load your saved scripts.", variant: "destructive" })
+        return
+      }
       const { data, error } = await supabase.from("saved_scripts").select("*").order("updated_at", { ascending: false })
       if (error) throw error
       setSavedScripts(data || [])
@@ -128,6 +156,19 @@ export default function EditorPage() {
 
   const downloadFramesJson = async () => {
     if (messages.length === 0) { toast({ title: "No messages", variant: "destructive" }); return }
+    const reachability = await pingServer()
+    if (reachability === 'offline') {
+      toast({ title: 'You are offline', description: 'Reconnect to generate the video.', variant: 'destructive' });
+      return
+    }
+    if (reachability === 'unreachable') {
+      toast({
+        title: 'Local API not reachable',
+        description: 'Ensure the dev server is running (pnpm dev) and DevTools Network is not set to Offline.',
+        variant: 'destructive'
+      })
+      return
+    }
     setIsGeneratingVideo(true)
     try {
       // Request a render job
@@ -203,6 +244,11 @@ export default function EditorPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8 lg:py-10">
+        {!isOnline && (
+          <div className="mb-4 rounded-md border border-red-300 bg-red-50 text-red-800 px-4 py-2 text-sm">
+            You are offline. Some features won’t work until you reconnect.
+          </div>
+        )}
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground transition-colors mb-8">
           <ArrowLeft className="w-4 h-4" />

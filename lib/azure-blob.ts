@@ -14,7 +14,12 @@ function getBlobServiceClient() {
   return blobServiceClient;
 }
 
-export async function uploadToAzureBlob(filePath: string, blobName: string, containerName = 'videos'): Promise<string> {
+export async function uploadToAzureBlob(
+  filePath: string,
+  blobName: string,
+  containerName = 'videos',
+  downloadFilename?: string
+): Promise<string> {
   const client = getBlobServiceClient();
   const container = client.getContainerClient(containerName);
   await container.createIfNotExists();
@@ -22,9 +27,12 @@ export async function uploadToAzureBlob(filePath: string, blobName: string, cont
     // naive ensure extension
     blobName += extname(filePath) || '.mp4';
   }
+  const contentDisposition = downloadFilename ? `attachment; filename="${downloadFilename}"` : undefined;
   const blockBlob = container.getBlockBlobClient(blobName);
   const stream = createReadStream(filePath);
-  await blockBlob.uploadStream(stream, 4 * 1024 * 1024, 5, { blobHTTPHeaders: { blobContentType: 'video/mp4' } });
+  await blockBlob.uploadStream(stream, 4 * 1024 * 1024, 5, {
+    blobHTTPHeaders: { blobContentType: 'video/mp4', contentDisposition },
+  });
   return blockBlob.name; // return just the blob name; caller can build SAS URL
 }
 

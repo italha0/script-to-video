@@ -15,17 +15,25 @@ interface ToolDef {
   special?: boolean
   previewImg?: string
 }
+
+// Import the User type from Supabase
+import type { User } from "@supabase/supabase-js"
+
 // Single tool only (updated preview image path). Place your screenshot at /public/screenshots/fake-text-preview.png
 const TOOLS: ToolDef[] = [
   { id: "fake-text", title: "Fake Text Messages", description: "Use AI Text to Speech to bring text messages to life", icon: MessageCircleMore, href: "/editor", colorClass: "bg-gradient-to-r from-[#c8c9ff] to-[#9fa2ff]", special: true, previewImg: "/fake-text-preview.png" }
 ]
 
 export default function DashboardHome() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      setUser(data.user)
+    }
+    fetchUser()
   }, [])
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Creator"
   
@@ -39,8 +47,8 @@ export default function DashboardHome() {
           </div>
           <span className="font-semibold">Mockvideo</span>
         </div>
-        <Button className="w-full text-sm font-medium shadow-none" size="sm">
-          + Create new
+        <Button asChild className="w-full text-sm font-medium shadow-none" size="sm">
+          <Link href="/editor">+ Create new</Link>
         </Button>
         <div className="rounded-xl p-4 bg-gradient-to-br from-pink-50 to-purple-50 border border-primary/20 flex flex-col gap-3">
           <div className="text-sm font-semibold text-foreground">Get more credits</div>
