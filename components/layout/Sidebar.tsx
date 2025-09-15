@@ -70,8 +70,8 @@ export function Sidebar() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800 transition-colors",
-                    activeTab === item.id && "bg-gray-800 text-white"
+                    "w-full justify-start text-muted-foreground hover:text-foreground hover:bg-accent transition-colors",
+                    activeTab === item.id && "bg-accent text-foreground"
                   )}
                   onClick={() => setActiveTab(item.id)}
                 >
@@ -93,7 +93,7 @@ export function Sidebar() {
               <Star className="w-4 h-4 text-yellow-400" />
               <span className="text-sm font-semibold text-white">Go Pro</span>
             </div>
-            <p className="text-xs text-gray-300 mb-3">
+            <p className="text-xs text-muted-foreground mb-3">
               Unlock unlimited renders and premium features
             </p>
             <Button 
@@ -111,7 +111,7 @@ export function Sidebar() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-950 border-t border-gray-800 p-4"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border p-4"
       >
         <div className="flex items-center justify-around">
           {navItems.slice(0, 4).map((item) => (
@@ -120,8 +120,8 @@ export function Sidebar() {
               variant="ghost"
               size="icon"
               className={cn(
-                "text-gray-400 hover:text-white",
-                activeTab === item.id && "text-white bg-gray-800"
+                "text-muted-foreground hover:text-foreground",
+                activeTab === item.id && "text-foreground bg-accent"
               )}
               onClick={() => setActiveTab(item.id)}
             >

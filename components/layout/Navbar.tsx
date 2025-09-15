@@ -55,7 +55,7 @@ export function Navbar() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
             <MessageSquare className="w-4 h-4 text-white" />
           </div>
-          <span className="text-xl font-bold text-white hidden sm:block">
+          <span className="text-xl font-bold text-foreground hidden sm:block">
             ChatVideo
           </span>
         </motion.div>
@@ -65,9 +65,9 @@ export function Navbar() {
       <div className="flex items-center gap-3">
         {user && (
           <>
-            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-300">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
               <span>Welcome back,</span>
-              <span className="text-white font-medium">
+              <span className="text-foreground font-medium">
                 {user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
               </span>
             </div>
@@ -76,7 +76,7 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-300 hover:text-white hover:bg-gray-800"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent"
               >
                 <Settings className="w-4 h-4" />
               </Button>
@@ -85,7 +85,7 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={handleSignOut}
-                className="text-gray-300 hover:text-white hover:bg-gray-800"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
@@ -97,7 +97,7 @@ export function Navbar() {
           <Button
             variant="outline"
             size="sm"
-            className="border-gray-700 text-gray-300 hover:text-white hover:border-gray-600"
+            className="border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground"
             onClick={() => router.push("/auth/login")}
           >
             Sign In
