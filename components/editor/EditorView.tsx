@@ -16,7 +16,7 @@ export function EditorView() {
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-96 border-r border-border bg-card overflow-y-auto"
+        className="w-[35rem] border-r border-border bg-card overflow-y-auto"
       >
         <ControlPanel />
       </motion.div>

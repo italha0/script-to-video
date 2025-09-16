@@ -6,6 +6,22 @@ import { createReadStream } from 'fs';
 
 let blobServiceClient: any = null;
 
+function parseConnectionString(connStr: string): { accountName: string; accountKey: string } {
+  const parts = Object.fromEntries(
+    connStr.split(';')
+      .map((kv) => kv.trim())
+      .filter(Boolean)
+      .map((kv) => {
+        const idx = kv.indexOf('=');
+        return idx === -1 ? [kv, ''] : [kv.slice(0, idx), kv.slice(idx + 1)];
+      })
+  ) as any;
+  const accountName = parts.AccountName || parts.accountname;
+  const accountKey = parts.AccountKey || parts.accountkey;
+  if (!accountName || !accountKey) throw new Error('Invalid AZURE_STORAGE_CONNECTION_STRING: missing AccountName/AccountKey');
+  return { accountName, accountKey };
+}
+
 function getBlobServiceClient() {
   if (blobServiceClient) return blobServiceClient;
   const connStr = process.env.AZURE_STORAGE_CONNECTION_STRING;
@@ -37,9 +53,20 @@ export async function uploadToAzureBlob(
 }
 
 export function generateSASUrl(blobName: string, expiryMinutes = 60, containerName = 'videos'): string {
-  const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
-  const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY;
-  if (!accountName || !accountKey) throw new Error('AZURE_STORAGE_ACCOUNT_NAME & AZURE_STORAGE_ACCOUNT_KEY required');
+  // Prefer deriving creds from the same connection string used for upload to avoid mismatches
+  const connStr = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  let accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+  let accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY;
+  if (connStr) {
+    try {
+      const parsed = parseConnectionString(connStr);
+      accountName = parsed.accountName;
+      accountKey = parsed.accountKey;
+    } catch (e) {
+      // Fall back to explicit envs if parsing fails
+    }
+  }
+  if (!accountName || !accountKey) throw new Error('AZURE storage credentials required (set AZURE_STORAGE_CONNECTION_STRING or AZURE_STORAGE_ACCOUNT_NAME/AZURE_STORAGE_ACCOUNT_KEY)');
   const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
   const expiresOn = new Date(Date.now() + expiryMinutes * 60 * 1000);
   const sas = generateBlobSASQueryParameters({
