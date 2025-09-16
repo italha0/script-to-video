@@ -77,16 +77,6 @@ export function PreviewPanel() {
           {/* Phone Frame */}
           <div className="relative bg-black rounded-[2.5rem] p-4 shadow-2xl shadow-black/50">
             <div className="bg-black rounded-[2rem] overflow-hidden relative" style={{ width: 320, height: 568 }}>
-              
-              {/* Notch */}
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-10" />
-              
-              {/* Status Bar */}
-              <div className="absolute top-2 left-4 right-4 flex justify-between items-center text-white text-xs font-semibold z-10">
-                <span>9:41</span>
-                <span>100%</span>
-              </div>
-
               {/* Video Preview */}
               {messages.length > 0 ? (
                 <div className="w-full h-full">
@@ -118,7 +108,6 @@ export function PreviewPanel() {
               )}
             </div>
           </div>
-
           {/* Play/Pause Button Overlay */}
           {messages.length > 0 && (
             <motion.button
@@ -138,27 +127,6 @@ export function PreviewPanel() {
               </div>
             </motion.button>
           )}
-        </motion.div>
-
-        {/* Info Cards */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="grid grid-cols-3 gap-4 text-center"
-        >
-          <div className="bg-card rounded-lg p-3 border border-border">
-            <div className="text-lg font-bold text-foreground">{messages.length}</div>
-            <div className="text-xs text-muted-foreground">Messages</div>
-          </div>
-          <div className="bg-card rounded-lg p-3 border border-border">
-            <div className="text-lg font-bold text-foreground">{Math.ceil(durationInFrames / 30)}s</div>
-            <div className="text-xs text-muted-foreground">Duration</div>
-          </div>
-          <div className="bg-card rounded-lg p-3 border border-border">
-            <div className="text-lg font-bold text-foreground capitalize">{selectedTheme}</div>
-            <div className="text-xs text-muted-foreground">Style</div>
-          </div>
         </motion.div>
       </motion.div>
     </div>
