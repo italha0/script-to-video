@@ -12,8 +12,29 @@ export function DownloadModal() {
   
   const { isRendering, status, progress, downloadUrl, error } = renderProgress
 
-  const handleDownload = () => {
-    if (downloadUrl) {
+  const handleDownload = async () => {
+    if (!downloadUrl) return
+    try {
+      const u = new URL(downloadUrl)
+      const isAzure = u.hostname.endsWith('.blob.core.windows.net')
+      if (isAzure) {
+        const pathParts = u.pathname.split('/').filter(Boolean)
+        if (pathParts.length >= 2 && pathParts[0] === 'videos') {
+          const blobName = decodeURIComponent(pathParts.slice(1).join('/'))
+          const resp = await fetch(`/api/get-download-url?blobName=${encodeURIComponent(blobName)}`)
+          if (resp.ok) {
+            const { url } = await resp.json()
+            if (url && typeof url === 'string') {
+              window.location.href = url
+              return
+            }
+          }
+        }
+      }
+      // Fallback to original URL if not Azure or re-sign failed
+      window.location.href = downloadUrl
+    } catch {
+      // Any parsing/fetch issues -> fallback
       window.location.href = downloadUrl
     }
   }
