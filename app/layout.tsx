@@ -7,7 +7,9 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "ChatVideo - Turn Chat Scripts into Viral Videos",
+  title: "ChatVideo - Turn Chat Scripts into Viral Videos", icons: {
+    icon: '/logo.png',   // points to /public/favicon.ico
+  },
   description:
     "Create engaging TikTok, Instagram Reels, and YouTube Shorts from chat conversations. No video editing skills required.",
   generator: "v0.app",

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 import { 
   Menu, 
   User, 
@@ -52,12 +53,7 @@ export function Navbar() {
           className="flex items-center gap-3"
           whileHover={{ scale: 1.05 }}
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-            <MessageSquare className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-xl font-bold text-foreground hidden sm:block">
-            ChatVideo
-          </span>
+          <Image src="/logo.png" alt="logo" width={100} height={100} />
         </motion.div>
       </div>
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { generateSASUrl } from '@/lib/azure-blob';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ jobId: stri
     while (Date.now() - start < maxWaitMs) {
       const { data, error } = await supabase
         .from('video_renders')
-        .select('status, url')
+        .select('status, url, blob_name')
   .eq('id', jobId)
         .maybeSingle();
 
