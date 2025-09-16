@@ -10,6 +10,7 @@ import { useAppStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useRef } from "react"
 import Image from 'next/image';
+import { createClient } from "@/lib/supabase/client"
 
 const themes = [
   { id: 'imessage', name: 'iMessage', image: '/Imessage.png', accent: 'border-blue-500' },
@@ -48,6 +49,22 @@ export function ControlPanel() {
   }, [])
 
   const handleRender = async () => {
+    // First, ensure the user is authenticated; otherwise redirect to login
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        const redirect = encodeURIComponent('/editor')
+        window.location.href = `/auth/login?redirect=${redirect}`
+        return
+      }
+    } catch {
+      // On any auth check error, fall back to login redirect as a safe default
+      const redirect = encodeURIComponent('/editor')
+      window.location.href = `/auth/login?redirect=${redirect}`
+      return
+    }
+
     if (messages.length === 0) {
       toast({
         title: "No messages",
