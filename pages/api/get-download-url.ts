@@ -98,6 +98,7 @@ export default async function handler(
         startsOn,
         expiresOn,
         protocol: SASProtocol.Https,
+        version: '2023-11-03',
       },
       sharedKeyCredential
     ).toString();

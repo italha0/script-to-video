@@ -44,7 +44,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ jobId: stri
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-      const { status, url: sasUrl, blob_name } = data as { status: string; url: string | null; blob_name?: string | null };
+  const { status, url: sasUrl, blob_name } = data as { status: string; url: string | null; blob_name?: string | null };
       lastStatus = status;
 
       if (status === 'done' && (sasUrl || blob_name)) {

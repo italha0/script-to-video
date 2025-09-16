@@ -19,23 +19,26 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ jobId: str
 		const { jobId } = await ctx.params;
 		const { data, error } = await supabase
 			.from('video_renders')
-		.select('status, url, error_message')
+	.select('status, url, blob_name, error_message')
 			.eq('id', jobId)
 			.maybeSingle();
 		if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 		if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-				const { status, url, error_message } = data as { status: string; url: string | null; error_message?: string | null };
+						const { status, url, blob_name, error_message } = data as { status: string; url: string | null; blob_name?: string | null; error_message?: string | null };
 				let finalUrl = url || null;
-				if (status === 'done' && url) {
+						if (status === 'done') {
 					try {
-						const u = new URL(url);
-						if (u.hostname.endsWith('.blob.core.windows.net')) {
-							const parts = u.pathname.split('/').filter(Boolean);
-							if (parts.length >= 2 && parts[0] === 'videos') {
-								const blobName = decodeURIComponent(parts.slice(1).join('/'));
-								finalUrl = generateSASUrl(blobName, 60);
-							}
-						}
+								let blobName: string | null = blob_name || null;
+								if (!blobName && url) {
+									const u = new URL(url);
+									if (u.hostname.endsWith('.blob.core.windows.net')) {
+										const parts = u.pathname.split('/').filter(Boolean);
+										if (parts.length >= 2 && parts[0] === 'videos') {
+											blobName = decodeURIComponent(parts.slice(1).join('/'));
+										}
+									}
+								}
+								if (blobName) finalUrl = generateSASUrl(blobName, 60);
 					} catch {
 						// leave finalUrl as-is on parse/generation errors
 					}

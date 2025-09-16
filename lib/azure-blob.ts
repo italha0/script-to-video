@@ -53,6 +53,7 @@ export async function uploadToAzureBlob(
 }
 
 export function generateSASUrl(blobName: string, expiryMinutes = 60, containerName = 'videos'): string {
+  const SAS_VERSION = '2023-11-03';
   // Prefer deriving creds from the same connection string used for upload to avoid mismatches
   const connStr = process.env.AZURE_STORAGE_CONNECTION_STRING;
   let accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
@@ -76,6 +77,7 @@ export function generateSASUrl(blobName: string, expiryMinutes = 60, containerNa
     startsOn: new Date(Date.now() - 5 * 60 * 1000),
     expiresOn,
     protocol: SASProtocol.Https,
+    version: SAS_VERSION,
   }, sharedKeyCredential).toString();
   return `https://${accountName}.blob.core.windows.net/${containerName}/${encodeURIComponent(blobName)}?${sas}`;
 }
