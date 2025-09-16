@@ -9,11 +9,12 @@ import { Plus, Trash2, Download, Sparkles } from "lucide-react"
 import { useAppStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useRef } from "react"
+import Image from 'next/image';
 
 const themes = [
-  { id: 'imessage', name: 'iMessage', color: 'bg-blue-500', accent: 'border-blue-500' },
-  { id: 'whatsapp', name: 'WhatsApp', color: 'bg-green-500', accent: 'border-green-500' },
-  { id: 'snapchat', name: 'Snapchat', color: 'bg-yellow-400', accent: 'border-yellow-400' }
+  { id: 'imessage', name: 'iMessage', image: '/Imessage.png', accent: 'border-blue-500' },
+  { id: 'whatsapp', name: 'WhatsApp', image: '/WhatsApp.webp',accent: 'border-green-500' },
+  { id: 'snapchat', name: 'Snapchat', image: '/snapchat.jpg', accent: 'border-yellow-400' }
 ] as const
 
 export function ControlPanel() {
@@ -216,8 +217,12 @@ export function ControlPanel() {
                   : 'border-border bg-card hover:border-muted-foreground'
               }`}
             >
-              <div className={`w-6 h-6 rounded-full ${theme.color} mx-auto mb-1`} />
-              <div className="text-xs font-medium text-muted-foreground">{theme.name}</div>
+              <Image
+                src={theme.image}   // no need for template literal if it's already a string
+                width={50}
+                height={50}
+                alt="logo"
+              />              <div className="text-xs font-medium text-muted-foreground">{theme.name}</div>
             </motion.button>
           ))}
         </div>
