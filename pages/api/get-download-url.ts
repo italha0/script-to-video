@@ -10,6 +10,27 @@ type Data = { url: string } | { error: string };
 
 const CONTAINER_NAME = 'videos';
 
+function parseConnectionString(connStr: string): { accountName: string; accountKey: string } | null {
+  try {
+    const parts = Object.fromEntries(
+      connStr
+        .split(';')
+        .map((kv) => kv.trim())
+        .filter(Boolean)
+        .map((kv) => {
+          const idx = kv.indexOf('=');
+          return idx === -1 ? [kv, ''] : [kv.slice(0, idx), kv.slice(idx + 1)];
+        })
+    ) as any;
+    const accountName = parts.AccountName || parts.accountname;
+    const accountKey = parts.AccountKey || parts.accountkey;
+    if (!accountName || !accountKey) return null;
+    return { accountName, accountKey };
+  } catch {
+    return null;
+  }
+}
+
 function encodeBlobPath(blobName: string): string {
   return blobName
     .split('/')
@@ -36,13 +57,19 @@ export default async function handler(
   res.setHeader('Cache-Control', 'no-store');
 
   try {
-    const accountName = process.env.AZURE_STORAGE_ACCOUNT;
-    const accountKey = process.env.AZURE_STORAGE_KEY;
+    let accountName = process.env.AZURE_STORAGE_ACCOUNT || process.env.AZURE_STORAGE_ACCOUNT_NAME;
+    let accountKey = process.env.AZURE_STORAGE_KEY || process.env.AZURE_STORAGE_ACCOUNT_KEY;
+    const connStr = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    if ((!accountName || !accountKey) && connStr) {
+      const parsed = parseConnectionString(connStr);
+      if (parsed) {
+        accountName = parsed.accountName;
+        accountKey = parsed.accountKey;
+      }
+    }
 
     if (!accountName || !accountKey) {
-      return res
-        .status(500)
-        .json({ error: 'Storage is not configured on the server.' });
+      return res.status(500).json({ error: 'Storage is not configured on the server.' });
     }
 
     const blobNameRaw = Array.isArray(req.query.blobName)

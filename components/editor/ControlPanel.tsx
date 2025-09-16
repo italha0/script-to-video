@@ -211,7 +211,7 @@ export function ControlPanel() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 + index * 0.1 }}
               onClick={() => setSelectedTheme(theme.id)}
-              className={`p-3 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded-lg border-2 transition-all  ${
                 selectedTheme === theme.id 
                   ? `${theme.accent} bg-card` 
                   : 'border-border bg-card hover:border-muted-foreground'
@@ -222,7 +222,9 @@ export function ControlPanel() {
                 width={50}
                 height={50}
                 alt="logo"
-              />              <div className="text-xs font-medium text-muted-foreground">{theme.name}</div>
+                className="mx-auto"
+              />
+              <div className="text-lg font-medium text-muted-foreground">{theme.name}</div>
             </motion.button>
           ))}
         </div>

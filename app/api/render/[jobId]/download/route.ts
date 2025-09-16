@@ -44,12 +44,36 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ jobId: stri
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-      const { status, url: sasUrl } = data as { status: string; url: string | null };
+      const { status, url: sasUrl, blob_name } = data as { status: string; url: string | null; blob_name?: string | null };
       lastStatus = status;
 
-      if (status === 'done' && sasUrl) {
-        // 302 redirect to SAS URL for direct download
-        const resp = NextResponse.redirect(sasUrl, 302);
+      if (status === 'done' && (sasUrl || blob_name)) {
+        // Prefer generating a fresh SAS to avoid stale/invalid tokens
+        let blobName: string | null = null;
+        if (blob_name && typeof blob_name === 'string') {
+          blobName = blob_name;
+        } else if (sasUrl) {
+          try {
+            const u = new URL(sasUrl);
+            if (u.hostname.endsWith('.blob.core.windows.net')) {
+              const parts = u.pathname.split('/').filter(Boolean);
+              if (parts.length >= 2 && parts[0] === 'videos') {
+                blobName = decodeURIComponent(parts.slice(1).join('/'));
+              }
+            }
+          } catch {}
+        }
+
+        let finalUrl = sasUrl || '';
+        if (blobName) {
+          try {
+            finalUrl = generateSASUrl(blobName, 60);
+          } catch {
+            // Fall back to stored URL if re-signing fails
+          }
+        }
+
+        const resp = NextResponse.redirect(finalUrl, 302);
         resp.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
         resp.headers.set('Pragma', 'no-cache');
         return resp;

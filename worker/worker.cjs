@@ -138,7 +138,8 @@ async function processRender(jobId){
   });
   const blobName = await uploadToAzureBlob(outputPath, `${jobId}.mp4`, 'videos', 'chat-video.mp4');
   const sasUrl = generateSASUrl(blobName, 60);
-  await updateJob(jobId,{ status:'done', url: sasUrl });
+  const baseUrl = typeof sasUrl === 'string' ? sasUrl.split('?')[0] : '';
+  await updateJob(jobId,{ status:'done', url: baseUrl });
 }
 let worker = null;
 if (QUEUE_ENABLED) {
