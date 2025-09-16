@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { createClient } from "@/lib/supabase/client"
 
 const themes = [
-  { id: 'imessage', name: 'iMessage', image: '/Imessage.png', accent: 'border-blue-500' },
+  { id: 'imessage', name: 'iMessage', image: '/IMessage.png', accent: 'border-blue-500' },
   { id: 'whatsapp', name: 'WhatsApp', image: '/WhatsApp.webp',accent: 'border-green-500' },
   { id: 'snapchat', name: 'Snapchat', image: '/snapchat.jpg', accent: 'border-yellow-400' }
 ] as const
