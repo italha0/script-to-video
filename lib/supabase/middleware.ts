@@ -31,8 +31,9 @@ export async function updateSession(request: NextRequest) {
     error,
   } = await supabase.auth.getUser()
 
-  // Redirect unauthenticated users from protected routes and preserve original destination
-  if (!user && (request.nextUrl.pathname.startsWith("/editor") || request.nextUrl.pathname.startsWith("/dashboard"))) {
+  // Redirect unauthenticated users from protected pages and preserve original destination
+  const isProtectedPage = request.nextUrl.pathname.startsWith("/editor") || request.nextUrl.pathname.startsWith("/dashboard")
+  if (!user && isProtectedPage) {
     const url = request.nextUrl.clone()
     const redirect = request.nextUrl.pathname + (request.nextUrl.search || "")
     // Validate redirect parameter to ensure it's an internal path

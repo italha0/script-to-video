@@ -78,6 +78,13 @@ export function ControlPanel() {
         }),
       })
 
+      if (response.status === 401) {
+        // Redirect to login, preserving return path
+        const redirect = encodeURIComponent('/editor')
+        window.location.href = `/auth/login?redirect=${redirect}`
+        return
+      }
+
       if (response.status === 202) {
         const { jobId, statusUrl } = await response.json()
         setRenderProgress({ jobId, status: 'rendering' })

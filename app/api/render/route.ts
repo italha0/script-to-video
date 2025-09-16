@@ -30,6 +30,12 @@ export async function POST(req: NextRequest) {
 		if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 			return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
 		}
+		// Require authentication before allowing render
+		const authedForCheck = await createAuthedClient();
+		const { data: { user: currentUser } } = await authedForCheck.auth.getUser();
+		if (!currentUser) {
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
 		const queueEnabled = process.env.RENDER_QUEUE_ENABLED === 'true';
 		if (queueEnabled && !process.env.REDIS_URL) {
 			return NextResponse.json({ error: 'Server not configured (REDIS_URL missing)' }, { status: 500 });
@@ -40,10 +46,8 @@ export async function POST(req: NextRequest) {
 		}
 		const compositionId = body.compositionId || 'MessageConversation';
 		const jobId = randomUUID();
-		// Try to resolve current user from cookies (optional)
-		const authed = await createAuthedClient();
-		const { data: userData } = await authed.auth.getUser();
-		const userId = userData?.user?.id ?? null;
+		// Current user is required
+		const userId = currentUser.id;
 
 		// Basic shape stored in DB (table to be created separately): video_renders
 		const supabase = getSupabaseServiceRole();

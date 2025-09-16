@@ -23,6 +23,12 @@ export async function POST(request: NextRequest) {
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
     }
+    // Require authentication
+    const authedForCheck = await createAuthedClient();
+    const { data: { user: currentUser } } = await authedForCheck.auth.getUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body: RequestBody = await request.json();
     const { characters, messages, theme = 'imessage', contactName } = body;
     
@@ -49,10 +55,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Server not configured (REDIS_URL missing)' }, { status: 500 });
     }
 
-    // Resolve user (optional)
-    const authed = await createAuthedClient();
-    const { data: userData } = await authed.auth.getUser();
-    const userId = userData?.user?.id ?? null;
+  // Resolve user (required)
+  const userId = currentUser.id;
 
     // Create DB record and enqueue
     const jobId = randomUUID();
