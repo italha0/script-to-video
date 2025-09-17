@@ -97,11 +97,15 @@ async function processRender(jobId){
     }
   }
   const marker = join(process.cwd(),'prebundled','serveUrl.txt');
+  const preferPrebundled = process.env.REMOTION_USE_PREBUNDLED === 'true';
   let serveUrl = null;
-  if (existsSync(marker)) serveUrl = readFileSync(marker,'utf-8').trim();
-  else {
+  if (preferPrebundled && existsSync(marker)) {
+    serveUrl = readFileSync(marker,'utf-8').trim();
+    console.log('[WORKER] Using prebundled Remotion from', marker);
+  } else {
     const { bundle } = require('@remotion/bundler');
     serveUrl = await bundle(join(process.cwd(),'remotion','index.ts'));
+    console.log('[WORKER] Bundled fresh Remotion project');
   }
   const comps = await getCompositions(serveUrl, { inputProps });
   const comp = comps.find(c=> c.id === compositionId);

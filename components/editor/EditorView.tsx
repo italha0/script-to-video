@@ -35,7 +35,7 @@ export function EditorView() {
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`w-full md:w-[35rem] md:border-r border-border bg-card overflow-y-auto md:block ${mobileTab === 'edit' ? 'block' : 'hidden'}`}
+        className={`w-full md:w-[40rem] md:border-r border-border bg-card overflow-y-auto md:block ${mobileTab === 'edit' ? 'block' : 'hidden'}`}
       >
         <ControlPanel />
       </motion.div>

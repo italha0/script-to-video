@@ -31,7 +31,8 @@ export function PreviewPanel() {
     ],
     theme: selectedTheme,
     contactName,
-    isPro: false
+    isPro: false,
+    alwaysShowKeyboard: true
   }), [messages, characters, contactName, selectedTheme])
 
   const durationInFrames = Math.max(300, messages.length * 120) // At least 10 seconds, +4 seconds per message
@@ -60,55 +61,32 @@ export function PreviewPanel() {
         transition={{ duration: 0.6 }}
         className="space-y-6"
       >
-        {/* Header */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-2">Preview</h2>
-          <p className="text-muted-foreground text-sm">
-            See how your video will look
-          </p>
-        </div>
+        {/* Header hidden to match screenshot */}
 
         {/* Phone Frame with Preview */}
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.3 }}
-          className="relative"
-        >
-          {/* Phone Frame */}
-          <div className="relative bg-black rounded-[2.5rem] p-3 md:p-4 shadow-2xl shadow-black/50">
-            <div
-              className="bg-black rounded-[2rem] overflow-hidden relative w-[280px] h-[497px] sm:w-[300px] sm:h-[533px] md:w-[320px] md:h-[568px]"
-            >
-              {/* Video Preview */}
-              {messages.length > 0 ? (
-                <div className="w-full h-full">
-                  <Player
-                    ref={playerRef}
-                    component={MessageConversation}
-                    durationInFrames={durationInFrames}
-                    fps={30}
-                    compositionWidth={390}
-                    compositionHeight={844}
-                    inputProps={inputProps}
-                    controls={false}
-                    autoPlay={false}
-                    loop
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain'
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                  <Smartphone className="w-16 h-16 mb-4 opacity-50" />
-                  <p className="text-sm text-center px-8">
-                    Add messages to see your video preview
-                  </p>
-                </div>
-              )}
-            </div>
+        <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.3 }} className="relative">
+          {/* Composition viewport only (MessageConversation includes its own phone) */}
+          <div className="relative w-[320px] h-[600px]">
+            {messages.length > 0 ? (
+              <Player
+                ref={playerRef}
+                component={MessageConversation}
+                durationInFrames={durationInFrames}
+                fps={30}
+                compositionWidth={390}
+                compositionHeight={844}
+                inputProps={inputProps}
+                controls={false}
+                autoPlay={false}
+                loop
+                style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent', backgroundColor: 'transparent' }}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <Smartphone className="w-16 h-16 mb-4 opacity-50" />
+                <p className="text-sm text-center px-8">Add messages to see your video preview</p>
+              </div>
+            )}
           </div>
           {/* Play/Pause Button Overlay */}
           {messages.length > 0 && (
@@ -130,6 +108,11 @@ export function PreviewPanel() {
             </motion.button>
           )}
         </motion.div>
+
+        {/* Low-res preview label */}
+        <div className="w-full flex items-center justify-center">
+          <div className="px-4 py-2 rounded-full bg-black text-white/90 text-sm shadow-sm">Low-res preview</div>
+        </div>
       </motion.div>
     </div>
   )

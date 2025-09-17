@@ -5,25 +5,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash2, Download, Sparkles } from "lucide-react"
+import { Plus, Trash2, Sparkles } from "lucide-react"
 import { useAppStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useRef } from "react"
-import Image from 'next/image';
 import { createClient } from "@/lib/supabase/client"
 
-const themes = [
-  { id: 'imessage', name: 'iMessage', image: '/IMessage.png', accent: 'border-blue-500' },
-  { id: 'whatsapp', name: 'WhatsApp', image: '/WhatsApp.webp',accent: 'border-green-500' },
-  { id: 'snapchat', name: 'Snapchat', image: '/snapchat.jpg', accent: 'border-yellow-400' }
-] as const
+// Theme selection is fixed to iMessage per new design
 
 export function ControlPanel() {
   const {
     contactName,
     setContactName,
     selectedTheme,
-    setSelectedTheme,
     messages,
     addMessage,
     updateMessage,
@@ -97,7 +91,7 @@ export function ControlPanel() {
       })
 
       if (response.status === 401) {
-        // Redirect to login, preserving return path
+        
         const redirect = encodeURIComponent('/editor')
         window.location.href = `/auth/login?redirect=${redirect}`
         return
@@ -145,7 +139,7 @@ export function ControlPanel() {
           if (!isMountedRef.current) {
             return
           }
-          
+
           if (status === 'done' && url) {
             setRenderProgress({ status: 'done', downloadUrl: url })
             return
@@ -176,17 +170,23 @@ export function ControlPanel() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6 h-full pb-28 md:pb-6">
+  <div className="p-6 space-y-6 h-full pb-28 md:pb-6">
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <h1 className="text-2xl font-bold text-foreground mb-2">Create Video</h1>
-        <p className="text-muted-foreground text-sm">
-          Design your chat conversation and generate a viral video
-        </p>
+        <div className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+            CREATE A FAKE
+            <br />
+            <span className="">iMESSAGE VIDEO</span>
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Type in any story you’d like to be told in the video
+          </p>
+        </div>
       </motion.div>
 
       {/* Contact Name */}
@@ -196,54 +196,17 @@ export function ControlPanel() {
         transition={{ delay: 0.2 }}
         className="space-y-3"
       >
-        <Label className="text-sm font-semibold text-foreground">Contact Name</Label>
+        <Label className="text-sm font-semibold text-foreground">Name</Label>
         <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium text-sm">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium text-xs">
             {contactName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() || "C"}
           </div>
           <Input
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
-            className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground placeholder:text-muted-foreground"
+            className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground placeholder:text-muted-foreground text-sm"
             placeholder="Enter contact name"
           />
-        </div>
-      </motion.div>
-
-      {/* Theme Selection */}
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="space-y-2 md:space-y-3"
-      >
-        <Label className="text-sm font-semibold text-foreground">Chat Style</Label>
-        <div className="grid grid-cols-3 gap-2">
-          {themes.map((theme, index) => (
-            <motion.button
-              key={theme.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-              onClick={() => setSelectedTheme(theme.id)}
-              className={`p-2 md:p-3 rounded-lg border-2 transition-all  ${
-                selectedTheme === theme.id 
-                  ? `${theme.accent} bg-card` 
-                  : 'border-border bg-card hover:border-muted-foreground'
-              }`}
-            >
-              <Image
-                src={theme.image}   // no need for template literal if it's already a string
-                width={44}
-                height={44}
-                alt="logo"
-                className="mx-auto"
-              />
-              <div className="text-sm md:text-lg font-medium text-muted-foreground">{theme.name}</div>
-            </motion.button>
-          ))}
         </div>
       </motion.div>
 
@@ -251,11 +214,11 @@ export function ControlPanel() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.3 }}
         className="space-y-4 flex-1 overflow-y-auto"
       >
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold text-foreground">Messages</Label>
+          <Label className="text-sm font-semibold text-foreground">Conversation</Label>
           <Button
             onClick={addMessage}
             size="sm"
@@ -267,7 +230,7 @@ export function ControlPanel() {
           </Button>
         </div>
         
-        <div className="space-y-3 max-h-[28rem] md:max-h-96 overflow-y-auto">
+  <div className="space-y-3 max-h-[28rem] md:max-h-[30rem] overflow-y-auto pr-1">
           {messages.map((message, index) => {
             const isThem = message.characterId === "them"
             
@@ -277,18 +240,23 @@ export function ControlPanel() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 * index }}
-                className={`p-3 md:p-3 rounded-lg border border-border bg-card relative ${
-                  isThem ? 'border-l-4 border-l-blue-500' : 'border-l-4 border-l-green-500'
-                }`}
+                className={
+                  `rounded-lg border border-border bg-card relative flex items-stretch gap-0`
+                }
               >
-                <Textarea
-                  value={message.text}
-                  onChange={(e) => updateMessage(message.id, e.target.value)}
-                  placeholder={isThem ? "Their message..." : "Your message..."}
-                  className="resize-none border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground min-h-[60px] text-sm"
-                />
-                
-                <div className="flex items-center justify-between mt-2 md:mt-3">
+                {/* Left accent bar */}
+                <div className={`w-[3px] rounded-l-lg ${isThem ? 'bg-blue-500' : 'bg-green-500'}`} />
+                {/* Text area */}
+                <div className="flex-1 p-3">
+                  <Textarea
+                    value={message.text}
+                    onChange={(e) => updateMessage(message.id, e.target.value)}
+                    placeholder={isThem ? "Type here..." : "Type here..."}
+                    className="resize-none border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground min-h-[72px] text-sm"
+                  />
+                </div>
+                {/* Controls */}
+                <div className="pr-3 py-3 flex flex-col items-end gap-2 w-[112px]">
                   <div className="inline-flex p-1 bg-muted rounded-full">
                     <button
                       onClick={() => toggleMessageSpeaker(message.id, "them")}
@@ -307,7 +275,6 @@ export function ControlPanel() {
                       You
                     </button>
                   </div>
-                  
                   <Button
                     onClick={() => deleteMessage(message.id)}
                     size="icon"

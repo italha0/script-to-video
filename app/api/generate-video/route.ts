@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const body: RequestBody = await request.json();
-    const { characters, messages, theme = 'imessage', contactName } = body;
+  const { characters, messages, theme = 'imessage', contactName } = body;
     
     // Validate theme parameter
     const validThemes = ['imessage', 'whatsapp', 'snapchat'];
@@ -48,7 +48,12 @@ export async function POST(request: NextRequest) {
       return { id: index + 1, text: msg.text, sent: isOutgoing, time: `0:${String(index * 2).padStart(2, '0')}` };
     });
     const contactCharacter = characters.find((c) => c.id === 'them') || characters[0];
-    const inputProps = { messages: remotionMessages, contactName: contactName || contactCharacter?.name || 'Contact', theme: selectedTheme };
+    const inputProps = {
+      messages: remotionMessages,
+      contactName: contactName || contactCharacter?.name || 'Contact',
+      theme: selectedTheme,
+      alwaysShowKeyboard: true,
+    };
 
     const queueEnabled = process.env.RENDER_QUEUE_ENABLED === 'true';
     if (queueEnabled && !process.env.REDIS_URL) {

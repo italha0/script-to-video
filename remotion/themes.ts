@@ -117,7 +117,7 @@ export const themes: Record<string, ChatTheme> = {
         received: '0 1px 1px rgba(0,0,0,.15)',
       },
       letterSpacing: -0.2,
-      marginBottom: 6,
+  marginBottom: 4,
     },
     header: {
       height: 52,
