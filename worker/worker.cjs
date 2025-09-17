@@ -124,6 +124,7 @@ async function processRender(jobId){
     outputLocation: outputPath, 
     inputProps, 
     concurrency:1,
+    timeoutInMilliseconds: 120000,
     browserExecutable,
     chromiumOptions: {
       args: [
