@@ -1,6 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { getTheme, ChatTheme } from './themes';
+import { renderWithTwemoji } from '../lib/emoji';
 
 interface Message { id: number; text: string; sent: boolean; time: string; }
 interface MessageConversationProps {
@@ -64,7 +65,7 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
   
   return (
     <div style={{ display:'flex', justifyContent: msg.sent ? 'flex-end':'flex-start', marginBottom: theme.bubble.marginBottom, transform:`translateY(${translateY}px) scale(${scale})`, opacity: progress }}>
-      <div style={bubbleStyle}>{displayText}</div>
+      <div style={bubbleStyle}>{renderWithTwemoji(displayText, theme.bubble.fontSize + 1, { localBase: '/emoji' })}</div>
     </div>
   );
 };

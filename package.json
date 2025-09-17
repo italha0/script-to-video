@@ -5,6 +5,8 @@
   "scripts": {
     "build": "node scripts/prebundle-remotion.cjs || echo prebundle:skipped && next build",
     "prebundle": "node scripts/prebundle-remotion.cjs",
+    "prefetch-emojis": "node scripts/prefetch-emojis.cjs remotion",
+    "prefetch-emojis:props": "node scripts/prefetch-emojis.cjs",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
