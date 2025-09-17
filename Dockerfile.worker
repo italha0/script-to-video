@@ -2,7 +2,8 @@
 FROM node:20-bullseye-slim
 
 ENV NODE_ENV=production \
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    LANG=C.UTF-8
 
 # Install Chromium and required system libraries for headless rendering
 RUN apt-get update && apt-get install -y \
@@ -42,6 +43,8 @@ RUN apt-get update && apt-get install -y \
     wget \
     xdg-utils \
     --no-install-recommends && \
+    # Rebuild font cache so emoji/fonts are recognized by Chromium
+    fc-cache -f -v && \
     rm -rf /var/lib/apt/lists/*
 
 # Make Chromium the default executable for Remotion/Puppeteer
@@ -61,20 +64,38 @@ COPY worker ./worker
 COPY lib ./lib
 COPY remotion ./remotion
 COPY scripts ./scripts
+COPY public ./public
 
 # Healthcheck is optional; we rely on logs and Supabase DB state
 
 CMD ["node", "worker/worker.cjs"]
 
+#cd ~/script-to-video
+#git pull
 
- 
-#azureuser@script-to-video:~/script-to-video$ sudo docker rm -f script-to-video-worker
+# Stop existing worker (safe if not running)
+#sudo docker rm -f script-to-video-worker || true
 
-#cmd for running in bg 
+# Rebuild (use cache; fine for typical code changes)
+#sudo docker build -f Dockerfile.worker -t script-to-video-worker:latest .
+
+# Run in background, restart on reboot/crash
 #sudo docker run -d --name script-to-video-worker --restart unless-stopped \
 #  --env-file /etc/script-to-video/worker.env -v /tmp:/tmp \
-#  --shm-size=1g --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
- # script-to-video-worker:latest
-#script-to-video-worker
-#451ea5ec7094497ab8745d6b3cca9a6f44552698df0091aac3d2806e2b3ae2d8
-#azureuser@script-to-video:~/script-to-video$
+# --shm-size=1g --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
+#script-to-video-worker:latest
+
+# Verify
+#sudo docker logs -f --tail=200 script-to-video-worker
+
+#Hard Rebuild (Dockerfile/deps changed)
+#cd ~/script-to-video
+#git pull
+sudo docker rm -f script-to-video-worker || true
+sudo docker build --no-cache -f Dockerfile.worker -t script-to-video-worker:latest .
+sudo docker run -d --name script-to-video-worker --restart unless-stopped \
+  --env-file /etc/script-to-video/worker.env -v /tmp:/tmp \
+  --shm-size=1g --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
+  script-to-video-worker:latest
+sudo docker exec -it script-to-video-worker which chromium
+sudo docker logs -f --tail=200 script-to-video-worker

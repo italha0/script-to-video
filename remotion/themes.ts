@@ -97,7 +97,7 @@ export const themes: Record<string, ChatTheme> = {
       padding: '8px 14px',
       fontSize: 17,
       lineHeight: 1.25,
-      fontFamily: 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  fontFamily: 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
       borderRadius: {
         sent: {
           topLeft: (first) => first ? 18 : 6,
@@ -116,8 +116,8 @@ export const themes: Record<string, ChatTheme> = {
         sent: '0 1px 1px rgba(0,0,0,.25)',
         received: '0 1px 1px rgba(0,0,0,.15)',
       },
-      letterSpacing: -0.2,
-  marginBottom: 4,
+    letterSpacing: -0.2,
+    marginBottom: 8,
     },
     header: {
       height: 52,
@@ -166,7 +166,7 @@ export const themes: Record<string, ChatTheme> = {
       padding: '6px 12px',
       fontSize: 16,
       lineHeight: 1.3,
-      fontFamily: 'Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
+  fontFamily: 'Roboto, "Helvetica Neue", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
       borderRadius: {
         sent: {
           topLeft: (first) => 8,
@@ -186,7 +186,7 @@ export const themes: Record<string, ChatTheme> = {
         received: '0 1px 2px rgba(0,0,0,.1)',
       },
       letterSpacing: 0,
-      marginBottom: 4,
+  marginBottom: 8,
     },
     header: {
       height: 56,
@@ -235,7 +235,7 @@ export const themes: Record<string, ChatTheme> = {
       padding: '10px 16px',
       fontSize: 16,
       lineHeight: 1.4,
-      fontFamily: 'Avenir Next, "Helvetica Neue", Helvetica, Arial, sans-serif',
+  fontFamily: 'Avenir Next, "Helvetica Neue", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
       borderRadius: {
         sent: {
           topLeft: (first) => 20,
@@ -255,7 +255,7 @@ export const themes: Record<string, ChatTheme> = {
         received: '0 1px 4px rgba(0,0,0,.1)',
       },
       letterSpacing: 0.2,
-      marginBottom: 8,
+  marginBottom: 10,
     },
     header: {
       height: 50,

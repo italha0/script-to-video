@@ -85,12 +85,12 @@ async function run() {
     process.exit(1);
   }
 
-  // Determine dynamic duration based on messages (2s per + 4 tail)
+  // Match the Preview: ~4s per message, minimum 10s total
   const msgCount = (props.messages || []).length;
-  const perMessage = 2; // seconds
-  const tail = 4; // seconds
-  const desired = Math.round((msgCount * perMessage + tail) * comp.fps);
-  const durationInFrames = Math.max(comp.durationInFrames, desired);
+  const minSeconds = 10; // 300 frames at 30fps
+  const perMessageSeconds = 4;
+  const desired = Math.round(Math.max(minSeconds, msgCount * perMessageSeconds) * comp.fps);
+  const durationInFrames = desired;
   console.log('[RENDER] Using durationInFrames', durationInFrames);
 
   await renderMedia({
@@ -99,6 +99,8 @@ async function run() {
     codec: 'h264',
     outputLocation: outputPath,
     inputProps: props,
+    scale: 2, // 2x resolution for sharper output
+    crf: 15,  // higher quality (lower CRF)
   concurrency: process.env.VERCEL ? 1 : 2, // lower concurrency in serverless envs
     dumpBrowserLogs: false,
     onProgress: (p) => {

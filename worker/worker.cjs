@@ -111,7 +111,10 @@ async function processRender(jobId){
   const comp = comps.find(c=> c.id === compositionId);
   if (!comp) throw new Error('Composition not found: '+compositionId);
   const msgCount = (inputProps.messages || []).length;
-  const durationInFrames = Math.max(comp.durationInFrames, Math.round((msgCount*2+4)*comp.fps));
+  const minSeconds = 10; // align with PreviewPanel
+  const perMessageSeconds = 4;
+  const desired = Math.round(Math.max(minSeconds, msgCount * perMessageSeconds) * comp.fps);
+  const durationInFrames = desired;
   const workDir = process.env.WORK_DIR || os.tmpdir();
   const outDir = join(workDir,'renders');
   if (!existsSync(outDir)) mkdirSync(outDir,{ recursive:true });
@@ -123,6 +126,8 @@ async function processRender(jobId){
     codec:'h264', 
     outputLocation: outputPath, 
     inputProps, 
+    scale: 2,
+    crf: 15,
     concurrency:1,
     timeoutInMilliseconds: 120000,
     browserExecutable,

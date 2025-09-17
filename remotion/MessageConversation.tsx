@@ -22,13 +22,14 @@ const TYPING_DURATION = 1.2; // total lead time allocated for an incoming typing
 const TYPING_GAP = 0.15; // gap between typing indicator end and bubble appear
 const DELIVERED_DELAY = 0.6; // seconds after last outgoing message finishes typing
 // Keyboard + typing effect configuration
-const KEYBOARD_HEIGHT = 300; 
-const ACCESSORY_HEIGHT = 44; // camera+input+send bar height used to reduce content padding
+const KEYBOARD_HEIGHT = 320; 
+const ACCESSORY_HEIGHT = 56; // taller to support 2-line input without overlap
 const KEYBOARD_DISAPPEAR_FRAMES = 12; // frames for slide out animation
 const KEYBOARD_LEAD = 0.8; // seconds keyboard appears before first outgoing message typing begins
 const KEYBOARD_TRAIL = 0.3; // seconds keyboard stays after last outgoing finishes
 const TYPE_SPEED = 11; // characters per second (sender typing speed)
 const SEND_GAP = 0.18; // gap between finish typing and bubble appearing (press send)
+const SAFE_TOP_INSET = 18; // extra spacing below header to avoid any overlap
 
 const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean; last: boolean; theme: ChatTheme; }>= ({ msg, appearSec, first, last, theme }) => {
   const frame = useCurrentFrame();
@@ -51,6 +52,8 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
     lineHeight: theme.bubble.lineHeight,
     fontFamily: theme.bubble.fontFamily,
     wordWrap: 'break-word',
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'anywhere',
     borderTopLeftRadius: borderRadius.topLeft(first),
     borderTopRightRadius: borderRadius.topRight(first),
     borderBottomLeftRadius: borderRadius.bottomLeft(last),
@@ -144,9 +147,9 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
     : <span style={{ opacity:0.4 }}>Type a message{showCaret && caretBlink ? <span style={{borderLeft: `2px solid ${theme.colors.sent}`, marginLeft:2}} />: null}</span>;
   return (
     <div style={{ position:'absolute', left:0, right:0, bottom:2, transform:`translateY(${translateY}px)`, background: theme.colors.keyboardBackground, borderTop: `1px solid ${theme.colors.keyboardBorder}`, fontFamily: theme.bubble.fontFamily }}>
-      <div style={{ display:'flex', alignItems:'center', padding:'6px 8px', gap:8, background: theme.colors.headerBackground, height: ACCESSORY_HEIGHT, boxSizing:'border-box' }}>
+      <div style={{ display:'flex', alignItems:'center', padding:'8px 10px', gap:8, background: theme.colors.headerBackground, minHeight: ACCESSORY_HEIGHT, boxSizing:'border-box' }}>
         <div style={{ width:32, height:32, borderRadius:16, background: theme.colors.keyboardKeyActive, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>📷</div>
-        <div style={{ flex:1, background: theme.colors.inputBackground, borderRadius:16, padding:'6px 12px', color: theme.colors.inputText, fontSize:16, minHeight:32, display:'flex', alignItems:'center' }}>{inputDisplay}</div>
+        <div style={{ flex:1, background: theme.colors.inputBackground, borderRadius:16, padding:'8px 12px', color: theme.colors.inputText, fontSize:16, minHeight:36, maxHeight:72, overflow:'hidden', display:'flex', alignItems:'center', lineHeight:1.25, whiteSpace:'pre-wrap', wordBreak:'break-word' }}>{inputDisplay}</div>
         <div style={{ width:32, height:32, borderRadius:16, background: theme.colors.sent, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, color:'#fff' }}>➤</div>
       </div>
       <div style={{ padding:'6px 6px 6px' }}>
@@ -159,7 +162,7 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
 const StatusBar: React.FC<{ batteryLevel?: number; theme: ChatTheme }> = ({ batteryLevel = 100, theme }) => {
   const clamped = Math.min(100, Math.max(0, batteryLevel));
   return (
-  <div style={{ position:'absolute', top:0, left:0, right:0, height: theme.statusBar.height, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize: theme.statusBar.fontSize, fontWeight: theme.statusBar.fontWeight, fontFamily: theme.bubble.fontFamily, color: theme.colors.statusBar, zIndex:50 }}>
+  <div style={{ position:'absolute', top:0, left:0, right:0, height: theme.statusBar.height, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize: theme.statusBar.fontSize, fontWeight: theme.statusBar.fontWeight, fontFamily: theme.bubble.fontFamily, color: theme.colors.statusBar, zIndex:1000 }}>
       <div>9:41</div>
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
         {/* Signal Bars */}
@@ -185,7 +188,7 @@ const StatusBar: React.FC<{ batteryLevel?: number; theme: ChatTheme }> = ({ batt
 };
 
 const NavigationHeader: React.FC<{ contactName?: string; theme: ChatTheme }> = ({ contactName, theme }) => (
-  <div style={{ position:'absolute', top: theme.statusBar.height, left:0, right:0, height: theme.header.height, background: theme.colors.headerBackground, borderBottom: `1px solid ${theme.colors.headerBorder}`, display:'flex', alignItems:'center', padding:'0 12px', fontFamily: theme.bubble.fontFamily, zIndex:40 }}>
+  <div style={{ position:'absolute', top: theme.statusBar.height, left:0, right:0, height: theme.header.height, background: theme.colors.headerBackground, borderBottom: `1px solid ${theme.colors.headerBorder}`, display:'flex', alignItems:'center', padding:'0 12px', fontFamily: theme.bubble.fontFamily, zIndex:900 }}>
     <div style={{ fontSize: theme.header.fontSize, color: theme.colors.headerText }}>Back</div>
     <div style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', fontSize: theme.header.fontSize, fontWeight: theme.header.fontWeight, color: theme.colors.headerText }}>{contactName || 'Contact'}</div>
   </div>
@@ -315,7 +318,7 @@ export const MessageConversation: React.FC<MessageConversationProps> = ({ messag
       <div style={{ width:360, height:780, background: theme.colors.background, borderRadius:48, position:'relative', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.25)', border:'0px solid transparent', isolation:'isolate' }}>
         <StatusBar batteryLevel={batteryLevel} theme={theme} />
         <NavigationHeader contactName={contactName} theme={theme} />
-        <div style={{ position:'absolute', top: headerHeight, left:0, right:0, bottom:0, padding:'0 12px', paddingBottom: Math.max(0, keyboardVisibleHeight - ACCESSORY_HEIGHT), display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box', zIndex:10 }}>
+  <div style={{ position:'absolute', top: headerHeight + SAFE_TOP_INSET, left:0, right:0, bottom:0, padding:'8px 12px 0', paddingBottom: Math.max(0, keyboardVisibleHeight - ACCESSORY_HEIGHT), display:'flex', flexDirection:'column', justifyContent:'flex-end', boxSizing:'border-box', zIndex:100 }}>
           {entries.map(entry=>{
             const { msg, idx, appearSec, typingIndicatorStart, typingIndicatorEnd } = entry;
             const prev = entries[idx-1]?.msg;
