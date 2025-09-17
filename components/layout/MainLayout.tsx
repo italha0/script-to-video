@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Navbar } from "./Navbar"
-import { Sidebar } from "./Sidebar"
 import { EditorView } from "../editor/EditorView"
 import { ProjectsView } from "../projects/ProjectsView"
 import { RendersView } from "../renders/RendersView"
@@ -48,7 +47,6 @@ export function MainLayout() {
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="flex h-[calc(100vh-4rem)]">
-        <Sidebar />
         <motion.main
           key={activeTab}
           initial={{ opacity: 0, y: 20 }}
