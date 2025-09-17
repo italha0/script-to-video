@@ -91,7 +91,7 @@ export function ControlPanel() {
       })
 
       if (response.status === 401) {
-        
+
         const redirect = encodeURIComponent('/editor')
         window.location.href = `/auth/login?redirect=${redirect}`
         return
@@ -104,14 +104,12 @@ export function ControlPanel() {
         // Start polling for status
         pollRenderStatus(jobId)
       } else if (response.ok) {
-        // Direct download
+        // Direct download (rare path) -> open in new tab using blob URL
         const blob = await response.blob()
         const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `chat-video-${Date.now()}.mp4`
-        a.click()
-        URL.revokeObjectURL(url)
+        window.open(url, '_blank', 'noopener,noreferrer')
+        // We intentionally do not revoke immediately to allow the tab to load
+        setTimeout(() => URL.revokeObjectURL(url), 30000)
         resetRender()
       }
     } catch (error) {

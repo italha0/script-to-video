@@ -12,6 +12,17 @@ export function DownloadModal() {
   
   const { isRendering, status, progress, downloadUrl, error } = renderProgress
 
+  const createAndClickDownload = (url: string, filename: string) => {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.rel = 'noopener'
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    setTimeout(() => a.remove(), 0)
+  }
+
   const handleDownload = async () => {
     if (!downloadUrl) return
     try {
@@ -21,21 +32,17 @@ export function DownloadModal() {
         const pathParts = u.pathname.split('/').filter(Boolean)
         if (pathParts.length >= 2 && pathParts[0] === 'videos') {
           const blobName = decodeURIComponent(pathParts.slice(1).join('/'))
-          const resp = await fetch(`/api/get-download-url?blobName=${encodeURIComponent(blobName)}`)
-          if (resp.ok) {
-            const { url } = await resp.json()
-            if (url && typeof url === 'string') {
-              window.location.href = url
-              return
-            }
-          }
+          // Prefer proxy streaming endpoint to hide storage host and force download
+          const proxyUrl = `/api/download?blobName=${encodeURIComponent(blobName)}&filename=${encodeURIComponent('chat-video.mp4')}`
+          createAndClickDownload(proxyUrl, 'chat-video.mp4')
+          return
         }
       }
       // Fallback to original URL if not Azure or re-sign failed
-      window.location.href = downloadUrl
+      createAndClickDownload(downloadUrl, 'chat-video.mp4')
     } catch {
       // Any parsing/fetch issues -> fallback
-      window.location.href = downloadUrl
+      createAndClickDownload(downloadUrl, 'chat-video.mp4')
     }
   }
 
