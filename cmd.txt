@@ -17,13 +17,13 @@ script-to-video-worker:latest
 sudo docker logs -f --tail=200 script-to-video-worker
 
 #Hard Rebuild (Dockerfile/deps changed)
-#cd ~/script-to-video
-#git pull
-#sudo docker rm -f script-to-video-worker || true
-#sudo docker build --no-cache -f Dockerfile.worker -t script-to-video-worker:latest .
-#sudo docker run -d --name script-to-video-worker --restart unless-stopped \
-#  --env-file /etc/script-to-video/worker.env -v /tmp:/tmp \
-#  --shm-size=1g --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
-#  script-to-video-worker:latest
-#sudo docker exec -it script-to-video-worker which chromium
-#sudo docker logs -f --tail=200 script-to-video-worker
+cd ~/script-to-video
+git pull
+sudo docker rm -f script-to-video-worker || true
+sudo docker build --no-cache -f Dockerfile.worker -t script-to-video-worker:latest .
+sudo docker run -d --name script-to-video-worker --restart unless-stopped \
+  --env-file /etc/script-to-video/worker.env -v /tmp:/tmp \
+  --shm-size=1g --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
+  script-to-video-worker:latest
+sudo docker exec -it script-to-video-worker which chromium
+sudo docker logs -f --tail=200 script-to-video-worker

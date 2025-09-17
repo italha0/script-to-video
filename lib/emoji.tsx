@@ -1,11 +1,12 @@
 import React from 'react';
 import { toCodePoints, isEmojiGrapheme } from './emoji-util';
+import { staticFile } from 'remotion';
 
 // Helper to render emojis via Twemoji SVGs.
 const CDN_BASE = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg';
 
 const resolveEmojiUrl = (code: string, localBase?: string) => {
-  if (localBase) return `${localBase}/${code}.svg`;
+  if (localBase) return staticFile(`${localBase}/${code}.svg`);
   return `${CDN_BASE}/${code}.svg`;
 };
 
