@@ -176,7 +176,7 @@ export function ControlPanel() {
   }
 
   return (
-    <div className="p-6 space-y-6 h-full">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6 h-full pb-28 md:pb-6">
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -215,7 +215,7 @@ export function ControlPanel() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="space-y-3"
+        className="space-y-2 md:space-y-3"
       >
         <Label className="text-sm font-semibold text-foreground">Chat Style</Label>
         <div className="grid grid-cols-3 gap-2">
@@ -228,7 +228,7 @@ export function ControlPanel() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 + index * 0.1 }}
               onClick={() => setSelectedTheme(theme.id)}
-              className={`p-3 rounded-lg border-2 transition-all  ${
+              className={`p-2 md:p-3 rounded-lg border-2 transition-all  ${
                 selectedTheme === theme.id 
                   ? `${theme.accent} bg-card` 
                   : 'border-border bg-card hover:border-muted-foreground'
@@ -236,12 +236,12 @@ export function ControlPanel() {
             >
               <Image
                 src={theme.image}   // no need for template literal if it's already a string
-                width={50}
-                height={50}
+                width={44}
+                height={44}
                 alt="logo"
                 className="mx-auto"
               />
-              <div className="text-lg font-medium text-muted-foreground">{theme.name}</div>
+              <div className="text-sm md:text-lg font-medium text-muted-foreground">{theme.name}</div>
             </motion.button>
           ))}
         </div>
@@ -267,7 +267,7 @@ export function ControlPanel() {
           </Button>
         </div>
         
-        <div className="space-y-3 max-h-96 overflow-y-auto">
+        <div className="space-y-3 max-h-[28rem] md:max-h-96 overflow-y-auto">
           {messages.map((message, index) => {
             const isThem = message.characterId === "them"
             
@@ -277,7 +277,7 @@ export function ControlPanel() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 * index }}
-                className={`p-3 rounded-lg border border-border bg-card relative ${
+                className={`p-3 md:p-3 rounded-lg border border-border bg-card relative ${
                   isThem ? 'border-l-4 border-l-blue-500' : 'border-l-4 border-l-green-500'
                 }`}
               >
@@ -288,7 +288,7 @@ export function ControlPanel() {
                   className="resize-none border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground min-h-[60px] text-sm"
                 />
                 
-                <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center justify-between mt-2 md:mt-3">
                   <div className="inline-flex p-1 bg-muted rounded-full">
                     <button
                       onClick={() => toggleMessageSpeaker(message.id, "them")}
@@ -330,12 +330,12 @@ export function ControlPanel() {
         </div>
       </motion.div>
 
-      {/* Generate Button */}
+      {/* Generate Button - desktop */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="pt-4 border-t border-border"
+        className="pt-4 border-t border-border hidden md:block"
       >
         <Button
           onClick={handleRender}
@@ -346,6 +346,18 @@ export function ControlPanel() {
           Generate Video
         </Button>
       </motion.div>
+
+      {/* Sticky Generate Button - mobile */}
+      <div className="md:hidden fixed bottom-20 left-0 right-0 z-40 px-4">
+        <Button
+          onClick={handleRender}
+          disabled={messages.length === 0}
+          className="w-full h-12 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white font-semibold text-base shadow-lg"
+        >
+          <Sparkles className="w-5 h-5 mr-2" />
+          Generate Video
+        </Button>
+      </div>
     </div>
   )
 }

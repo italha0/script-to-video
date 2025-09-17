@@ -53,7 +53,7 @@ export function Navbar() {
           className="flex items-center gap-3"
           whileHover={{ scale: 1.05 }}
         >
-          <Image src="/logo.png" alt="logo" width={100} height={100} />
+          <Image src="/logo.png" alt="logo" width={140} height={36} />
         </motion.div>
       </div>
 

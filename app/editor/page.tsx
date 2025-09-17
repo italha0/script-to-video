@@ -1,35 +1,14 @@
-"use client"
+import { redirect } from "next/navigation"
+import { MainLayout } from "@/components/layout/MainLayout"
+import { createClient } from "@/lib/supabase/server"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { useAppStore } from "@/lib/store"
+export default async function EditorPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-export default function EditorPage() {
-  const router = useRouter()
-  const supabase = createClient()
-  const { setUser, setActiveTab } = useAppStore()
+  if (!user) {
+    redirect(`/auth/login?redirect=${encodeURIComponent('/editor')}`)
+  }
 
-  useEffect(() => {
-    // Check auth and redirect to main app
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-      setUser(user)
-      setActiveTab('editor')
-      router.push('/')
-    }
-    checkAuth()
-  }, [router, setUser, setActiveTab])
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center text-foreground">
-        <p>Redirecting to editor...</p>
-      </div>
-    </div>
-  )
+  return <MainLayout />
 }

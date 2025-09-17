@@ -53,7 +53,7 @@ export function PreviewPanel() {
   }, [])
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8">
+    <div className="flex flex-col items-center justify-center h-full p-4 md:p-8">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -75,8 +75,10 @@ export function PreviewPanel() {
           className="relative"
         >
           {/* Phone Frame */}
-          <div className="relative bg-black rounded-[2.5rem] p-4 shadow-2xl shadow-black/50">
-            <div className="bg-black rounded-[2rem] overflow-hidden relative" style={{ width: 320, height: 568 }}>
+          <div className="relative bg-black rounded-[2.5rem] p-3 md:p-4 shadow-2xl shadow-black/50">
+            <div
+              className="bg-black rounded-[2rem] overflow-hidden relative w-[280px] h-[497px] sm:w-[300px] sm:h-[533px] md:w-[320px] md:h-[568px]"
+            >
               {/* Video Preview */}
               {messages.length > 0 ? (
                 <div className="w-full h-full">
