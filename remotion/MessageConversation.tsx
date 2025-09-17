@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { getTheme, ChatTheme } from './themes';
-import { renderWithTwemoji } from '../lib/emoji';
+import { renderEmojiHTML } from './emoji';
 
 interface Message { id: number; text: string; sent: boolean; time: string; }
 interface MessageConversationProps {
@@ -24,7 +24,7 @@ const TYPING_GAP = 0.15; // gap between typing indicator end and bubble appear
 const DELIVERED_DELAY = 0.6; // seconds after last outgoing message finishes typing
 // Keyboard + typing effect configuration
 const KEYBOARD_HEIGHT = 320; 
-const ACCESSORY_HEIGHT = 72; // taller to support 2-line input without overlap
+const ACCESSORY_HEIGHT = 56; // taller to support 2-line input without overlap
 const KEYBOARD_DISAPPEAR_FRAMES = 12; // frames for slide out animation
 const KEYBOARD_LEAD = 0.8; // seconds keyboard appears before first outgoing message typing begins
 const KEYBOARD_TRAIL = 0.3; // seconds keyboard stays after last outgoing finishes
@@ -65,7 +65,7 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
   
   return (
     <div style={{ display:'flex', justifyContent: msg.sent ? 'flex-end':'flex-start', marginBottom: theme.bubble.marginBottom, transform:`translateY(${translateY}px) scale(${scale})`, opacity: progress }}>
-      <div style={bubbleStyle}>{renderWithTwemoji(displayText, theme.bubble.fontSize + 1, { localBase: '/emoji' })}</div>
+      <div style={bubbleStyle} dangerouslySetInnerHTML={{ __html: renderEmojiHTML(displayText) }} />
     </div>
   );
 };
@@ -93,29 +93,7 @@ const TypingBubble: React.FC<{ startSec: number; endSec: number; sent: boolean; 
   );
 };
 
-// Simple inline SVG icons to avoid missing emoji glyphs across platforms
-const CameraIcon: React.FC<{ color: string }>=({ color })=> (
-  <svg width={18} height={16} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 6h-2.1a1 1 0 0 1-.8-.4l-1.2-1.6A2 2 0 0 0 14.3 3h-4.6a2 2 0 0 0-1.6.8L6.9 5.6a1 1 0 0 1-.8.4H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-8 11a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" fill={color}/>
-  </svg>
-);
-
-const SendIcon: React.FC<{ color: string }>=({ color })=> (
-  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3.4 20.6 21 13.3a1 1 0 0 0 0-1.8L3.4 4.2a1 1 0 0 0-1.3 1.3l2.7 6.2a1 1 0 0 0 .8.6l8.1.4-8.1.4a1 1 0 0 0-.8.6L2.1 19.3a1 1 0 0 0 1.3 1.3Z" fill={color}/>
-  </svg>
-);
-
-const EmojiIcon: React.FC<{ color: string }>=({ color })=> (
-  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="2" fill="none"/>
-    <circle cx="9" cy="10" r="1.5" fill={color}/>
-    <circle cx="15" cy="10" r="1.5" fill={color}/>
-    <path d="M8 15s1.5 2 4 2 4-2 4-2" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none"/>
-  </svg>
-);
-
-const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?: string; activeChar?: string; theme: ChatTheme; placeholderText?: string }> = ({ startSec, endSec, currentInputText, activeChar, theme, placeholderText = "Type in any story you’d like to be told in the vid" }) => {
+const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?: string; activeChar?: string; theme: ChatTheme }> = ({ startSec, endSec, currentInputText, activeChar, theme }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const startFrame = Math.round(startSec * fps);
@@ -141,7 +119,7 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
     translateY = slideOut;
     opacity = 1 - eased * 0.4; // slight fade
   }
-  const keyRows = [ ['Q','W','E','R','T','Y','U','I','O','P'], ['A','S','D','F','G','H','J','K','L'], ['⇧','Z','X','C','V','B','N','M','⌫'], ['123',':emoji:','space','return'] ];
+  const keyRows = [ ['Q','W','E','R','T','Y','U','I','O','P'], ['A','S','D','F','G','H','J','K','L'], ['⇧','Z','X','C','V','B','N','M','⌫'], ['123',':)','space','return'] ];
   const renderKey = (k: string) => {
     const isSpace = k==='space';
     const normalizedActive = (activeChar || '').toLowerCase();
@@ -161,26 +139,27 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
       transform: isActive ? 'translateY(1px)' : 'translateY(0)',
       transition:'background 80ms ease, color 80ms ease, transform 80ms ease'
     };
-    return (
-      <div key={k} style={baseStyle}>
-        {isSpace ? '' : k === ':emoji:' ? <EmojiIcon color={isActive ? '#FFFFFF' : '#000'} /> : k}
-      </div>
-    );
+    return <div key={k} style={baseStyle}>{isSpace? '' : k}</div>;
   };
   const caretBlink = (frame / fps) % 1 < 0.5;
   const showCaret = true;
-  const inputDisplay = currentInputText && currentInputText.length>0
-    ? <span>{currentInputText}{showCaret && caretBlink ? <span style={{borderLeft: `2px solid ${theme.colors.sent}`, marginLeft:2}} />: null}</span>
-    : <span style={{ opacity:0.5 }}>{placeholderText}{showCaret && caretBlink ? <span style={{borderLeft: `2px solid ${theme.colors.sent}`, marginLeft:2}} />: null}</span>;
+  const baseInputText = currentInputText && currentInputText.length>0 ? currentInputText : 'Type a message';
+  const inputHTMLCore = renderEmojiHTML(baseInputText);
+  const caretHTML = showCaret && caretBlink ? `<span style="border-left: 2px solid ${theme.colors.sent}; margin-left:2px"></span>` : '';
+  const inputHTML = (currentInputText && currentInputText.length>0) ? `${inputHTMLCore}${caretHTML}` : `<span style="opacity:0.4">${inputHTMLCore}${caretHTML}</span>`;
   return (
     <div style={{ position:'absolute', left:0, right:0, bottom:2, transform:`translateY(${translateY}px)`, background: theme.colors.keyboardBackground, borderTop: `1px solid ${theme.colors.keyboardBorder}`, fontFamily: theme.bubble.fontFamily }}>
       <div style={{ display:'flex', alignItems:'center', padding:'8px 10px', gap:8, background: theme.colors.headerBackground, minHeight: ACCESSORY_HEIGHT, boxSizing:'border-box' }}>
         <div style={{ width:32, height:32, borderRadius:16, background: theme.colors.keyboardKeyActive, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <CameraIcon color="#FFFFFF" />
+          <svg viewBox="0 0 24 24" width={16} height={16} fill="#fff" aria-hidden>
+            <path d="M4 7h3l1-2h8l1 2h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+          </svg>
         </div>
-        <div style={{ flex:1, background: theme.colors.inputBackground, borderRadius:16, padding:'10px 12px', color: theme.colors.inputText, fontSize:16, minHeight:42, maxHeight:96, overflow:'hidden', display:'flex', alignItems:'flex-start', lineHeight:1.25, whiteSpace:'pre-wrap', wordBreak:'break-word' }}>{inputDisplay}</div>
+  <div style={{ flex:1, background: theme.colors.inputBackground, borderRadius:16, padding:'8px 12px', color: theme.colors.inputText, fontSize:16, minHeight:36, maxHeight:72, overflow:'hidden', display:'flex', alignItems:'center', lineHeight:1.25, whiteSpace:'pre-wrap', wordBreak:'break-word' }} dangerouslySetInnerHTML={{ __html: inputHTML }} />
         <div style={{ width:32, height:32, borderRadius:16, background: theme.colors.sent, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <SendIcon color="#FFFFFF" />
+          <svg viewBox="0 0 24 24" width={14} height={14} fill="#fff" aria-hidden>
+            <path d="M3 12l18-9-9 18-1.5-6L3 12z"/>
+          </svg>
         </div>
       </div>
       <div style={{ padding:'6px 6px 6px' }}>

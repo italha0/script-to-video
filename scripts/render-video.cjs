@@ -103,6 +103,25 @@ async function run() {
     crf: 15,  // higher quality (lower CRF)
   concurrency: process.env.VERCEL ? 1 : 2, // lower concurrency in serverless envs
     dumpBrowserLogs: false,
+    chromiumOptions: {
+      disableWebSecurity: true,
+      enableMultiProcessOnLinux: true,
+      allowHTTP1ForStreaming: true,
+      allowOrganizeImports: true,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-extensions',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ]
+    },
     onProgress: (p) => {
       if (p.renderedFrames % 30 === 0) {
         process.stdout.write(`\n[RENDER] ${p.renderedFrames}/${durationInFrames} ${(p.progress*100).toFixed(1)}%`);

@@ -132,6 +132,10 @@ async function processRender(jobId){
     timeoutInMilliseconds: 120000,
     browserExecutable,
     chromiumOptions: {
+      headless: true,
+      disableWebSecurity: true,
+      enableMultiProcessOnLinux: true,
+      allowHTTP1ForStreaming: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
