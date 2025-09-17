@@ -162,7 +162,7 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
 const StatusBar: React.FC<{ batteryLevel?: number; theme: ChatTheme }> = ({ batteryLevel = 100, theme }) => {
   const clamped = Math.min(100, Math.max(0, batteryLevel));
   return (
-  <div style={{ position:'absolute', top:0, left:0, right:0, height: theme.statusBar.height, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize: theme.statusBar.fontSize, fontWeight: theme.statusBar.fontWeight, fontFamily: theme.bubble.fontFamily, color: theme.colors.statusBar, zIndex:1000 }}>
+  <div style={{ position:'absolute', top:0, left:0, right:0, height: theme.statusBar.height, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', fontSize: theme.statusBar.fontSize, fontWeight: theme.statusBar.fontWeight, fontFamily: theme.bubble.fontFamily, color: theme.colors.statusBar, zIndex:1000, background:'#FFFFFF' }}>
       <div>9:41</div>
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
         {/* Signal Bars */}
