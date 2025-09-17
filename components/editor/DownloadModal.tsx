@@ -9,7 +9,6 @@ import { useAppStore } from "@/lib/store"
 
 export function DownloadModal() {
   const { renderProgress, resetRender } = useAppStore()
-  
   const { isRendering, status, progress, downloadUrl, error } = renderProgress
 
   const createAndClickDownload = (url: string, filename: string) => {

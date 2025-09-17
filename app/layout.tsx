@@ -22,6 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2892825507816139"
+          crossorigin="anonymous"></script>
+        </head>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false}>
           <Suspense fallback={null}>{children}</Suspense>
