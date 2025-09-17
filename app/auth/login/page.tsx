@@ -19,7 +19,7 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   // Safely validate redirect parameter to prevent open redirects
-  const redirectParam = searchParams.get("redirect")
+  const redirectParam = searchParams?.get("redirect") ?? null
   const redirectTo = (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) 
     ? redirectParam 
     : "/editor"
@@ -59,9 +59,9 @@ export default function LoginPage() {
         password,
       })
       if (error) throw error
-      
-      // Don't manually redirect here - let the auth state change handler do it
-      // The onAuthStateChange listener will handle the redirect
+      // Proactively navigate after successful sign-in; listener remains as a fallback
+      // Small delay helps ensure cookies/session are fully synced before navigation
+      setTimeout(() => router.replace(redirectTo), 50)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
