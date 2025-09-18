@@ -14,7 +14,7 @@ export default function HomePage() {
         <main className="flex-1 overflow-auto pb-24 md:pb-8">
           <div className="mx-auto w-full max-w-6xl px-6 md:px-10 py-6 md:py-8">
             <div className="mb-6 md:mb-8">
-              <h2 className="text-3xl md:text-5xl font-bold">Hello, <span className="text-primary">Abu Talha</span></h2>
+              <h2 className="text-3xl md:text-5xl font-bold">Hello, <span className="text-primary">Creator</span></h2>
               <p className="text-muted-foreground mt-2">What are you creating today?</p>
             </div>
 
