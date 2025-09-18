@@ -1,5 +1,4 @@
 import twemoji from 'twemoji';
-
 /**
  * Converts a text string into HTML with emoji images using Twemoji, ensuring consistent emoji rendering
  * in headless environments where system color emoji fonts might be unavailable.

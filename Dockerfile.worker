@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     fonts-noto-color-emoji \
     fonts-noto-core \
     fonts-noto-cjk \
+    curl \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
@@ -57,7 +58,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && \
     corepack prepare pnpm@latest --activate && \
-    pnpm install --frozen-lockfile --prod
+    pnpm install --prod
 
 # Copy only what the worker needs
 COPY worker ./worker
