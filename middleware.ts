@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
   // We only enhance that logic here for auth pages (avoid showing them when already signed in) because
   // updateSession intentionally doesn't redirect authenticated users away from /auth/*.
 
-  // If user is already authenticated and visits an auth route, redirect to editor.
+  // If user is already authenticated and visits an auth route, redirect to intended destination
   // Use server-validated auth check instead of cookie heuristics to prevent loops with expired tokens
   if (request.nextUrl.pathname.startsWith("/auth")) {
     const supabase = createServerClient(
@@ -33,7 +33,13 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const url = request.nextUrl.clone()
-      url.pathname = "/editor"
+      // Check if there's a redirect parameter and use it if valid
+      const redirectParam = request.nextUrl.searchParams.get('redirect')
+      const targetPath = (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) 
+        ? redirectParam 
+        : '/editor'
+      
+      url.pathname = targetPath
       url.search = ""
       return NextResponse.redirect(url)
     }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { getTheme, ChatTheme } from './themes';
-import { renderEmojiHTML } from './emoji';
+import { renderEmojiForVideo } from './emoji';
 
 interface Message { id: number; text: string; sent: boolean; time: string; }
 interface MessageConversationProps {
@@ -65,7 +65,7 @@ const MessageBubble: React.FC<{ msg: Message; appearSec: number; first: boolean;
   
   return (
     <div style={{ display:'flex', justifyContent: msg.sent ? 'flex-end':'flex-start', marginBottom: theme.bubble.marginBottom, transform:`translateY(${translateY}px) scale(${scale})`, opacity: progress }}>
-      <div style={bubbleStyle} dangerouslySetInnerHTML={{ __html: renderEmojiHTML(displayText) }} />
+      <div style={bubbleStyle} dangerouslySetInnerHTML={{ __html: renderEmojiForVideo(displayText) }} />
     </div>
   );
 };
@@ -144,7 +144,7 @@ const Keyboard: React.FC<{ startSec: number; endSec?: number; currentInputText?:
   const caretBlink = (frame / fps) % 1 < 0.5;
   const showCaret = true;
   const baseInputText = currentInputText && currentInputText.length>0 ? currentInputText : 'Type a message';
-  const inputHTMLCore = renderEmojiHTML(baseInputText);
+  const inputHTMLCore = renderEmojiForVideo(baseInputText);
   const caretHTML = showCaret && caretBlink ? `<span style="border-left: 2px solid ${theme.colors.sent}; margin-left:2px"></span>` : '';
   const inputHTML = (currentInputText && currentInputText.length>0) ? `${inputHTMLCore}${caretHTML}` : `<span style="opacity:0.4">${inputHTMLCore}${caretHTML}</span>`;
   return (

@@ -168,18 +168,18 @@ export function ControlPanel() {
   }
 
   return (
-  <div className="p-6 space-y-6 h-full pb-28 md:pb-6">
+  <div className="p-6 space-y-8 h-full pb-28 md:pb-6">
       {/* Header */}
       <motion.div
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.2, duration: 0.8, ease: [0.23, 1, 0.320, 1] }}
       >
-        <div className="space-y-2">
+        <div className="space-y-3 p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
           <h1 className="text-3xl md:text-4xl font-extrabold leading-tight tracking-tight text-foreground">
             CREATE A FAKE
             <br />
-            <span className="">iMESSAGE VIDEO</span>
+            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">iMESSAGE VIDEO</span>
           </h1>
           <p className="text-muted-foreground text-sm">
             Type in any story you’d like to be told in the video
@@ -195,8 +195,8 @@ export function ControlPanel() {
         className="space-y-3"
       >
         <Label className="text-sm font-semibold text-foreground">Name</Label>
-        <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium text-xs">
+        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-card to-card/80 rounded-xl border border-border/60 shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10 transition-all duration-300">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs shadow-lg shadow-blue-500/25">
             {contactName.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() || "C"}
           </div>
           <Input
@@ -238,12 +238,11 @@ export function ControlPanel() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 * index }}
-                className={
-                  `rounded-lg border border-border bg-card relative flex items-stretch gap-0`
-                }
+                whileHover={{ scale: 1.01, y: -2 }}
+                className="rounded-xl border border-border/60 bg-gradient-to-r from-card to-card/90 relative flex items-stretch gap-0 shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10 transition-all duration-300"
               >
                 {/* Left accent bar */}
-                <div className={`w-[3px] rounded-l-lg ${isThem ? 'bg-blue-500' : 'bg-green-500'}`} />
+                <div className={`w-1 rounded-l-xl ${isThem ? 'bg-gradient-to-b from-blue-400 to-blue-600' : 'bg-gradient-to-b from-green-400 to-green-600'}`} />
                 {/* Text area */}
                 <div className="flex-1 p-3">
                   <Textarea

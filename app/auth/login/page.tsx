@@ -24,23 +24,42 @@ export default function LoginPage() {
     ? redirectParam 
     : "/editor"
 
-  // If already authenticated, skip showing the form and listen for auth changes
+  // Handle authentication and redirects
   useEffect(() => {
     const supabase = createClient()
+    let redirecting = false
+    
+    const handleRedirect = async () => {
+      if (redirecting) return
+      redirecting = true
+      
+      try {
+        // Ensure session is properly synced before redirecting
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          // Refresh router to ensure middleware sees the session
+          router.refresh()
+          // Small delay to ensure refresh completes
+          setTimeout(() => router.replace(redirectTo), 100)
+        }
+      } catch (error) {
+        console.warn('Session check failed during redirect:', error)
+        // Fallback to original behavior
+        setTimeout(() => router.replace(redirectTo), 150)
+      }
+    }
     
     // Check initial auth state
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        // Give a small delay to ensure proper session handling
-        setTimeout(() => router.replace(redirectTo), 100)
+        handleRedirect()
       }
     })
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // Successful login, redirect after short delay
-        setTimeout(() => router.replace(redirectTo), 100)
+        handleRedirect()
       }
     })
 
@@ -59,9 +78,8 @@ export default function LoginPage() {
         password,
       })
       if (error) throw error
-      // Proactively navigate after successful sign-in; listener remains as a fallback
-      // Small delay helps ensure cookies/session are fully synced before navigation
-      setTimeout(() => router.replace(redirectTo), 50)
+      // Don't navigate here - let the auth state change listener handle it
+      // This prevents multiple redirect attempts
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {

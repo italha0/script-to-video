@@ -54,19 +54,23 @@ export function PreviewPanel() {
   }, [])
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4 md:p-8">
+    <div className="flex flex-col items-center justify-center h-full p-4 md:p-8 bg-gradient-to-br from-background/50 to-muted/20">
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="space-y-6"
+        initial={{ scale: 0.8, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.23, 1, 0.320, 1] }}
+        className="space-y-8"
       >
         {/* Header hidden to match screenshot */}
 
         {/* Phone Frame with Preview */}
-        <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.3 }} className="relative">
+        <motion.div 
+          whileHover={{ scale: 1.03, y: -8 }} 
+          transition={{ duration: 0.4, ease: [0.23, 1, 0.320, 1] }} 
+          className="relative p-6 rounded-3xl bg-gradient-to-br from-card to-card/90 shadow-2xl shadow-black/20 border border-border/30"
+        >
           {/* Composition viewport only (MessageConversation includes its own phone) */}
-          <div className="relative w-[320px] h-[600px]">
+          <div className="relative w-[320px] h-[600px] rounded-2xl overflow-hidden bg-background/50 shadow-inner">
             {messages.length > 0 ? (
               <Player
                 ref={playerRef}
@@ -76,33 +80,44 @@ export function PreviewPanel() {
                 compositionWidth={390}
                 compositionHeight={844}
                 inputProps={inputProps}
-                controls={false}
+                controls={true}
                 autoPlay={false}
                 loop
                 style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent', backgroundColor: 'transparent' }}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                <Smartphone className="w-16 h-16 mb-4 opacity-50" />
-                <p className="text-sm text-center px-8">Add messages to see your video preview</p>
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
+                    <Smartphone className="w-10 h-10 text-primary/60" />
+                  </div>
+                  <p className="text-sm text-center px-8 font-medium">Add messages to see your video preview</p>
+                  <p className="text-xs text-center px-8 mt-2 text-muted-foreground/60">Your conversation will come to life here</p>
+                </motion.div>
               </div>
             )}
           </div>
           {/* Play/Pause Button Overlay */}
           {messages.length > 0 && (
             <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.85 }}
               onClick={handlePlayPause}
-              className="absolute inset-0 flex items-center justify-center"
+              className="absolute inset-0 flex items-center justify-center group pointer-events-none"
+              transition={{ duration: 0.3, ease: [0.23, 1, 0.320, 1] }}
             >
-              <div className="w-16 h-16 bg-black/20 backdrop-blur rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 bg-black/30 backdrop-blur-lg rounded-full flex items-center justify-center shadow-2xl shadow-black/40 border border-white/20 group-hover:bg-black/40 transition-all duration-300 pointer-events-auto">
                 {isPlaying ? (
-                  <Pause className="w-8 h-8 text-white" />
+                  <Pause className="w-10 h-10 text-white drop-shadow-lg" />
                 ) : (
-                  <Play className="w-8 h-8 text-white ml-1" />
+                  <Play className="w-10 h-10 text-white ml-1 drop-shadow-lg" />
                 )}
               </div>
             </motion.button>

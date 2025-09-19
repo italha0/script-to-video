@@ -109,6 +109,7 @@ async function run() {
       allowHTTP1ForStreaming: true,
       allowOrganizeImports: true,
       headless: true,
+      ignoreCertificateErrors: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -119,7 +120,20 @@ async function run() {
         '--disable-extensions',
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
+        '--disable-renderer-backgrounding',
+        // Enhanced emoji and font support
+        '--font-render-hinting=none',
+        '--enable-font-antialiasing',
+        '--disable-font-subpixel-positioning',
+        '--allow-running-insecure-content',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--force-color-profile=srgb',
+        // Network and CDN access
+        '--disable-background-networking',
+        '--disable-default-apps',
+        '--disable-translate',
+        '--no-default-browser-check'
       ]
     },
     onProgress: (p) => {

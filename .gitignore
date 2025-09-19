@@ -25,3 +25,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Cache and temporary files
+.cache/
+temp/
+tmp/
+*.tmp
+
+# IDE files
+.vscode/
+.idea/
+
+# Build artifacts
+lib/dist/
+dist/
+
+# Temporary files
+cmd.txt
+attached_assets/
