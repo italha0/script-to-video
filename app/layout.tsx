@@ -40,7 +40,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-
   // Icons (ensure these files are in your /public folder)
   icons: {
     icon: '/favicon.ico',
