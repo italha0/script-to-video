@@ -5,6 +5,16 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   images: { unoptimized: true },
   
+  // Allow all hosts for Replit proxy compatibility
+  async rewrites() {
+    return []
+  },
+  
+  // Configure development server
+  experimental: {
+    allowedHosts: true,
+  },
+  
   async headers() {
     return [
       {
