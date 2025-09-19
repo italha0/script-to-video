@@ -11,8 +11,8 @@ const nextConfig = {
   },
   
   // Configure development server
-  experimental: {
-    allowedHosts: true,
+  env: {
+    HOSTNAME: '0.0.0.0',
   },
   
   async headers() {
