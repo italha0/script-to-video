@@ -10,6 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        
         // Primary: solid purple, hover lighter purple, subtle glow
         default: "bg-primary text-primary-foreground shadow-[0_2px_8px_-2px_rgba(138,43,226,0.55)] hover:bg-primary-hover hover:shadow-[0_4px_18px_-4px_rgba(138,43,226,0.65)]",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
