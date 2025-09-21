@@ -126,12 +126,32 @@ export default function RootLayout({
         />
 
         {/* Google AdSense */}
+        
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2892825507816139"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2892825507816139"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+
+        <ins
+          className="adsbygoogle"
+          style={{ display: "block" }}
+          data-ad-client="ca-pub-2892825507816139"
+          data-ad-slot="2534500000"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+
+        <Script id="ads-init" strategy="afterInteractive">
+          {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+        </Script>
 
         {/* Google Analytics */}
         <Script
