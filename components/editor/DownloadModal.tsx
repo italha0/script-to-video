@@ -1,3 +1,36 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useEffect, useState } from "react";
+import { Loader2, CheckCircle, AlertCircle, Download } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+interface DownloadModalProps {
+  isRendering: boolean;
+  status: 'pending' | 'rendering' | 'done' | 'error';
+  progress: number;
+  error: string | null;
+  onDownload: () => void;
+  canClose: boolean;
+  handleClose: () => void;
+}
+
+export const DownloadModal = ({
+  isRendering,
+  status,
+  error,
+  onDownload,
+  canClose,
+  handleClose,
+}: DownloadModalProps) => {
+  const [visualProgress, setVisualProgress] = useState(0);
+
   useEffect(() => {
     if (status === 'pending') {
       setVisualProgress(10)
@@ -108,7 +141,7 @@
                   value={visualProgress}
                   className="w-full h-2 bg-muted"
                 />
-                <p className="text-center text-xs text-muted-foreground">
+                <p className.tsx="text-center text-xs text-muted-foreground">
                   {Math.round(visualProgress)}% complete
                 </p>
               </motion.div>
