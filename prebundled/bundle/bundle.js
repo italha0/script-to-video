@@ -25800,7 +25800,7 @@ const themes = {
       padding: "8px 14px",
       fontSize: 17,
       lineHeight: 1.25,
-      fontFamily: 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      fontFamily: 'SF Pro Text, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
       borderRadius: {
         sent: {
           topLeft: (first) => first ? 18 : 6,
@@ -25820,7 +25820,7 @@ const themes = {
         received: "0 1px 1px rgba(0,0,0,.15)"
       },
       letterSpacing: -0.2,
-      marginBottom: 6
+      marginBottom: 8
     },
     header: {
       height: 52,
@@ -25868,7 +25868,7 @@ const themes = {
       padding: "6px 12px",
       fontSize: 16,
       lineHeight: 1.3,
-      fontFamily: 'Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
+      fontFamily: 'Roboto, "Helvetica Neue", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
       borderRadius: {
         sent: {
           topLeft: (first) => 8,
@@ -25888,7 +25888,7 @@ const themes = {
         received: "0 1px 2px rgba(0,0,0,.1)"
       },
       letterSpacing: 0,
-      marginBottom: 4
+      marginBottom: 8
     },
     header: {
       height: 56,
@@ -25936,7 +25936,7 @@ const themes = {
       padding: "10px 16px",
       fontSize: 16,
       lineHeight: 1.4,
-      fontFamily: 'Avenir Next, "Helvetica Neue", Helvetica, Arial, sans-serif',
+      fontFamily: 'Avenir Next, "Helvetica Neue", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif',
       borderRadius: {
         sent: {
           topLeft: (first) => 20,
@@ -25956,7 +25956,7 @@ const themes = {
         received: "0 1px 4px rgba(0,0,0,.1)"
       },
       letterSpacing: 0.2,
-      marginBottom: 8
+      marginBottom: 10
     },
     header: {
       height: 50,
@@ -25980,7 +25980,51 @@ const getTheme = (themeName) => {
   return themes[themeName] || themes.imessage;
 };
 
+;// ./node_modules/twemoji/dist/twemoji.esm.js
+/*! Copyright Twitter Inc. and other contributors. Licensed under MIT */
+var twemoji_esm_twemoji=function(){"use strict";var twemoji={base:"https://twemoji.maxcdn.com/v/14.0.2/",ext:".png",size:"72x72",className:"emoji",convert:{fromCodePoint:fromCodePoint,toCodePoint:toCodePoint},onerror:function onerror(){if(this.parentNode){this.parentNode.replaceChild(createText(this.alt,false),this)}},parse:parse,replace:replace,test:test},escaper={"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"},re=/(?:\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c[\udffc-\udfff]|\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c[\udffb\udffd-\udfff]|\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c[\udffb\udffc\udffe\udfff]|\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c[\udffb-\udffd\udfff]|\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c[\udffb-\udffe]|\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c[\udffb-\udfff]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffe]|\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c[\udffc-\udfff]|\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c[\udffb\udffd-\udfff]|\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c[\udffb\udffc\udffe\udfff]|\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c[\udffb-\udffd\udfff]|\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c[\udffb-\udffe]|\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d[\udc68\udc69]|\ud83e\udef1\ud83c\udffb\u200d\ud83e\udef2\ud83c[\udffc-\udfff]|\ud83e\udef1\ud83c\udffc\u200d\ud83e\udef2\ud83c[\udffb\udffd-\udfff]|\ud83e\udef1\ud83c\udffd\u200d\ud83e\udef2\ud83c[\udffb\udffc\udffe\udfff]|\ud83e\udef1\ud83c\udffe\u200d\ud83e\udef2\ud83c[\udffb-\udffd\udfff]|\ud83e\udef1\ud83c\udfff\u200d\ud83e\udef2\ud83c[\udffb-\udffe]|\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d[\udc68\udc69]|\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1|\ud83d\udc6b\ud83c[\udffb-\udfff]|\ud83d\udc6c\ud83c[\udffb-\udfff]|\ud83d\udc6d\ud83c[\udffb-\udfff]|\ud83d\udc8f\ud83c[\udffb-\udfff]|\ud83d\udc91\ud83c[\udffb-\udfff]|\ud83e\udd1d\ud83c[\udffb-\udfff]|\ud83d[\udc6b-\udc6d\udc8f\udc91]|\ud83e\udd1d)|(?:\ud83d[\udc68\udc69]|\ud83e\uddd1)(?:\ud83c[\udffb-\udfff])?\u200d(?:\u2695\ufe0f|\u2696\ufe0f|\u2708\ufe0f|\ud83c[\udf3e\udf73\udf7c\udf84\udf93\udfa4\udfa8\udfeb\udfed]|\ud83d[\udcbb\udcbc\udd27\udd2c\ude80\ude92]|\ud83e[\uddaf-\uddb3\uddbc\uddbd])|(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75]|\u26f9)((?:\ud83c[\udffb-\udfff]|\ufe0f)\u200d[\u2640\u2642]\ufe0f)|(?:\ud83c[\udfc3\udfc4\udfca]|\ud83d[\udc6e\udc70\udc71\udc73\udc77\udc81\udc82\udc86\udc87\ude45-\ude47\ude4b\ude4d\ude4e\udea3\udeb4-\udeb6]|\ud83e[\udd26\udd35\udd37-\udd39\udd3d\udd3e\uddb8\uddb9\uddcd-\uddcf\uddd4\uddd6-\udddd])(?:\ud83c[\udffb-\udfff])?\u200d[\u2640\u2642]\ufe0f|(?:\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f|\ud83c\udff3\ufe0f\u200d\ud83c\udf08|\ud83d\ude36\u200d\ud83c\udf2b\ufe0f|\u2764\ufe0f\u200d\ud83d\udd25|\u2764\ufe0f\u200d\ud83e\ude79|\ud83c\udff4\u200d\u2620\ufe0f|\ud83d\udc15\u200d\ud83e\uddba|\ud83d\udc3b\u200d\u2744\ufe0f|\ud83d\udc41\u200d\ud83d\udde8|\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc6f\u200d\u2640\ufe0f|\ud83d\udc6f\u200d\u2642\ufe0f|\ud83d\ude2e\u200d\ud83d\udca8|\ud83d\ude35\u200d\ud83d\udcab|\ud83e\udd3c\u200d\u2640\ufe0f|\ud83e\udd3c\u200d\u2642\ufe0f|\ud83e\uddde\u200d\u2640\ufe0f|\ud83e\uddde\u200d\u2642\ufe0f|\ud83e\udddf\u200d\u2640\ufe0f|\ud83e\udddf\u200d\u2642\ufe0f|\ud83d\udc08\u200d\u2b1b)|[#*0-9]\ufe0f?\u20e3|(?:[©®\u2122\u265f]\ufe0f)|(?:\ud83c[\udc04\udd70\udd71\udd7e\udd7f\ude02\ude1a\ude2f\ude37\udf21\udf24-\udf2c\udf36\udf7d\udf96\udf97\udf99-\udf9b\udf9e\udf9f\udfcd\udfce\udfd4-\udfdf\udff3\udff5\udff7]|\ud83d[\udc3f\udc41\udcfd\udd49\udd4a\udd6f\udd70\udd73\udd76-\udd79\udd87\udd8a-\udd8d\udda5\udda8\uddb1\uddb2\uddbc\uddc2-\uddc4\uddd1-\uddd3\udddc-\uddde\udde1\udde3\udde8\uddef\uddf3\uddfa\udecb\udecd-\udecf\udee0-\udee5\udee9\udef0\udef3]|[\u203c\u2049\u2139\u2194-\u2199\u21a9\u21aa\u231a\u231b\u2328\u23cf\u23ed-\u23ef\u23f1\u23f2\u23f8-\u23fa\u24c2\u25aa\u25ab\u25b6\u25c0\u25fb-\u25fe\u2600-\u2604\u260e\u2611\u2614\u2615\u2618\u2620\u2622\u2623\u2626\u262a\u262e\u262f\u2638-\u263a\u2640\u2642\u2648-\u2653\u2660\u2663\u2665\u2666\u2668\u267b\u267f\u2692-\u2697\u2699\u269b\u269c\u26a0\u26a1\u26a7\u26aa\u26ab\u26b0\u26b1\u26bd\u26be\u26c4\u26c5\u26c8\u26cf\u26d1\u26d3\u26d4\u26e9\u26ea\u26f0-\u26f5\u26f8\u26fa\u26fd\u2702\u2708\u2709\u270f\u2712\u2714\u2716\u271d\u2721\u2733\u2734\u2744\u2747\u2757\u2763\u2764\u27a1\u2934\u2935\u2b05-\u2b07\u2b1b\u2b1c\u2b50\u2b55\u3030\u303d\u3297\u3299])(?:\ufe0f|(?!\ufe0e))|(?:(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75\udd90]|[\u261d\u26f7\u26f9\u270c\u270d])(?:\ufe0f|(?!\ufe0e))|(?:\ud83c[\udf85\udfc2-\udfc4\udfc7\udfca]|\ud83d[\udc42\udc43\udc46-\udc50\udc66-\udc69\udc6e\udc70-\udc78\udc7c\udc81-\udc83\udc85-\udc87\udcaa\udd7a\udd95\udd96\ude45-\ude47\ude4b-\ude4f\udea3\udeb4-\udeb6\udec0\udecc]|\ud83e[\udd0c\udd0f\udd18-\udd1c\udd1e\udd1f\udd26\udd30-\udd39\udd3d\udd3e\udd77\uddb5\uddb6\uddb8\uddb9\uddbb\uddcd-\uddcf\uddd1-\udddd\udec3-\udec5\udef0-\udef6]|[\u270a\u270b]))(?:\ud83c[\udffb-\udfff])?|(?:\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc77\udb40\udc6c\udb40\udc73\udb40\udc7f|\ud83c\udde6\ud83c[\udde8-\uddec\uddee\uddf1\uddf2\uddf4\uddf6-\uddfa\uddfc\uddfd\uddff]|\ud83c\udde7\ud83c[\udde6\udde7\udde9-\uddef\uddf1-\uddf4\uddf6-\uddf9\uddfb\uddfc\uddfe\uddff]|\ud83c\udde8\ud83c[\udde6\udde8\udde9\uddeb-\uddee\uddf0-\uddf5\uddf7\uddfa-\uddff]|\ud83c\udde9\ud83c[\uddea\uddec\uddef\uddf0\uddf2\uddf4\uddff]|\ud83c\uddea\ud83c[\udde6\udde8\uddea\uddec\udded\uddf7-\uddfa]|\ud83c\uddeb\ud83c[\uddee-\uddf0\uddf2\uddf4\uddf7]|\ud83c\uddec\ud83c[\udde6\udde7\udde9-\uddee\uddf1-\uddf3\uddf5-\uddfa\uddfc\uddfe]|\ud83c\udded\ud83c[\uddf0\uddf2\uddf3\uddf7\uddf9\uddfa]|\ud83c\uddee\ud83c[\udde8-\uddea\uddf1-\uddf4\uddf6-\uddf9]|\ud83c\uddef\ud83c[\uddea\uddf2\uddf4\uddf5]|\ud83c\uddf0\ud83c[\uddea\uddec-\uddee\uddf2\uddf3\uddf5\uddf7\uddfc\uddfe\uddff]|\ud83c\uddf1\ud83c[\udde6-\udde8\uddee\uddf0\uddf7-\uddfb\uddfe]|\ud83c\uddf2\ud83c[\udde6\udde8-\udded\uddf0-\uddff]|\ud83c\uddf3\ud83c[\udde6\udde8\uddea-\uddec\uddee\uddf1\uddf4\uddf5\uddf7\uddfa\uddff]|\ud83c\uddf4\ud83c\uddf2|\ud83c\uddf5\ud83c[\udde6\uddea-\udded\uddf0-\uddf3\uddf7-\uddf9\uddfc\uddfe]|\ud83c\uddf6\ud83c\udde6|\ud83c\uddf7\ud83c[\uddea\uddf4\uddf8\uddfa\uddfc]|\ud83c\uddf8\ud83c[\udde6-\uddea\uddec-\uddf4\uddf7-\uddf9\uddfb\uddfd-\uddff]|\ud83c\uddf9\ud83c[\udde6\udde8\udde9\uddeb-\udded\uddef-\uddf4\uddf7\uddf9\uddfb\uddfc\uddff]|\ud83c\uddfa\ud83c[\udde6\uddec\uddf2\uddf3\uddf8\uddfe\uddff]|\ud83c\uddfb\ud83c[\udde6\udde8\uddea\uddec\uddee\uddf3\uddfa]|\ud83c\uddfc\ud83c[\uddeb\uddf8]|\ud83c\uddfd\ud83c\uddf0|\ud83c\uddfe\ud83c[\uddea\uddf9]|\ud83c\uddff\ud83c[\udde6\uddf2\uddfc]|\ud83c[\udccf\udd8e\udd91-\udd9a\udde6-\uddff\ude01\ude32-\ude36\ude38-\ude3a\ude50\ude51\udf00-\udf20\udf2d-\udf35\udf37-\udf7c\udf7e-\udf84\udf86-\udf93\udfa0-\udfc1\udfc5\udfc6\udfc8\udfc9\udfcf-\udfd3\udfe0-\udff0\udff4\udff8-\udfff]|\ud83d[\udc00-\udc3e\udc40\udc44\udc45\udc51-\udc65\udc6a\udc6f\udc79-\udc7b\udc7d-\udc80\udc84\udc88-\udc8e\udc90\udc92-\udca9\udcab-\udcfc\udcff-\udd3d\udd4b-\udd4e\udd50-\udd67\udda4\uddfb-\ude44\ude48-\ude4a\ude80-\udea2\udea4-\udeb3\udeb7-\udebf\udec1-\udec5\uded0-\uded2\uded5-\uded7\udedd-\udedf\udeeb\udeec\udef4-\udefc\udfe0-\udfeb\udff0]|\ud83e[\udd0d\udd0e\udd10-\udd17\udd20-\udd25\udd27-\udd2f\udd3a\udd3c\udd3f-\udd45\udd47-\udd76\udd78-\uddb4\uddb7\uddba\uddbc-\uddcc\uddd0\uddde-\uddff\ude70-\ude74\ude78-\ude7c\ude80-\ude86\ude90-\udeac\udeb0-\udeba\udec0-\udec2\uded0-\uded9\udee0-\udee7]|[\u23e9-\u23ec\u23f0\u23f3\u267e\u26ce\u2705\u2728\u274c\u274e\u2753-\u2755\u2795-\u2797\u27b0\u27bf\ue50a])|\ufe0f/g,UFE0Fg=/\uFE0F/g,U200D=String.fromCharCode(8205),rescaper=/[&<>'"]/g,shouldntBeParsed=/^(?:iframe|noframes|noscript|script|select|style|textarea)$/,fromCharCode=String.fromCharCode;return twemoji;function createText(text,clean){return document.createTextNode(clean?text.replace(UFE0Fg,""):text)}function escapeHTML(s){return s.replace(rescaper,replacer)}function defaultImageSrcGenerator(icon,options){return"".concat(options.base,options.size,"/",icon,options.ext)}function grabAllTextNodes(node,allText){var childNodes=node.childNodes,length=childNodes.length,subnode,nodeType;while(length--){subnode=childNodes[length];nodeType=subnode.nodeType;if(nodeType===3){allText.push(subnode)}else if(nodeType===1&&!("ownerSVGElement"in subnode)&&!shouldntBeParsed.test(subnode.nodeName.toLowerCase())){grabAllTextNodes(subnode,allText)}}return allText}function grabTheRightIcon(rawText){return toCodePoint(rawText.indexOf(U200D)<0?rawText.replace(UFE0Fg,""):rawText)}function parseNode(node,options){var allText=grabAllTextNodes(node,[]),length=allText.length,attrib,attrname,modified,fragment,subnode,text,match,i,index,img,rawText,iconId,src;while(length--){modified=false;fragment=document.createDocumentFragment();subnode=allText[length];text=subnode.nodeValue;i=0;while(match=re.exec(text)){index=match.index;if(index!==i){fragment.appendChild(createText(text.slice(i,index),true))}rawText=match[0];iconId=grabTheRightIcon(rawText);i=index+rawText.length;src=options.callback(iconId,options);if(iconId&&src){img=new Image;img.onerror=options.onerror;img.setAttribute("draggable","false");attrib=options.attributes(rawText,iconId);for(attrname in attrib){if(attrib.hasOwnProperty(attrname)&&attrname.indexOf("on")!==0&&!img.hasAttribute(attrname)){img.setAttribute(attrname,attrib[attrname])}}img.className=options.className;img.alt=rawText;img.src=src;modified=true;fragment.appendChild(img)}if(!img)fragment.appendChild(createText(rawText,false));img=null}if(modified){if(i<text.length){fragment.appendChild(createText(text.slice(i),true))}subnode.parentNode.replaceChild(fragment,subnode)}}return node}function parseString(str,options){return replace(str,function(rawText){var ret=rawText,iconId=grabTheRightIcon(rawText),src=options.callback(iconId,options),attrib,attrname;if(iconId&&src){ret="<img ".concat('class="',options.className,'" ','draggable="false" ','alt="',rawText,'"',' src="',src,'"');attrib=options.attributes(rawText,iconId);for(attrname in attrib){if(attrib.hasOwnProperty(attrname)&&attrname.indexOf("on")!==0&&ret.indexOf(" "+attrname+"=")===-1){ret=ret.concat(" ",attrname,'="',escapeHTML(attrib[attrname]),'"')}}ret=ret.concat("/>")}return ret})}function replacer(m){return escaper[m]}function returnNull(){return null}function toSizeSquaredAsset(value){return typeof value==="number"?value+"x"+value:value}function fromCodePoint(codepoint){var code=typeof codepoint==="string"?parseInt(codepoint,16):codepoint;if(code<65536){return fromCharCode(code)}code-=65536;return fromCharCode(55296+(code>>10),56320+(code&1023))}function parse(what,how){if(!how||typeof how==="function"){how={callback:how}}return(typeof what==="string"?parseString:parseNode)(what,{callback:how.callback||defaultImageSrcGenerator,attributes:typeof how.attributes==="function"?how.attributes:returnNull,base:typeof how.base==="string"?how.base:twemoji.base,ext:how.ext||twemoji.ext,size:how.folder||toSizeSquaredAsset(how.size||twemoji.size),className:how.className||twemoji.className,onerror:how.onerror||twemoji.onerror})}function replace(text,callback){return String(text).replace(re,callback)}function test(text){re.lastIndex=0;var result=re.test(text);re.lastIndex=0;return result}function toCodePoint(unicodeSurrogates,sep){var r=[],c=0,p=0,i=0;while(i<unicodeSurrogates.length){c=unicodeSurrogates.charCodeAt(i++);if(p){r.push((65536+(p-55296<<10)+(c-56320)).toString(16));p=0}else if(55296<=c&&c<=56319){p=c}else{r.push(c.toString(16))}}return r.join(sep||"-")}}();
+/* harmony default export */ const twemoji_esm = ((/* unused pure expression or super */ null && (twemoji_esm_twemoji)));
+;// ./remotion/emoji.ts
+
+
+const escapeHtml = (text) => {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+};
+const renderEmojiForVideo = (text) => {
+  if (!text) return "";
+  const escapedText = escapeHtml(text);
+  return `<span style="font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',system-ui,sans-serif;font-size:inherit;line-height:inherit;">${escapedText}</span>`;
+};
+const renderEmojiHTML = (text) => {
+  if (!text) return "";
+  const escapedText = escapeHtml(text);
+  try {
+    const result = twemoji.parse(escapedText, {
+      folder: "svg",
+      ext: ".svg",
+      base: "/twemoji/",
+      // Use local assets instead of CDN
+      attributes: () => ({
+        draggable: "false",
+        height: "1em",
+        width: "1em",
+        style: "display:inline-block;vertical-align:-0.125em;",
+        alt: "",
+        // Remove alt to prevent issues
+        loading: "lazy"
+      })
+    });
+    return result;
+  } catch (error) {
+    console.warn("[EMOJI] Twemoji parsing failed, using font fallback:", error);
+    return `<span style="font-family:system-ui,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji',sans-serif;">${escapedText}</span>`;
+  }
+};
+
 ;// ./remotion/MessageConversation.tsx
+
 
 
 
@@ -25989,12 +26033,14 @@ const GAP_SECONDS = 2;
 const TYPING_DURATION = 1.2;
 const TYPING_GAP = 0.15;
 const DELIVERED_DELAY = 0.6;
-const KEYBOARD_HEIGHT = 300;
+const KEYBOARD_HEIGHT = 320;
+const ACCESSORY_HEIGHT = 56;
 const KEYBOARD_DISAPPEAR_FRAMES = 12;
 const KEYBOARD_LEAD = 0.8;
 const KEYBOARD_TRAIL = 0.3;
-const TYPE_SPEED = 14;
+const TYPE_SPEED = 11;
 const SEND_GAP = 0.18;
+const SAFE_TOP_INSET = 18;
 const MessageBubble = ({ msg, appearSec, first, last, theme }) => {
   const frame = (0,esm.useCurrentFrame)();
   const { fps } = (0,esm.useVideoConfig)();
@@ -26014,6 +26060,8 @@ const MessageBubble = ({ msg, appearSec, first, last, theme }) => {
     lineHeight: theme.bubble.lineHeight,
     fontFamily: theme.bubble.fontFamily,
     wordWrap: "break-word",
+    whiteSpace: "pre-wrap",
+    overflowWrap: "anywhere",
     borderTopLeftRadius: borderRadius.topLeft(first),
     borderTopRightRadius: borderRadius.topRight(first),
     borderBottomLeftRadius: borderRadius.bottomLeft(last),
@@ -26021,7 +26069,7 @@ const MessageBubble = ({ msg, appearSec, first, last, theme }) => {
     boxShadow: msg.sent ? theme.bubble.shadow.sent : theme.bubble.shadow.received,
     letterSpacing: theme.bubble.letterSpacing
   };
-  return /* @__PURE__ */ react.createElement("div", { style: { display: "flex", justifyContent: msg.sent ? "flex-end" : "flex-start", marginBottom: theme.bubble.marginBottom, transform: `translateY(${translateY}px) scale(${scale})`, opacity: progress } }, /* @__PURE__ */ react.createElement("div", { style: bubbleStyle }, displayText));
+  return /* @__PURE__ */ react.createElement("div", { style: { display: "flex", justifyContent: msg.sent ? "flex-end" : "flex-start", marginBottom: theme.bubble.marginBottom, transform: `translateY(${translateY}px) scale(${scale})`, opacity: progress } }, /* @__PURE__ */ react.createElement("div", { style: bubbleStyle, dangerouslySetInnerHTML: { __html: renderEmojiForVideo(displayText) } }));
 };
 const TypingBubble = ({ startSec, endSec, sent, theme }) => {
   const frame = (0,esm.useCurrentFrame)();
@@ -26061,7 +26109,7 @@ const Keyboard = ({ startSec, endSec, currentInputText, activeChar, theme }) => 
     translateY = slideOut;
     opacity = 1 - eased * 0.4;
   }
-  const keyRows = [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["\u21E7", "Z", "X", "C", "V", "B", "N", "M", "\u232B"], ["123", "\u{1F600}", "space", "return"]];
+  const keyRows = [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["\u21E7", "Z", "X", "C", "V", "B", "N", "M", "\u232B"], ["123", ":)", "space", "return"]];
   const renderKey = (k) => {
     const isSpace = k === "space";
     const normalizedActive = (activeChar || "").toLowerCase();
@@ -26085,14 +26133,17 @@ const Keyboard = ({ startSec, endSec, currentInputText, activeChar, theme }) => 
   };
   const caretBlink = frame / fps % 1 < 0.5;
   const showCaret = true;
-  const inputDisplay = currentInputText && currentInputText.length > 0 ? /* @__PURE__ */ react.createElement("span", null, currentInputText, showCaret && caretBlink ? /* @__PURE__ */ react.createElement("span", { style: { borderLeft: `2px solid ${theme.colors.sent}`, marginLeft: 2 } }) : null) : /* @__PURE__ */ react.createElement("span", { style: { opacity: 0.4 } }, "Type a message", showCaret && caretBlink ? /* @__PURE__ */ react.createElement("span", { style: { borderLeft: `2px solid ${theme.colors.sent}`, marginLeft: 2 } }) : null);
-  return /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", left: 0, right: 0, bottom: 0, transform: `translateY(${translateY}px)`, background: theme.colors.keyboardBackground, borderTop: `1px solid ${theme.colors.keyboardBorder}`, fontFamily: theme.bubble.fontFamily } }, /* @__PURE__ */ react.createElement("div", { style: { display: "flex", alignItems: "center", padding: "6px 8px", gap: 8, background: theme.colors.headerBackground } }, /* @__PURE__ */ react.createElement("div", { style: { width: 32, height: 32, borderRadius: 16, background: theme.colors.keyboardKeyActive, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 } }, "\u{1F4F7}"), /* @__PURE__ */ react.createElement("div", { style: { flex: 1, background: theme.colors.inputBackground, borderRadius: 16, padding: "6px 12px", color: theme.colors.inputText, fontSize: 16, minHeight: 32, display: "flex", alignItems: "center" } }, inputDisplay), /* @__PURE__ */ react.createElement("div", { style: { width: 32, height: 32, borderRadius: 16, background: theme.colors.keyboardKeyActive, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 } }, "\u{1F3A4}")), /* @__PURE__ */ react.createElement("div", { style: { padding: "4px 6px 8px" } }, keyRows.map((row, i) => /* @__PURE__ */ react.createElement("div", { key: i, style: { display: "flex", justifyContent: "center", marginBottom: i === keyRows.length - 1 ? 0 : 6 } }, row.map(renderKey)))));
+  const baseInputText = currentInputText && currentInputText.length > 0 ? currentInputText : "Type a message";
+  const inputHTMLCore = renderEmojiForVideo(baseInputText);
+  const caretHTML = showCaret && caretBlink ? `<span style="border-left: 2px solid ${theme.colors.sent}; margin-left:2px"></span>` : "";
+  const inputHTML = currentInputText && currentInputText.length > 0 ? `${inputHTMLCore}${caretHTML}` : `<span style="opacity:0.4">${inputHTMLCore}${caretHTML}</span>`;
+  return /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", left: 0, right: 0, bottom: 2, transform: `translateY(${translateY}px)`, background: theme.colors.keyboardBackground, borderTop: `1px solid ${theme.colors.keyboardBorder}`, fontFamily: theme.bubble.fontFamily } }, /* @__PURE__ */ react.createElement("div", { style: { display: "flex", alignItems: "center", padding: "8px 10px", gap: 8, background: theme.colors.headerBackground, minHeight: ACCESSORY_HEIGHT, boxSizing: "border-box" } }, /* @__PURE__ */ react.createElement("div", { style: { width: 32, height: 32, borderRadius: 16, background: theme.colors.keyboardKeyActive, display: "flex", alignItems: "center", justifyContent: "center" } }, /* @__PURE__ */ react.createElement("svg", { viewBox: "0 0 24 24", width: 16, height: 16, fill: "#fff", "aria-hidden": true }, /* @__PURE__ */ react.createElement("path", { d: "M4 7h3l1-2h8l1 2h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" }))), /* @__PURE__ */ react.createElement("div", { style: { flex: 1, background: theme.colors.inputBackground, borderRadius: 16, padding: "8px 12px", color: theme.colors.inputText, fontSize: 16, minHeight: 36, maxHeight: 72, overflow: "hidden", display: "flex", alignItems: "center", lineHeight: 1.25, whiteSpace: "pre-wrap", wordBreak: "break-word" }, dangerouslySetInnerHTML: { __html: inputHTML } }), /* @__PURE__ */ react.createElement("div", { style: { width: 32, height: 32, borderRadius: 16, background: theme.colors.sent, display: "flex", alignItems: "center", justifyContent: "center" } }, /* @__PURE__ */ react.createElement("svg", { viewBox: "0 0 24 24", width: 14, height: 14, fill: "#fff", "aria-hidden": true }, /* @__PURE__ */ react.createElement("path", { d: "M3 12l18-9-9 18-1.5-6L3 12z" })))), /* @__PURE__ */ react.createElement("div", { style: { padding: "6px 6px 6px" } }, keyRows.map((row, i) => /* @__PURE__ */ react.createElement("div", { key: i, style: { display: "flex", justifyContent: "center", marginBottom: i === keyRows.length - 1 ? 0 : 6 } }, row.map(renderKey)))));
 };
 const StatusBar = ({ batteryLevel = 100, theme }) => {
   const clamped = Math.min(100, Math.max(0, batteryLevel));
-  return /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: theme.statusBar.height, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", fontSize: theme.statusBar.fontSize, fontWeight: theme.statusBar.fontWeight, fontFamily: theme.bubble.fontFamily, color: theme.colors.statusBar, zIndex: 30 } }, /* @__PURE__ */ react.createElement("div", null, "9:41"), /* @__PURE__ */ react.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ react.createElement("div", { style: { display: "flex", alignItems: "flex-end", gap: 2 } }, [4, 7, 10, 13].map((h, i) => /* @__PURE__ */ react.createElement("div", { key: i, style: { width: 3, height: h, background: theme.colors.statusBar, borderRadius: 1 } }))), /* @__PURE__ */ react.createElement("div", { style: { position: "relative", width: 18, height: 14 } }, /* @__PURE__ */ react.createElement("svg", { viewBox: "0 0 20 14", width: 18, height: 14 }, /* @__PURE__ */ react.createElement("path", { d: "M10 13c.9 0 1.6-.7 1.6-1.6S10.9 9.8 10 9.8 8.4 10.5 8.4 11.4 9.1 13 10 13Z", fill: theme.colors.statusBar }), /* @__PURE__ */ react.createElement("path", { d: "M3.3 6.6a9.2 9.2 0 0 1 13.4 0l-1.2 1.2a7.5 7.5 0 0 0-11 0L3.3 6.6Z", fill: theme.colors.statusBar }), /* @__PURE__ */ react.createElement("path", { d: "M6.2 9.3a5.3 5.3 0 0 1 7.6 0l-1.2 1.2a3.6 3.6 0 0 0-5.2 0l-1.2-1.2Z", fill: theme.colors.statusBar }))), /* @__PURE__ */ react.createElement("div", { style: { position: "relative", width: 28, height: 14, border: `2px solid ${theme.colors.statusBar}`, borderRadius: 4, display: "flex", alignItems: "center", padding: "0 3px", boxSizing: "border-box" } }, /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: 3, right: -5, width: 3, height: 8, background: theme.colors.statusBar, borderRadius: 1 } }), /* @__PURE__ */ react.createElement("div", { style: { width: `${clamped}%`, height: 6, background: clamped < 20 ? "#FF3B30" : theme.colors.statusBar, borderRadius: 2, transition: "width 0.3s" } }))));
+  return /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: theme.statusBar.height, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", fontSize: theme.statusBar.fontSize, fontWeight: theme.statusBar.fontWeight, fontFamily: theme.bubble.fontFamily, color: theme.colors.statusBar, zIndex: 1e3, background: "#FFFFFF" } }, /* @__PURE__ */ react.createElement("div", null, "9:41"), /* @__PURE__ */ react.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ react.createElement("div", { style: { display: "flex", alignItems: "flex-end", gap: 2 } }, [4, 7, 10, 13].map((h, i) => /* @__PURE__ */ react.createElement("div", { key: i, style: { width: 3, height: h, background: theme.colors.statusBar, borderRadius: 1 } }))), /* @__PURE__ */ react.createElement("div", { style: { position: "relative", width: 18, height: 14 } }, /* @__PURE__ */ react.createElement("svg", { viewBox: "0 0 20 14", width: 18, height: 14 }, /* @__PURE__ */ react.createElement("path", { d: "M10 13c.9 0 1.6-.7 1.6-1.6S10.9 9.8 10 9.8 8.4 10.5 8.4 11.4 9.1 13 10 13Z", fill: theme.colors.statusBar }), /* @__PURE__ */ react.createElement("path", { d: "M3.3 6.6a9.2 9.2 0 0 1 13.4 0l-1.2 1.2a7.5 7.5 0 0 0-11 0L3.3 6.6Z", fill: theme.colors.statusBar }), /* @__PURE__ */ react.createElement("path", { d: "M6.2 9.3a5.3 5.3 0 0 1 7.6 0l-1.2 1.2a3.6 3.6 0 0 0-5.2 0l-1.2-1.2Z", fill: theme.colors.statusBar }))), /* @__PURE__ */ react.createElement("div", { style: { position: "relative", width: 28, height: 14, border: `2px solid ${theme.colors.statusBar}`, borderRadius: 4, display: "flex", alignItems: "center", padding: "0 3px", boxSizing: "border-box" } }, /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: 3, right: -5, width: 3, height: 8, background: theme.colors.statusBar, borderRadius: 1 } }), /* @__PURE__ */ react.createElement("div", { style: { width: `${clamped}%`, height: 6, background: clamped < 20 ? "#FF3B30" : theme.colors.statusBar, borderRadius: 2, transition: "width 0.3s" } }))));
 };
-const NavigationHeader = ({ contactName, theme }) => /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: theme.statusBar.height, left: 0, right: 0, height: theme.header.height, background: theme.colors.headerBackground, borderBottom: `1px solid ${theme.colors.headerBorder}`, display: "flex", alignItems: "center", padding: "0 12px", fontFamily: theme.bubble.fontFamily, zIndex: 20 } }, /* @__PURE__ */ react.createElement("div", { style: { fontSize: theme.header.fontSize, color: theme.colors.headerText } }, "Back"), /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", left: "50%", transform: "translateX(-50%)", fontSize: theme.header.fontSize, fontWeight: theme.header.fontWeight, color: theme.colors.headerText } }, contactName || "Contact"));
+const NavigationHeader = ({ contactName, theme }) => /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: theme.statusBar.height, left: 0, right: 0, height: theme.header.height, background: theme.colors.headerBackground, borderBottom: `1px solid ${theme.colors.headerBorder}`, display: "flex", alignItems: "center", padding: "0 12px", fontFamily: theme.bubble.fontFamily, zIndex: 900 } }, /* @__PURE__ */ react.createElement("div", { style: { fontSize: theme.header.fontSize, color: theme.colors.headerText } }, "Back"), /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", left: "50%", transform: "translateX(-50%)", fontSize: theme.header.fontSize, fontWeight: theme.header.fontWeight, color: theme.colors.headerText } }, contactName || "Contact"));
 const DeliveredBelow = ({ startSec, theme }) => {
   const frame = (0,esm.useCurrentFrame)();
   const { fps } = (0,esm.useVideoConfig)();
@@ -26103,7 +26154,7 @@ const DeliveredBelow = ({ startSec, theme }) => {
   const translateY = (0,esm.interpolate)(progress, [0, 1], [6, 0]);
   return /* @__PURE__ */ react.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 4, transform: `translateY(${translateY}px)`, opacity } }, /* @__PURE__ */ react.createElement("div", { style: { fontSize: 12, color: theme.colors.deliveredText, fontFamily: theme.bubble.fontFamily } }, "Delivered"));
 };
-const MessageConversation = ({ messages, typingBeforeIndices, contactName, batteryLevel, theme: themeName = "imessage" }) => {
+const MessageConversation = ({ messages, typingBeforeIndices, contactName, batteryLevel, theme: themeName = "imessage", alwaysShowKeyboard }) => {
   const theme = getTheme(themeName);
   const frame = (0,esm.useCurrentFrame)();
   const { fps } = (0,esm.useVideoConfig)();
@@ -26141,8 +26192,8 @@ const MessageConversation = ({ messages, typingBeforeIndices, contactName, batte
   }
   const firstSent = entries.find((e) => e.msg.sent);
   const lastSent = [...entries].reverse().find((e) => e.msg.sent);
-  const keyboardStart = firstSent ? Math.max(0, (firstSent.typingStart ?? firstSent.appearSec) - KEYBOARD_LEAD) : null;
-  const keyboardEnd = lastSent ? (lastSent.typingEnd ?? lastSent.appearSec) + KEYBOARD_TRAIL : void 0;
+  const keyboardStart = alwaysShowKeyboard ? 0 : firstSent ? Math.max(0, (firstSent.typingStart ?? firstSent.appearSec) - KEYBOARD_LEAD) : null;
+  const keyboardEnd = alwaysShowKeyboard ? void 0 : lastSent ? (lastSent.typingEnd ?? lastSent.appearSec) + KEYBOARD_TRAIL : void 0;
   const deliveredStartSec = lastSent ? lastSent.appearSec + DELIVERED_DELAY : null;
   const currentSec = frame / fps;
   let currentInputText = "";
@@ -26181,7 +26232,7 @@ const MessageConversation = ({ messages, typingBeforeIndices, contactName, batte
     }
   }
   const headerHeight = theme.statusBar.height + theme.header.height;
-  return /* @__PURE__ */ react.createElement(esm.AbsoluteFill, { style: { background: "#000", fontFamily: theme.bubble.fontFamily, display: "flex", alignItems: "center", justifyContent: "center" } }, /* @__PURE__ */ react.createElement("div", { style: { width: 360, height: 780, background: theme.colors.background, borderRadius: 48, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.4)", border: "6px solid #000" } }, /* @__PURE__ */ react.createElement(StatusBar, { batteryLevel, theme }), /* @__PURE__ */ react.createElement(NavigationHeader, { contactName, theme }), /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: headerHeight, left: 0, right: 0, bottom: 0, padding: "0 12px", paddingBottom: 4 + keyboardVisibleHeight, display: "flex", flexDirection: "column", justifyContent: "flex-end", boxSizing: "border-box", zIndex: 5 } }, entries.map((entry) => {
+  return /* @__PURE__ */ react.createElement(esm.AbsoluteFill, { style: { background: "transparent", fontFamily: theme.bubble.fontFamily, display: "flex", alignItems: "center", justifyContent: "center" } }, /* @__PURE__ */ react.createElement("div", { style: { width: 360, height: 780, background: theme.colors.background, borderRadius: 48, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.25)", border: "0px solid transparent", isolation: "isolate" } }, /* @__PURE__ */ react.createElement(StatusBar, { batteryLevel, theme }), /* @__PURE__ */ react.createElement(NavigationHeader, { contactName, theme }), /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", top: headerHeight + SAFE_TOP_INSET, left: 0, right: 0, bottom: 0, padding: "8px 12px 0", paddingBottom: Math.max(0, keyboardVisibleHeight - ACCESSORY_HEIGHT), display: "flex", flexDirection: "column", justifyContent: "flex-end", boxSizing: "border-box", zIndex: 100 } }, entries.map((entry) => {
     var _a, _b;
     const { msg, idx, appearSec, typingIndicatorStart, typingIndicatorEnd } = entry;
     const prev = (_a = entries[idx - 1]) == null ? void 0 : _a.msg;
@@ -26189,7 +26240,7 @@ const MessageConversation = ({ messages, typingBeforeIndices, contactName, batte
     const first = !prev || prev.sent !== msg.sent;
     const last = !next || next.sent !== msg.sent;
     return /* @__PURE__ */ react.createElement(react.Fragment, { key: msg.id }, typingIndicatorStart !== void 0 && typingIndicatorEnd !== void 0 && /* @__PURE__ */ react.createElement(TypingBubble, { startSec: typingIndicatorStart, endSec: typingIndicatorEnd, sent: false, theme }), /* @__PURE__ */ react.createElement(MessageBubble, { msg, appearSec, first, last, theme }), deliveredStartSec != null && lastSent && lastSent.idx === idx && /* @__PURE__ */ react.createElement(DeliveredBelow, { startSec: deliveredStartSec, theme }));
-  })), keyboardStart != null && /* @__PURE__ */ react.createElement(Keyboard, { startSec: keyboardStart, endSec: keyboardEnd, currentInputText, activeChar, theme })));
+  })), keyboardStart != null && /* @__PURE__ */ react.createElement("div", { style: { position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 25 } }, /* @__PURE__ */ react.createElement(Keyboard, { startSec: keyboardStart, endSec: keyboardEnd, currentInputText, activeChar, theme }))));
 };
 
 ;// ./remotion/Root.tsx
@@ -26210,6 +26261,7 @@ const RemotionRoot = () => {
       defaultProps: {
         contactName: "Alex",
         theme: "imessage",
+        alwaysShowKeyboard: true,
         messages: [
           { id: 1, text: "oh no.", sent: false, time: "0:00" },
           { id: 2, text: "i thought you meant.", sent: false, time: "0:02" },

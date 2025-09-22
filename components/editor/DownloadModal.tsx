@@ -97,15 +97,15 @@
           {/* Progress Bar */}
           <AnimatePresence>
             {status !== 'done' && status !== 'error' && (
-              <motion.div 
+              <motion.div
                 className="w-full space-y-2"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
               >
-                <Progress 
-                  value={visualProgress} 
+                <Progress
+                  value={visualProgress}
                   className="w-full h-2 bg-muted"
                 />
                 <p className="text-center text-xs text-muted-foreground">
@@ -114,3 +114,32 @@
               </motion.div>
             )}
           </AnimatePresence>
+        </motion.div>
+
+        {status === 'done' && (
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              onClick={onDownload}
+              className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download Video
+            </Button>
+          </DialogFooter>
+        )}
+        
+        {status === 'error' && (
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              onClick={handleClose}
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
