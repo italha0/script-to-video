@@ -1,9 +1,15 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Navbar } from "@/components/layout/Navbar"
-import { HomeSidebar } from "@/components/landing/HomeSidebar"
-import { HomeCard } from "@/components/landing/HomeCard"
-import { MessageSquare, Bookmark, Quote, Calendar, Mic2, PanelRight } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { type Metadata } from "next";
+import { Navbar } from "@/components/layout/Navbar";
+import { HomeSidebar } from "@/components/landing/HomeSidebar";
+import { HomeCard } from "@/components/landing/HomeCard";
+import { MessageSquare, Bookmark, Quote, Calendar, Mic2, PanelRight } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Creator Dashboard | Script to Video",
+  description: "Your central hub for creating and managing AI-generated videos. Start a new project, view your renders, and access all tools.",
+};
 
 export default function HomePage() {
   return (

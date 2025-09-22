@@ -28,7 +28,7 @@ export function HomeCard({ title, description, href, gradient, icon, imageSrc }:
           {imageSrc && (
             <div className="hidden sm:block relative">
               <div className="relative  rounded-2xl shadow-lg shadow-black/10 overflow-hidden w-28 h-20 md:w-20 md:h-24 translate-x-2 group-hover:translate-x-3 transition-transform">
-                <Image src={imageSrc} alt="Preview" fill className="object-contain" />
+                <Image src={imageSrc} alt={title} fill className="object-contain" />
               </div>
             </div>
           )}

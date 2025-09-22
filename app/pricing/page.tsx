@@ -1,11 +1,17 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check, Sparkles, Video, Palette, Download } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { type Metadata } from "next";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Check, Sparkles, Video, Palette, Download } from "lucide-react";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Pricing Plans | Script to Video",
+  description: "Find the perfect plan for your video creation needs. Start for free or upgrade to our Pro plan for HD exports, no watermarks, and premium features.",
+};
 
 const plans = [
   {
