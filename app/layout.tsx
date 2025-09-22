@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/components/layout/AuthProvider";
 import type React from "react"
 import type { Metadata } from "next"
 import { Suspense } from "react"
