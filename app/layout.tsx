@@ -142,14 +142,6 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
 
-        <ins
-          className="adsbygoogle"
-          style={{ display: "block" }}
-          data-ad-client="ca-pub-2892825507816139"
-          data-ad-slot="2534500000"
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        />
 
         <Script id="ads-init" strategy="afterInteractive">
           {`(adsbygoogle = window.adsbygoogle || []).push({});`}
@@ -178,6 +170,15 @@ export default function RootLayout({
           <Toaster />
           <Analytics />
         </ThemeProvider>
+
+        <ins
+          className="adsbygoogle"
+          style={{ display: "block" }}
+          data-ad-client="ca-pub-2892825507816139"
+          data-ad-slot="2534500000"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
       </body>
     </html>
   )
