@@ -141,7 +141,7 @@ export const DownloadModal = ({
                   value={visualProgress}
                   className="w-full h-2 bg-muted"
                 />
-                <p className.tsx="text-center text-xs text-muted-foreground">
+                <p className="text-center text-xs text-muted-foreground">
                   {Math.round(visualProgress)}% complete
                 </p>
               </motion.div>

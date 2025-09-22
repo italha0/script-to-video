@@ -11,22 +11,7 @@ import { useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 
 export function MainLayout() {
-  const { activeTab, setUser } = useAppStore()
-  const supabase = createClient()
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-    }
-    fetchUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [setUser])
+  const { activeTab } = useAppStore()
 
   const renderContent = () => {
     switch (activeTab) {

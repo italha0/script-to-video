@@ -171,7 +171,9 @@ export default function RootLayout({
 
         {/* Your App Components */}
         <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false}>
-          <Suspense fallback={null}>{children}</Suspense>
+          <AuthProvider>
+            <Suspense fallback={null}>{children}</Suspense>
+          </AuthProvider>
           <Toaster />
           <Analytics />
         </ThemeProvider>
