@@ -9,7 +9,7 @@ import { Plus, Trash2, Sparkles } from "lucide-react"
 import { useAppStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useRef } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/appwrite/client"
 
 // Theme selection is fixed to iMessage per new design
 
@@ -45,9 +45,16 @@ export function ControlPanel() {
   const handleRender = async () => {
     // First, ensure the user is authenticated; otherwise redirect to login
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const { account } = createClient()
+      try {
+        const user = await account.get();
+        if (!user) {
+          const redirect = encodeURIComponent('/editor')
+          window.location.href = `/auth/login?redirect=${redirect}`
+          return
+        }
+      } catch {
+        // On any auth check error, fall back to login redirect as a safe default
         const redirect = encodeURIComponent('/editor')
         window.location.href = `/auth/login?redirect=${redirect}`
         return

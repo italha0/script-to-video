@@ -1,15 +1,15 @@
-"use client"
+'use client'
 
 import type React from "react"
 
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/appwrite/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -18,72 +18,33 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  // Safely validate redirect parameter to prevent open redirects
   const redirectParam = searchParams?.get("redirect") ?? null
   const redirectTo = (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) 
     ? redirectParam 
     : "/editor"
 
-  // Handle authentication and redirects
-  useEffect(() => {
-    const supabase = createClient()
-    let redirecting = false
-    
-    const handleRedirect = async () => {
-      if (redirecting) return
-      redirecting = true
-      
-      try {
-        // Ensure session is properly synced before redirecting
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          // Refresh router to ensure middleware sees the session
-          router.refresh()
-          // Small delay to ensure refresh completes
-          setTimeout(() => router.replace(redirectTo), 100)
-        }
-      } catch (error) {
-        console.warn('Session check failed during redirect:', error)
-        // Fallback to original behavior
-        setTimeout(() => router.replace(redirectTo), 150)
-      }
-    }
-    
-    // Check initial auth state
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        handleRedirect()
-      }
-    })
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        handleRedirect()
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [redirectTo, router])
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    const supabase = createClient()
+    const { account } = createClient()
     setIsLoading(true)
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
-      // Don't navigate here - let the auth state change listener handle it
-      // This prevents multiple redirect attempts
+      await account.createEmailPasswordSession(email, password)
+      router.push(redirectTo)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { account } = createClient()
+      account.createOAuth2Session('google', `${window.location.origin}${redirectTo}`)
+    } catch (error: unknown) {
+        setError(error instanceof Error ? error.message : "An error occurred")
     }
   }
 
@@ -96,6 +57,14 @@ export default function LoginPage() {
             <CardDescription className="text-foreground-muted">Sign in to your ChatVideo account</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="space-y-4">
+                <Button onClick={handleGoogleLogin} className="w-full">Sign in with Google</Button>
+            </div>
+            <div className="my-4 flex items-center">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="mx-4 text-xs text-gray-500">OR</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+            </div>
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

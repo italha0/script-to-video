@@ -11,7 +11,7 @@ import {
   MessageSquare 
 } from "lucide-react"
 import { useAppStore } from "@/lib/store"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/appwrite/client"
 import { useRouter } from "next/navigation"
 
 export function Navbar() {
@@ -23,12 +23,18 @@ export function Navbar() {
   } = useAppStore()
   
   const router = useRouter()
-  const supabase = createClient()
+  const { account } = createClient()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    router.push("/")
+    try {
+      await account.deleteSession("current")
+      setUser(null)
+      router.push("/")
+    } catch (e) {
+      // Optionally show error toast
+      setUser(null)
+      router.push("/")
+    }
   }
 
   return (

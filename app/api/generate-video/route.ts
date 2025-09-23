@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
-import { createServerClient } from '@supabase/ssr';
-import { createClient as createAuthedClient } from '@/lib/supabase/server';
+import { Databases } from 'node-appwrite';
+import { createServerClient } from '@/lib/appwrite/server'; // Import the Appwrite server client
 import { getRenderQueue } from '@/lib/queue';
 
 // Force dynamic to avoid caching & ensure Node runtime
@@ -12,25 +12,21 @@ interface Character { id: string; name: string; color: string; avatar?: string }
 interface Message { id: string; characterId: string; text: string; timestamp: number }
 interface RequestBody { characters: Character[]; messages: Message[]; isPro?: boolean; theme?: string; contactName?: string }
 
-function getSupabaseServiceRole() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  return createServerClient(url, key, { cookies: { getAll() { return []; }, setAll() {} } });
-}
-
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json({ error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing)' }, { status: 500 });
-    }
-    // Require authentication
-    const authedForCheck = await createAuthedClient();
-    const { data: { user: currentUser } } = await authedForCheck.auth.getUser();
-    if (!currentUser) {
+    const { account, databases } = await createServerClient(); // Use Appwrite server client
+
+    // Authenticate user
+    let currentUser;
+    try {
+      currentUser = await account.get();
+    } catch (authError) {
+      console.error("Appwrite authentication failed:", authError);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
     const body: RequestBody = await request.json();
-  const { characters, messages, theme = 'imessage', contactName } = body;
+    const { characters, messages, theme = 'imessage', contactName } = body;
     
     // Validate theme parameter
     const validThemes = ['imessage', 'whatsapp', 'snapchat'];
@@ -60,23 +56,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Server not configured (REDIS_URL missing)' }, { status: 500 });
     }
 
-  // Resolve user (required)
-  const userId = currentUser.id;
-
-    // Create DB record and enqueue
     const jobId = randomUUID();
-    const now = new Date().toISOString();
-    const supabase = getSupabaseServiceRole();
-    const { error } = await supabase.from('video_renders').insert({
-      id: jobId,
-      user_id: userId,
-      status: 'pending',
-      composition_id: 'MessageConversation',
-      input_props: inputProps,
-      created_at: now,
-      updated_at: now,
-    });
-    if (error) return NextResponse.json({ error: 'DB insert failed', details: error.message }, { status: 500 });
+
+    await databases.createDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_COLLECTION_VIDEO_RENDERS_ID!,
+        jobId,
+        {
+            user_id: currentUser.$id, // Link to Appwrite user ID
+            status: 'pending',
+            composition_id: 'MessageConversation',
+            input_props: inputProps, // No JSON.stringify needed
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        }
+    );
 
     if (queueEnabled) {
       // Try enqueue; fail fast to avoid 504s

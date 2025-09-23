@@ -8,7 +8,6 @@ import { RendersView } from "../renders/RendersView"
 import { SettingsView } from "../settings/SettingsView"
 import { useAppStore } from "@/lib/store"
 import { useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
 
 export function MainLayout() {
   const { activeTab } = useAppStore()

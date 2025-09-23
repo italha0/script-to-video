@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { type Metadata } from "next";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Video Editor | Script to Video",
@@ -12,12 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default async function EditorPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect(`/auth/login?redirect=${encodeURIComponent('/editor')}`)
-  }
-
   return <MainLayout />
 }

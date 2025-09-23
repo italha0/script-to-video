@@ -6,7 +6,7 @@ ChatVideo is a Next.js application that turns chat scripts into viral videos usi
 ## Architecture
 - **Frontend**: Next.js 15 with React 19, TypeScript, and Tailwind CSS
 - **Video Processing**: Remotion for video generation
-- **Database**: Supabase (PostgreSQL)
+**Database**: Appwrite
 - **File Storage**: Azure Blob Storage
 - **UI Components**: Radix UI components with custom styling
 - **Queue System**: BullMQ with Redis (optional)
@@ -22,10 +22,12 @@ ChatVideo is a Next.js application that turns chat scripts into viral videos usi
 ⚠️ **Environment Variables Required**:
 The application requires the following environment variables to function:
 
-**Required for Supabase:**
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key  
-- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+**Required for Appwrite:**
+- `NEXT_PUBLIC_APPWRITE_ENDPOINT` - Your Appwrite endpoint
+- `NEXT_PUBLIC_APPWRITE_PROJECT_ID` - Your Appwrite project ID
+- `APPWRITE_API_KEY` - Your Appwrite API key
+- `APPWRITE_DATABASE_ID` - Your Appwrite database ID
+- `APPWRITE_COLLECTION_VIDEO_RENDERS_ID` - Your Appwrite video renders collection ID
 
 **Required for Azure Blob Storage:**
 - `AZURE_STORAGE_CONNECTION_STRING` - Azure storage connection string

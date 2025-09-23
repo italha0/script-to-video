@@ -3,8 +3,6 @@
 1) Create a `.env` file in the project root (same folder as package.json) with:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE_KEY=...
 AZURE_STORAGE_CONNECTION_STRING=...
 AZURE_STORAGE_ACCOUNT_NAME=...
 AZURE_STORAGE_ACCOUNT_KEY=...
@@ -27,9 +25,9 @@ node worker/worker.cjs
 ```
 
 Notes:
-- With `RENDER_QUEUE_ENABLED=false`, the worker will poll Supabase every ~15s for recent `pending` jobs and process them.
+-- With `RENDER_QUEUE_ENABLED=false`, the worker will poll Appwrite every ~15s for recent `pending` jobs and process them.
 - If you enable queueing, set `RENDER_QUEUE_ENABLED=true` and provide `REDIS_URL` (TLS: `rediss://...:6380`).
-- Ensure the API host has the same Supabase and Azure envs so it can insert jobs.
+- Ensure the API host has the same Appwrite and Azure envs so it can insert jobs.
 
 ## Deploying the worker (production)
 
@@ -42,8 +40,11 @@ You need a long-running process in production to consume jobs and upload to Azur
 	docker push <your-registry>/script-to-video-worker:latest
 	```
 2. Create an Azure Container App pointing to the image. Configure env vars (same as your API):
-	- `NEXT_PUBLIC_SUPABASE_URL`
-	- `SUPABASE_SERVICE_ROLE_KEY`
+		- `NEXT_PUBLIC_APPWRITE_ENDPOINT`
+		- `NEXT_PUBLIC_APPWRITE_PROJECT_ID`
+		- `APPWRITE_API_KEY`
+		- `APPWRITE_DATABASE_ID`
+		- `APPWRITE_COLLECTION_VIDEO_RENDERS_ID`
 	- `AZURE_STORAGE_CONNECTION_STRING`
 	- `AZURE_STORAGE_ACCOUNT_NAME`
 	- `AZURE_STORAGE_ACCOUNT_KEY`
@@ -60,4 +61,4 @@ You need a long-running process in production to consume jobs and upload to Azur
 ### Notes
 - Polling mode (no Redis) is fine for most small/medium workloads.
 - Queue mode (Redis) is recommended for higher throughput or when you need backpressure and retries. Ensure `REDIS_URL` is valid to avoid WRONGPASS errors.
-- Make sure the worker Supabase envs point to the same project as the API. Otherwise it won’t see the jobs your API inserted.
+- Make sure the worker Appwrite envs point to the same project as the API. Otherwise it won’t see the jobs your API inserted.

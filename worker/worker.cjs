@@ -10,9 +10,19 @@ const { uploadToAzureBlob, generateSASUrl } = require('../lib/dist/azure-blob.js
 const { RENDER_QUEUE_NAME } = require('../lib/dist/queue.js');
 const fetch = require('node-fetch');
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!SUPABASE_URL || !SERVICE_KEY) { console.error('Missing Supabase env vars'); process.exit(1); }
+const { Client, Databases } = require('appwrite');
+const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
+const APPWRITE_PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
+const APPWRITE_DATABASE_ID = process.env.APPWRITE_DATABASE_ID;
+const APPWRITE_COLLECTION_VIDEO_RENDERS_ID = process.env.APPWRITE_COLLECTION_VIDEO_RENDERS_ID;
+if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY || !APPWRITE_DATABASE_ID || !APPWRITE_COLLECTION_VIDEO_RENDERS_ID) {
+  console.error('Missing Appwrite env vars');
+  process.exit(1);
+}
+const client = new Client();
+client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID).setKey(APPWRITE_API_KEY);
+const databases = new Databases(client);
 const QUEUE_ENABLED = process.env.RENDER_QUEUE_ENABLED === 'true';
 
 // Quick Azure sanity hint on startup
@@ -23,17 +33,31 @@ if (!process.env.AZURE_STORAGE_CONNECTION_STRING || !process.env.AZURE_STORAGE_A
 // Debug: print which project and role we're using (do not log secrets)
 try {
   const role = JSON.parse(Buffer.from(SERVICE_KEY.split('.')[1], 'base64').toString('utf8')).role;
-  console.log('[WORKER] Supabase URL:', SUPABASE_URL);
-  console.log('[WORKER] Supabase key role:', role);
 } catch { /* ignore */ }
 
-async function fetchJob(jobId){
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/video_renders?id=eq.${jobId}&select=*`, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
-  const j = await r.json();
-  return j[0];
+async function fetchJob(jobId) {
+  try {
+    const doc = await databases.getDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_VIDEO_RENDERS_ID,
+      jobId
+    );
+    return doc;
+  } catch (e) {
+    return null;
+  }
 }
-async function updateJob(jobId, patch){
-  await fetch(`${SUPABASE_URL}/rest/v1/video_renders?id=eq.${jobId}`, { method:'PATCH', headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}`, 'Content-Type':'application/json', Prefer:'return=representation' }, body: JSON.stringify({ ...patch, updated_at: new Date().toISOString() })});
+async function updateJob(jobId, patch) {
+  try {
+    await databases.updateDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_VIDEO_RENDERS_ID,
+      jobId,
+      { ...patch, updated_at: new Date().toISOString() }
+    );
+  } catch (e) {
+    // handle error
+  }
 }
 async function processRender(jobId){
   const record = await fetchJob(jobId);
@@ -171,30 +195,44 @@ if (QUEUE_ENABLED) {
 // Polling fallback: pick up pending jobs even if Redis is unavailable or enqueue failed.
 async function pollingSweep(){
   try{
-    const url = `${SUPABASE_URL}/rest/v1/video_renders?select=id&status=in.(pending,processing)&order=created_at.asc&limit=5`;
-    const r = await fetch(url, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
-    if (!r.ok) {
-      const txt = await r.text().catch(()=> '');
-      console.error('[WORKER] polling fetch failed', r.status, txt);
-      return;
-    }
-    const rows = await r.json();
-    console.log(`[WORKER] sweep: ${Array.isArray(rows)? rows.length: 0} pending`);
-    for (const row of rows){
-      console.log('[WORKER] processing pending job', row.id);
-      try {
-        await processRender(row.id);
-      } catch(e){
-        console.error('[WORKER] Fallback processing failed', row.id, e?.message||e);
-        try { await updateJob(row.id, { status: 'error', error_message: (e && e.message) || String(e) }); } catch {}
+    // Query Appwrite for pending/processing jobs
+    try {
+      const res = await databases.listDocuments(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_COLLECTION_VIDEO_RENDERS_ID,
+        [
+          // Appwrite query for status in [pending, processing], order by created_at asc, limit 5
+          { attribute: 'status', operator: 'in', values: ['pending', 'processing'] },
+          { attribute: 'order', operator: 'asc', values: ['created_at'] },
+          { attribute: 'limit', operator: 'equal', values: [5] }
+        ]
+      );
+      const rows = res.documents || [];
+      console.log(`[WORKER] sweep: ${rows.length} pending`);
+      for (const row of rows) {
+        console.log('[WORKER] processing pending job', row.$id);
+        try {
+          await processRender(row.$id);
+        } catch (e) {
+          console.error('[WORKER] Fallback processing failed', row.$id, e?.message || e);
+          try { await updateJob(row.$id, { status: 'error', error_message: (e && e.message) || String(e) }); } catch {}
+        }
       }
-    }
-    if (!rows || rows.length === 0) {
-      // Extra debug: fetch a few recent rows to validate visibility and statuses
-      const sampleUrl = `${SUPABASE_URL}/rest/v1/video_renders?select=id,status,created_at&order=created_at.desc&limit=3`;
-      const s = await fetch(sampleUrl, { headers:{ apikey: SERVICE_KEY, Authorization:`Bearer ${SERVICE_KEY}` }});
-      const sample = s.ok ? await s.json() : [];
-      console.log('[WORKER] recent rows (id,status):', Array.isArray(sample) ? sample.map(r=> `${r.id}:${r.status}`).join(', ') : 'n/a');
+      if (rows.length === 0) {
+        // Extra debug: fetch a few recent rows to validate visibility and statuses
+        const sampleRes = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_COLLECTION_VIDEO_RENDERS_ID,
+          [
+            { attribute: 'order', operator: 'desc', values: ['created_at'] },
+            { attribute: 'limit', operator: 'equal', values: [3] }
+          ]
+        );
+        const sample = sampleRes.documents || [];
+        console.log('[WORKER] recent rows (id,status):', sample.map(r => `${r.$id}:${r.status}`).join(', '));
+      }
+    } catch (e) {
+      console.error('[WORKER] polling sweep error', e?.message || e);
     }
   } catch (e){ console.error('[WORKER] polling sweep error', e?.message||e); }
 }
