@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { account } from "@/lib/appwrite/client"
+import { createClient } from "@/lib/appwrite/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,6 +23,7 @@ export default function SignupPage() {
     setIsLoading(true)
     setError(null)
 
+    const { account } = createClient();
     try {
       await account.create('unique()', email, password)
       await account.createEmailPasswordSession(email, password)

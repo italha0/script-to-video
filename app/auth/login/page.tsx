@@ -30,23 +30,28 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      await account.createEmailPasswordSession(email, password)
-      router.push(redirectTo)
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      // Check if a session already exists
+      await account.get();
+      // If no error, user is already logged in
+      setTimeout(() => {
+        window.location.replace(redirectTo);
+      }, 100);
+    } catch {
+      // Not logged in, proceed to login
+      try {
+        await account.createEmailPasswordSession(email, password)
+        setTimeout(() => {
+          window.location.replace(redirectTo);
+        }, 100);
+      } catch (error: unknown) {
+        setError(error instanceof Error ? error.message : "An error occurred")
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleLogin = async () => {
-    try {
-      const { account } = createClient()
-      account.createOAuth2Session('google', `${window.location.origin}${redirectTo}`)
-    } catch (error: unknown) {
-        setError(error instanceof Error ? error.message : "An error occurred")
-    }
-  }
+
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 bg-background">
@@ -57,14 +62,6 @@ export default function LoginPage() {
             <CardDescription className="text-foreground-muted">Sign in to your ChatVideo account</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-                <Button onClick={handleGoogleLogin} className="w-full">Sign in with Google</Button>
-            </div>
-            <div className="my-4 flex items-center">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="mx-4 text-xs text-gray-500">OR</span>
-                <div className="flex-grow border-t border-gray-300"></div>
-            </div>
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -77,8 +74,25 @@ export default function LoginPage() {
               {error && <div className="text-xs rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-red-400">{error}</div>}
               <Button type="submit" className="w-full" disabled={isLoading}>{isLoading?"Signing in...":"Sign in"}</Button>
             </form>
-            <div className="mt-6 text-center text-xs text-foreground-muted">
-              Don't have an account? <Link href="/auth/signup" className="text-primary hover:text-primary-hover font-medium">Sign up</Link>
+            <div className="mt-6 flex flex-col gap-2">
+              <Button
+                type="button"
+                className="w-full bg-[#4285F4] hover:bg-[#357ae8] text-white"
+                onClick={() => {
+                  const { account } = createClient();
+                  account.createOAuth2Session(
+                    'google',
+                    window.location.origin + '/editor', // Success redirect
+                    window.location.origin + '/auth/login' // Failure redirect
+                  );
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 48 48" className="inline-block mr-2 align-middle"><g><path fill="#4285F4" d="M43.611 20.083H42V20H24v8h11.303C33.962 32.083 29.418 35 24 35c-6.065 0-11-4.935-11-11s4.935-11 11-11c2.507 0 4.813.857 6.654 2.278l6.435-6.435C33.36 6.532 28.905 5 24 5 12.954 5 4 13.954 4 25s8.954 20 20 20c11.046 0 20-8.954 20-20 0-1.341-.138-2.651-.389-3.917z"/><path fill="#34A853" d="M6.306 14.691l6.571 4.819C14.655 16.104 19.001 13 24 13c2.507 0 4.813.857 6.654 2.278l6.435-6.435C33.36 6.532 28.905 5 24 5c-7.732 0-14.313 4.388-17.694 10.691z"/><path fill="#FBBC05" d="M24 43c5.315 0 9.799-1.757 13.066-4.771l-6.066-4.966C29.418 35 24 35 24 35c-5.418 0-9.962-2.917-11.303-7.083l-6.571 4.819C9.687 40.612 16.268 45 24 45z"/><path fill="#EA4335" d="M43.611 20.083H42V20H24v8h11.303C33.962 32.083 29.418 35 24 35c-6.065 0-11-4.935-11-11s4.935-11 11-11c2.507 0 4.813.857 6.654 2.278l6.435-6.435C33.36 6.532 28.905 5 24 5c-7.732 0-14.313 4.388-17.694 10.691z" opacity=".15"/></g></svg>
+                Sign in with Google
+              </Button>
+              <div className="text-center text-xs text-foreground-muted">
+                Don't have an account? <Link href="/auth/signup" className="text-primary hover:text-primary-hover font-medium">Sign up</Link>
+              </div>
             </div>
           </CardContent>
         </Card>
