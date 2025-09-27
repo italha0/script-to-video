@@ -97,14 +97,15 @@ export default function LoginPage() {
                 onClick={() => {
                   const { account } = createClient();
                   const isProd = window.location.hostname === 'www.mockvideo.app';
+                  const currentUrl = window.location.origin;
                   const success = isProd
-                    ? 'https://www.mockvideo.app/editor'
-                    : 'http://localhost:5000/editor';
+                    ? 'https://www.mockvideo.app/auth/oauth-callback?redirect=' + encodeURIComponent(redirectTo)
+                    : currentUrl + '/auth/oauth-callback?redirect=' + encodeURIComponent(redirectTo);
                   const failure = isProd
                     ? 'https://www.mockvideo.app/auth/login'
-                    : 'http://localhost:5000/auth/login';
+                    : currentUrl + '/auth/login';
                   account.createOAuth2Session(
-                    'google',
+                    'google' as any, // Type assertion for now - will be fixed with proper import
                     success,
                     failure
                   );
