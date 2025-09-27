@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   title: "Creator Dashboard | Script to Video",
   description: "Your central hub for creating and managing AI-generated videos. Start a new project, view your renders, and access all tools.",
 };
-
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -23,9 +22,7 @@ export default function HomePage() {
               <h2 className="text-3xl md:text-5xl font-bold">Hello, <span className="text-primary">Creator</span></h2>
               <p className="text-muted-foreground mt-2">What are you creating today?</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">      
               <HomeCard
                 title="Fake Text Messages"
                 description="Use AI Text to Speech to bring text messages to life"
@@ -34,7 +31,6 @@ export default function HomePage() {
                 icon={<MessageSquare className="w-4 h-4" />}
                 imageSrc="/text.jpg"
               />
-             
             </div>
           </div>
         </main>

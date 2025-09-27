@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAppStore } from "@/lib/store"
 
 export default function LoginPage() {
+  const { setUser } = useAppStore();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -19,35 +21,49 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectParam = searchParams?.get("redirect") ?? null
-  const redirectTo = (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) 
-    ? redirectParam 
+  const redirectTo = (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//"))
+    ? redirectParam
     : "/editor"
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
     const { account } = createClient()
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // Check if a session already exists
-      await account.get();
-      // If no error, user is already logged in
-      setTimeout(() => {
-        window.location.replace(redirectTo);
-      }, 100);
-    } catch {
-      // Not logged in, proceed to login
+    const checkSession = async () => {
       try {
-        await account.createEmailPasswordSession(email, password)
-        setTimeout(() => {
-          window.location.replace(redirectTo);
-        }, 100);
-      } catch (error: unknown) {
-        setError(error instanceof Error ? error.message : "An error occurred")
+        await account.get()
+        router.replace(redirectTo)
+      } catch (error) {
+        // Not logged in
       }
+    }
+    checkSession()
+  }, [router, redirectTo])
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { account } = createClient();
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Check for existing session
+      let sessionExists = false;
+      try {
+        await account.get();
+        sessionExists = true;
+      } catch {}
+      if (!sessionExists) {
+        await account.createEmailPasswordSession(email, password);
+      }
+      const user = await account.get();
+      setUser(user);
+      if (typeof window !== 'undefined') {
+        window.location.replace(redirectTo);
+      } else {
+        router.replace(redirectTo);
+      }
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -80,10 +96,17 @@ export default function LoginPage() {
                 className="w-full bg-[#4285F4] hover:bg-[#357ae8] text-white"
                 onClick={() => {
                   const { account } = createClient();
+                  const isProd = window.location.hostname === 'www.mockvideo.app';
+                  const success = isProd
+                    ? 'https://www.mockvideo.app/editor'
+                    : 'http://localhost:5000/editor';
+                  const failure = isProd
+                    ? 'https://www.mockvideo.app/auth/login'
+                    : 'http://localhost:5000/auth/login';
                   account.createOAuth2Session(
                     'google',
-                    window.location.origin + '/editor', // Success redirect
-                    window.location.origin + '/auth/login' // Failure redirect
+                    success,
+                    failure
                   );
                 }}
               >

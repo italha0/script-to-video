@@ -10,28 +10,35 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useAppStore } from "@/lib/store"
 
-export default function SignupPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const { setUser } = useAppStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
     const { account } = createClient();
     try {
-      await account.create('unique()', email, password)
-      await account.createEmailPasswordSession(email, password)
-      router.push("/editor")
+      await account.create('unique()', email, password);
+      await account.createEmailPasswordSession(email, password);
+      const user = await account.get();
+      setUser(user);
+      if (typeof window !== 'undefined') {
+        window.location.replace("/editor");
+      } else {
+        router.push("/editor");
+      }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
