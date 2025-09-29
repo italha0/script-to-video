@@ -9,8 +9,8 @@ export default function EnterPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Replace 'mysecretpassword' with your actual admin password
-    if (password === "mysecretpassword") {
+    // Use the same password as in middleware.ts
+    if (password === "Kingrom@0954u") {
       document.cookie = `admin_password=${password}; path=/; max-age=86400`;
       router.push("/");
     } else {
