@@ -14,20 +14,19 @@ interface RequestBody { characters: Character[]; messages: Message[]; isPro?: bo
 
 export async function POST(request: NextRequest) {
   try {
-    const { account, databases } = await createServerClient(); // Use Appwrite server client
+    const { account, databases } = await createServerClient();
 
-    // Authenticate user
-    let currentUser;
+    // Try to get user, but allow unauthenticated
+    let currentUser: any = null;
     try {
       currentUser = await account.get();
     } catch (authError) {
-      console.error("Appwrite authentication failed:", authError);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      currentUser = null; // Not logged in, proceed as guest
     }
 
     const body: RequestBody = await request.json();
     const { characters, messages, theme = 'imessage', contactName } = body;
-    
+
     // Validate theme parameter
     const validThemes = ['imessage', 'whatsapp', 'snapchat'];
     const selectedTheme = validThemes.includes(theme) ? theme : 'imessage';
@@ -58,15 +57,16 @@ export async function POST(request: NextRequest) {
 
     const jobId = randomUUID();
 
+    // user_id is optional if not logged in
     await databases.createDocument(
         process.env.APPWRITE_DATABASE_ID!,
         process.env.APPWRITE_COLLECTION_VIDEO_RENDERS_ID!,
         jobId,
         {
-            user_id: currentUser.$id, // Link to Appwrite user ID
+            user_id: currentUser ? currentUser.$id : null,
             status: 'pending',
             composition_id: 'MessageConversation',
-            input_props: inputProps, // No JSON.stringify needed
+            input_props: inputProps,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         }

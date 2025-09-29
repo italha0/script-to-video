@@ -5,61 +5,61 @@
 @import "tw-animate-css";
 
 /*
-  Modern Video Editing Platform Design System
-  Inspired by Opus.pro - Clean, professional, AI-focused aesthetic
+  ClipGoat Light Theme / Pink Accent Design System
+  Light-themed UI with vibrant pink/magenta accent color
 */
 :root {
   /* Core surfaces */
-  --background: #fafafa;              /* Clean light background */
-  --background-light: #ffffff;        /* Pure white for cards */
+  --background: #f9f9fb;              /* Light lavender background */
+  --background-light: #f9f9fb;        /* Same as background */
   --card: #ffffff;                    /* Pure white cards */
   --popover: #ffffff;                 /* Popovers */
 
   /* Text */
-  --foreground: #0f172a;              /* Rich dark blue-gray for primary text */
-  --foreground-muted: #64748b;        /* Balanced gray for secondary text */
-  --card-foreground: #0f172a;
-  --popover-foreground: #0f172a;
+  --foreground: #1f2937;              /* Dark charcoal gray for primary text */
+  --foreground-muted: #6b7280;        /* Medium gray for secondary text */
+  --card-foreground: #1f2937;
+  --popover-foreground: #1f2937;
 
-  /* Brand / accent - Professional blue palette */
-  --primary: #2563eb;                 /* Professional blue */
-  --primary-hover: #1d4ed8;           /* Slightly darker blue */
+  /* Brand / accent */
+  --primary: #e83d84;                 /* Vibrant pink/magenta */
+  --primary-hover: #c12b6d;           /* Slightly darker pink */
   --primary-foreground: #ffffff;      /* White text on primary */
-  --accent: #f1f5f9;                  /* Light blue-gray accent */
-  --accent-foreground: #0f172a;
-  --secondary: #f8fafc;               /* Very light gray secondary */
-  --secondary-foreground: #0f172a;
+  --accent: #f3f4f6;                  /* Light gray accent */
+  --accent-foreground: #1f2937;
+  --secondary: #f3f4f6;               /* Light gray secondary */
+  --secondary-foreground: #1f2937;
 
   /* UI States */
-  --muted: #f1f5f9;                   /* Light blue-gray muted surface */
-  --muted-foreground: #64748b;        /* Balanced gray muted text */
+  --muted: #f3f4f6;                   /* Light gray muted surface */
+  --muted-foreground: #6b7280;        /* Medium gray muted text */
   --destructive: #dc2626;             /* Standard red */
   --destructive-foreground: #ffffff;
 
   /* Borders & Inputs */
-  --border: #e2e8f0;                  /* Soft gray border */
-  --input: #f8fafc;                   /* Very light input background */
-  --ring: #2563eb;                    /* Blue focus ring */
+  --border: #e5e7eb;                  /* Light gray border */
+  --input: #f3f4f6;                   /* Light gray input background */
+  --ring: #e83d84;                    /* Pink focus ring */
 
   /* Data viz placeholders */
-  --chart-1: #2563eb;
-  --chart-2: #7c3aed;
-  --chart-3: #dc2626;
-  --chart-4: #059669;
-  --chart-5: #d97706;
+  --chart-1: #e83d84;
+  --chart-2: #6366f1;
+  --chart-3: #ec4899;
+  --chart-4: #10b981;
+  --chart-5: #f59e0b;
 
   /* Radius scale */
   --radius: 0.5rem; /* 8px base (md) */
 
   /* Sidebar */
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #2563eb;
+  --sidebar-foreground: #1f2937;
+  --sidebar-primary: #e83d84;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #0f172a;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #2563eb;
+  --sidebar-accent: #f3f4f6;
+  --sidebar-accent-foreground: #1f2937;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #e83d84;
 }
 
 @theme inline {
@@ -118,29 +118,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-color: #fafafa;
-    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  }
-  
-  /* Enhanced smooth scrolling and focus styles */
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  /* Custom scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    @apply bg-background;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-full;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground;
+    background-color: #f9f9fb;
   }
 }

@@ -8,16 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
-import { useAppStore } from "@/lib/store"
+import { useAppStore } from "@/lib/store";
+// ...existing code...
 
+export default function SignupPage() {
   const { setUser } = useAppStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +65,7 @@ import { useAppStore } from "@/lib/store"
               </div>
               {error && <div className="text-xs rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-red-400">{error}</div>}
               <Button type="submit" className="w-full" disabled={isLoading}>{isLoading?"Signing up...":"Sign up"}</Button>
+// ...existing code...
             </form>
             <div className="mt-6 text-center text-xs text-foreground-muted">
               Already have an account? <Link href="/auth/login" className="text-primary hover:text-primary-hover font-medium">Log in</Link>
