@@ -289,7 +289,7 @@ export function ControlPanel() {
         <Button
           onClick={handleRender}
           disabled={messages.length === 0}
-          className="w-full h-12 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white font-semibold text-base shadow-lg"
+          className="w-full h-12 bg-gradient-to-r from-primary to-pink-500 text-white font-bold text-base shadow-lg hover:scale-[1.02] transition-transform duration-200"
         >
           <Sparkles className="w-5 h-5 mr-2" />
           Generate Video
@@ -297,13 +297,14 @@ export function ControlPanel() {
       </motion.div>
 
       {/* Sticky Generate Button - mobile */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 bg-gradient-to-t from-background/95 to-transparent">
         <Button
           onClick={handleRender}
           disabled={messages.length === 0}
-          className="w-full h-12 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white font-semibold text-base shadow-lg"
+          className="w-full h-14 bg-gradient-to-r from-primary to-pink-500 text-white font-bold text-lg shadow-lg hover:scale-[1.02] transition-transform duration-200 rounded-xl"
+          style={{ maxWidth: 480, margin: '0 auto' }}
         >
-          <Sparkles className="w-5 h-5 mr-2" />
+          <Sparkles className="w-6 h-6 mr-2" />
           Generate Video
         </Button>
       </div>

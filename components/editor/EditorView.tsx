@@ -35,26 +35,32 @@ export function EditorView() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className={`py-3 text-sm font-medium rounded-lg transition-all duration-300 ${
-              mobileTab === 'edit' 
-                ? 'text-foreground bg-background shadow-lg shadow-primary/20 border border-primary/20' 
+            className={`py-3 text-sm font-medium rounded-lg transition-all duration-300 relative overflow-hidden ${
+              mobileTab === 'edit'
+                ? 'text-foreground bg-background shadow-lg shadow-primary/20 border border-primary/20 ring-2 ring-primary'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
             }`}
             onClick={() => setMobileTab('edit')}
           >
-            Edit
+            {mobileTab === 'edit' && (
+              <span className="absolute inset-0 bg-primary/10 rounded-lg pointer-events-none animate-pulse" />
+            )}
+            <span className="relative">Edit</span>
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className={`py-3 text-sm font-medium rounded-lg transition-all duration-300 ${
-              mobileTab === 'preview' 
-                ? 'text-foreground bg-background shadow-lg shadow-primary/20 border border-primary/20' 
+            className={`py-3 text-sm font-medium rounded-lg transition-all duration-300 relative overflow-hidden ${
+              mobileTab === 'preview'
+                ? 'text-foreground bg-background shadow-lg shadow-primary/20 border border-primary/20 ring-2 ring-primary'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
             }`}
             onClick={() => setMobileTab('preview')}
           >
-            Preview
+            {mobileTab === 'preview' && (
+              <span className="absolute inset-0 bg-primary/10 rounded-lg pointer-events-none animate-pulse" />
+            )}
+            <span className="relative">Preview</span>
           </motion.button>
         </div>
       </div>
