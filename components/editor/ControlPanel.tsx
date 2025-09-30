@@ -42,30 +42,7 @@ export function ControlPanel() {
     }
   }, [])
 
-  const handleRender = async () => {
-    // First, ensure the user is authenticated; otherwise redirect to login
-
-    if (messages.length === 0) {
-      toast({
-        title: "No messages",
-        description: "Add some messages first!",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setRenderProgress({
-      isRendering: true,
-      status: 'pending',
-      progress: 0
-    })
-
-    try {
-      const response = await fetch('/api/generate-video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          characters: [
+  // ...existing code...
   const handleRender = async () => {
     if (messages.length === 0) {
       toast({
@@ -320,7 +297,7 @@ export function ControlPanel() {
       </motion.div>
 
       {/* Sticky Generate Button - mobile */}
-      <div className="md:hidden fixed bottom-20 left-0 right-0 z-40 px-4">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4">
         <Button
           onClick={handleRender}
           disabled={messages.length === 0}

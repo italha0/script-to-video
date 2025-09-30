@@ -58,19 +58,17 @@ export async function POST(request: NextRequest) {
     const jobId = randomUUID();
 
     // user_id is optional if not logged in
-    await databases.createDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_COLLECTION_VIDEO_RENDERS_ID!,
-        jobId,
-        {
-            user_id: currentUser ? currentUser.$id : null,
-            status: 'pending',
-            composition_id: 'MessageConversation',
-            input_props: inputProps,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        }
-    );
+  await databases.createDocument(
+    process.env.APPWRITE_DATABASE_ID!,
+    process.env.APPWRITE_COLLECTION_VIDEO_RENDERS_ID!,
+    jobId,
+    {
+      user_id: currentUser ? currentUser.$id : null,
+      status: 'pending',
+      composition_id: 'MessageConversation',
+      input_props: JSON.stringify(inputProps),
+    }
+  );
 
     if (queueEnabled) {
       // Try enqueue; fail fast to avoid 504s

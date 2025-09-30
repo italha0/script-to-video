@@ -8,8 +8,24 @@ import { useAppStore } from "@/lib/store"
 import { useState } from "react"
 
 export function EditorView() {
-  const { renderProgress } = useAppStore()
+  const { renderProgress, setRenderProgress, resetRender } = useAppStore()
   const [mobileTab, setMobileTab] = useState<'edit' | 'preview'>('edit')
+
+  // Handler for download button in modal
+  const handleDownload = () => {
+    if (renderProgress.downloadUrl) {
+      window.open(renderProgress.downloadUrl, '_blank', 'noopener,noreferrer')
+      setTimeout(() => resetRender(), 500)
+    }
+  }
+
+  // Handler for closing modal (after error or done)
+  const handleClose = () => {
+    resetRender()
+  }
+
+  // Allow closing modal if status is 'done' or 'error'
+  const canClose = renderProgress.status === 'done' || renderProgress.status === 'error'
 
   return (
     <div className="h-full flex flex-col md:flex-row bg-gradient-to-br from-background to-background/95">
@@ -63,7 +79,17 @@ export function EditorView() {
       </motion.div>
 
       {/* Download Modal */}
-      {renderProgress.isRendering && <DownloadModal />}
+      {renderProgress.isRendering && (
+        <DownloadModal
+          isRendering={renderProgress.isRendering}
+          status={renderProgress.status}
+          progress={renderProgress.progress}
+          error={renderProgress.error || null}
+          onDownload={handleDownload}
+          canClose={canClose}
+          handleClose={handleClose}
+        />
+      )}
     </div>
   )
 }
