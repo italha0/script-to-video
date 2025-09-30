@@ -44,28 +44,29 @@ export function ControlPanel() {
 
   const handleRender = async () => {
     // First, ensure the user is authenticated; otherwise redirect to login
-    try {
-      const { account } = createClient()
-      try {
-        const user = await account.get();
-        if (!user) {
-          const redirect = encodeURIComponent('/editor')
-          window.location.href = `/auth/login?redirect=${redirect}`
-          return
-        }
-      } catch {
-        // On any auth check error, fall back to login redirect as a safe default
-        const redirect = encodeURIComponent('/editor')
-        window.location.href = `/auth/login?redirect=${redirect}`
-        return
-      }
-    } catch {
-      // On any auth check error, fall back to login redirect as a safe default
-      const redirect = encodeURIComponent('/editor')
-      window.location.href = `/auth/login?redirect=${redirect}`
+
+    if (messages.length === 0) {
+      toast({
+        title: "No messages",
+        description: "Add some messages first!",
+        variant: "destructive"
+      })
       return
     }
 
+    setRenderProgress({
+      isRendering: true,
+      status: 'pending',
+      progress: 0
+    })
+
+    try {
+      const response = await fetch('/api/generate-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characters: [
+  const handleRender = async () => {
     if (messages.length === 0) {
       toast({
         title: "No messages",
