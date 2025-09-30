@@ -1,9 +1,10 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Player } from "@remotion/player"
-import { MessageConversation } from "@/remotion/MessageConversation"
+import dynamic from "next/dynamic"
+const Player = dynamic(() => import("@remotion/player").then(mod => mod.Player), { ssr: false, loading: () => <div className="flex items-center justify-center h-full text-muted-foreground">Loading preview...</div> })
 import { useAppStore } from "@/lib/store"
+import { MessageConversation } from "@/remotion/MessageConversation"
 import { Smartphone, Play, Pause } from "lucide-react"
 import { useState, useMemo, useRef, useCallback } from "react"
 

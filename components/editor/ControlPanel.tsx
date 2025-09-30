@@ -8,12 +8,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2, Sparkles } from "lucide-react"
 import { useAppStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, memo } from "react"
 import { createClient } from "@/lib/appwrite/client"
 
 // Theme selection is fixed to iMessage per new design
 
-export function ControlPanel() {
+const ControlPanelComponent = () => {
   const {
     contactName,
     setContactName,
@@ -107,49 +107,39 @@ export function ControlPanel() {
   }
 
   const pollRenderStatus = async (jobId: string) => {
-    const poll = async () => {
-      // Check if component is still mounted
-      if (!isMountedRef.current) {
-        return
-      }
+    let attempt = 0;
+    const maxInterval = 10000; // 10 seconds max
+    const baseInterval = 2000; // Start at 2 seconds
 
+    const poll = async () => {
+      if (!isMountedRef.current) return;
       try {
         const response = await fetch(`/api/render/${jobId}/status`)
         if (response.ok) {
           const { status, url, error } = await response.json()
-          
-          // Check again if component is still mounted before updating state
-          if (!isMountedRef.current) {
-            return
-          }
-
+          if (!isMountedRef.current) return;
           if (status === 'done' && url) {
             setRenderProgress({ status: 'done', downloadUrl: url })
-            return
+            return;
           }
-          
           if (status === 'error') {
             setRenderProgress({ status: 'error', error })
-            return
+            return;
           }
-          
-          // Continue polling only if component is still mounted
+          // Exponential backoff: interval increases with each attempt, up to maxInterval
+          attempt++;
+          const interval = Math.min(baseInterval * Math.pow(1.5, attempt), maxInterval);
           if (isMountedRef.current) {
-            pollTimeoutRef.current = setTimeout(poll, 2000)
+            pollTimeoutRef.current = setTimeout(poll, interval);
           }
         }
       } catch (error) {
-        // Only update state if component is still mounted
         if (isMountedRef.current) {
-          setRenderProgress({ 
-            status: 'error', 
-            error: 'Failed to check render status' 
-          })
+          setRenderProgress({ status: 'error', error: 'Failed to check render status' })
         }
       }
     }
-    
-    poll()
+    poll();
   }
 
   return (
@@ -311,3 +301,5 @@ export function ControlPanel() {
     </div>
   )
 }
+
+export const ControlPanel = memo(ControlPanelComponent)
