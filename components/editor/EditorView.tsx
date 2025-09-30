@@ -88,7 +88,7 @@ export function EditorView() {
       {renderProgress.isRendering && (
         <DownloadModal
           isRendering={renderProgress.isRendering}
-          status={renderProgress.status}
+          status={['pending','rendering','done','error'].includes(renderProgress.status) ? renderProgress.status as any : 'pending'}
           progress={renderProgress.progress}
           error={renderProgress.error || null}
           onDownload={handleDownload}

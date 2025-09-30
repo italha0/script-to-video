@@ -107,7 +107,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        
         {/* Google AdSense */}
         <Script
           async
@@ -115,7 +114,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        
         {/* Google Analytics */}
         <Script
           async
@@ -131,7 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
         <meta name="google-site-verification" content="qf15QRFUFM6oxJRs_YssAEM563O3XhDdTMyrhYU25-Q" />
-        <meta name="google-adsense-account" content="ca-pub-2892825507816139">
+        <meta name="google-adsense-account" content="ca-pub-2892825507816139" />
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false}>
@@ -142,5 +140,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

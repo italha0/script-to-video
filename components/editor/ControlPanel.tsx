@@ -143,7 +143,7 @@ const ControlPanelComponent = () => {
   }
 
   return (
-  <div className="p-6 space-y-8 h-full pb-28 md:pb-6">
+    <div className="p-6 space-y-8 h-full pb-28 md:pb-6">
       {/* Header */}
       <motion.div
         initial={{ y: -30, opacity: 0 }}
@@ -202,92 +202,73 @@ const ControlPanelComponent = () => {
             Add
           </Button>
         </div>
-        
-  <div className="space-y-3 max-h-[28rem] md:max-h-[30rem] overflow-y-auto pr-1">
-          {messages.map((message, index) => {
-            const isThem = message.characterId === "them"
-            
-            return (
-              <motion.div
-                key={message.id}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.1 * index }}
-                whileHover={{ scale: 1.01, y: -2 }}
-                className="rounded-xl border border-border/60 bg-gradient-to-r from-card to-card/90 relative flex items-stretch gap-0 shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10 transition-all duration-300"
-              >
-                {/* Left accent bar */}
-                <div className={`w-1 rounded-l-xl ${isThem ? 'bg-gradient-to-b from-blue-400 to-blue-600' : 'bg-gradient-to-b from-green-400 to-green-600'}`} />
-                {/* Text area */}
-                <div className="flex-1 p-3">
-                  <Textarea
-                    value={message.text}
-                    onChange={(e) => updateMessage(message.id, e.target.value)}
-                    placeholder={isThem ? "Type here..." : "Type here..."}
-                    className="resize-none border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground min-h-[72px] text-sm"
-                  />
-                </div>
-                {/* Controls */}
-                <div className="pr-3 py-3 flex flex-col items-end gap-2 w-[112px]">
-                  <div className="inline-flex p-1 bg-muted rounded-full">
-                    <button
-                      onClick={() => toggleMessageSpeaker(message.id, "them")}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition ${
-                        isThem ? "bg-blue-500 text-white" : "text-muted-foreground hover:text-foreground"
+        {messages.map((message, index) => {
+          const isThem = message.characterId === "them";
+          return (
+            <motion.div
+              key={message.id}
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 * index }}
+              whileHover={{ scale: 1.01, y: -2 }}
+              className="rounded-xl border border-border/60 bg-gradient-to-r from-card to-card/90 relative flex items-stretch gap-0 shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10 transition-all duration-300"
+            >
+              {/* Left accent bar */}
+              <div className={`w-1 rounded-l-xl ${isThem ? 'bg-gradient-to-b from-blue-400 to-blue-600' : 'bg-gradient-to-b from-green-400 to-green-600'}`} />
+              {/* Text area */}
+              <div className="flex-1 p-3">
+                <Textarea
+                  value={message.text}
+                  onChange={(e) => updateMessage(message.id, e.target.value)}
+                  placeholder={isThem ? "Type here..." : "Type here..."}
+                  className="resize-none border-0 bg-transparent focus-visible:ring-0 shadow-none text-foreground min-h-[72px] text-sm"
+                />
+              </div>
+              {/* Controls */}
+              <div className="pr-3 py-3 flex flex-col items-end gap-2 w-[112px]">
+                <div className="inline-flex p-1 bg-muted rounded-full">
+                  <button
+                    onClick={() => toggleMessageSpeaker(message.id, "them")}
+                    className={`px-3 py-1 text-xs font-medium rounded-full transition ${isThem ? "bg-blue-500 text-white" : "text-muted-foreground hover:text-foreground"
                       }`}
-                    >
-                      Them
-                    </button>
-                    <button
-                      onClick={() => toggleMessageSpeaker(message.id, "you")}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition ${
-                        !isThem ? "bg-green-500 text-white" : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      You
-                    </button>
-                  </div>
-                  <Button
-                    onClick={() => deleteMessage(message.id)}
-                    size="icon"
-                    variant="ghost"
-                    className="text-red-600 hover:text-red-600/80 hover:bg-red-100 w-8 h-8"
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    Them
+                  </button>
+                  <button
+                    onClick={() => toggleMessageSpeaker(message.id, "you")}
+                    className={`px-3 py-1 text-xs font-medium rounded-full transition ${!isThem ? "bg-green-500 text-white" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    You
+                  </button>
                 </div>
-              </motion.div>
-            )
-          })}
-          
-          {messages.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">No messages yet</p>
-              <p className="text-xs mt-1">Click "Add" to create your first message</p>
-            </div>
-          )}
-        </div>
+                <Button
+                  onClick={() => deleteMessage(message.id)}
+                  size="icon"
+                  variant="ghost"
+                  className="text-red-600 hover:text-red-600/80 hover:bg-red-100 w-8 h-8"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
+          );
+        })}
+        {messages.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p className="text-sm">No messages yet</p>
+            <p className="text-xs mt-1">Click "Add" to create your first message</p>
+          </div>
+        )}
       </motion.div>
 
-      {/* Generate Button - desktop */}
+      {/* Generate Button - bottom for all devices */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="pt-4 border-t border-border hidden md:block"
+        className="pt-4 border-t border-border"
       >
-        <Button
-          onClick={handleRender}
-          disabled={messages.length === 0}
-          className="w-full h-12 bg-gradient-to-r from-primary to-pink-500 text-white font-bold text-base shadow-lg hover:scale-[1.02] transition-transform duration-200"
-        >
-          <Sparkles className="w-5 h-5 mr-2" />
-          Generate Video
-        </Button>
-      </motion.div>
-
-      {/* Sticky Generate Button - mobile */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 bg-gradient-to-t from-background/95 to-transparent">
         <Button
           onClick={handleRender}
           disabled={messages.length === 0}
@@ -297,9 +278,8 @@ const ControlPanelComponent = () => {
           <Sparkles className="w-6 h-6 mr-2" />
           Generate Video
         </Button>
-      </div>
+      </motion.div>
     </div>
-  )
+  );
 }
-
 export const ControlPanel = memo(ControlPanelComponent)

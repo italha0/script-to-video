@@ -75,7 +75,7 @@ export function PreviewPanel() {
             {messages.length > 0 ? (
               <Player
                 ref={playerRef}
-                component={MessageConversation}
+                component={MessageConversation as any}
                 durationInFrames={durationInFrames}
                 fps={30}
                 compositionWidth={390}
