@@ -13,7 +13,7 @@
     "remotion:studio": "remotion studio remotion/index.ts",
     "render:script": "node scripts/render-video.cjs out/props-test.json out/test.mp4 MessageConversation",
     "build:worker": "tsc -p tsconfig.worker.json",
-    "worker": "pnpm run build:worker && node worker/worker.cjs"
+    "worker": "npm run build:worker && node worker/worker.cjs"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.28.0",
