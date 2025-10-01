@@ -21,6 +21,7 @@ if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY || !APPWRITE
   process.exit(1);
 }
 const client = new sdk.Client();
+console.log(client);
 client.setEndpoint(APPWRITE_ENDPOINT);
 client.setProject(APPWRITE_PROJECT_ID);
 client.setKey(APPWRITE_API_KEY);
