@@ -32,7 +32,7 @@
     "@remotion/cli": "4.0.345",
     "@remotion/player": "4.0.345",
     "@remotion/renderer": "4.0.345",
-    "@remotion/streaming": "^4.0.345",
+    "@remotion/streaming": "4.0.345",
     "@remotion/studio-shared": "4.0.345",
     "@sparticuz/chromium": "^138.0.2",
     "@supabase/ssr": "^0.5.2",
