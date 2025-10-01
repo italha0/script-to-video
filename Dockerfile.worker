@@ -60,18 +60,24 @@ ENV REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium \
 
 WORKDIR /app
 
-# Install pnpm and dependencies first (better layer caching)
-COPY package.json pnpm-lock.yaml ./
+# Install pnpm and ALL dependencies to build the project
+COPY package.json pnpm-lock.yaml tsconfig.json ./
 RUN corepack enable && \
     corepack prepare pnpm@latest --activate && \
-    pnpm install --prod
+    pnpm install
 
-# Copy only what the worker needs
+# Copy source code
 COPY worker ./worker
 COPY lib ./lib
 COPY remotion ./remotion
 COPY scripts ./scripts
 COPY public ./public
+
+# Build the typescript files
+RUN pnpm exec tsc
+
+# Remove dev dependencies
+RUN pnpm prune --prod
 
 # Healthcheck is optional; we rely on logs and Supabase DB state
 
