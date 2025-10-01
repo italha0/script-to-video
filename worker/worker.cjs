@@ -21,7 +21,9 @@ if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY || !APPWRITE
   process.exit(1);
 }
 const client = new Client();
-client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID).setKey(APPWRITE_API_KEY);
+client.setEndpoint(APPWRITE_ENDPOINT);
+client.setProject(APPWRITE_PROJECT_ID);
+client.setKey(APPWRITE_API_KEY);
 const databases = new Databases(client);
 const QUEUE_ENABLED = process.env.RENDER_QUEUE_ENABLED === 'true';
 
