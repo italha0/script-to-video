@@ -10,7 +10,7 @@ const { uploadToAzureBlob, generateSASUrl } = require('../lib/dist/azure-blob.js
 const { RENDER_QUEUE_NAME } = require('../lib/dist/queue.js');
 const fetch = require('node-fetch');
 
-const sdk = require('appwrite');
+const sdk = require('node-appwrite');
 const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
 const APPWRITE_PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
@@ -21,7 +21,7 @@ if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY || !APPWRITE
   process.exit(1);
 }
 const client = new sdk.Client();
-console.log(client);
+
 client.setEndpoint(APPWRITE_ENDPOINT);
 client.setProject(APPWRITE_PROJECT_ID);
 client.setKey(APPWRITE_API_KEY);
