@@ -3,7 +3,8 @@
   "compilerOptions": {
     "noEmit": false,
     "outDir": "lib/dist",
-    "module": "commonjs"
+    "module": "commonjs",
+    "moduleResolution": "node"
   },
   "include": ["lib/**/*.ts", "lib/**/*.tsx"]
 }
