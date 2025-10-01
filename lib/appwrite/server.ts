@@ -1,4 +1,4 @@
-import { Client, Account, Databases } from 'appwrite';
+import { Client, Account, Databases } from 'node-appwrite';
 import { cookies } from 'next/headers';
 
 export async function createServerClient() {
