@@ -74,7 +74,56 @@ async function processRender(jobId){
   }
   const compositionId = record.composition_id || 'MessageConversation';
   const inputProps = record.input_props || {};
-
+  // Use system Chromium instead of bundled Chrome Headless Shell
+  if (!process.env.REMOTION_BROWSER_EXECUTABLE) {
+    try {
+      const { exec } = require('child_process');
+      const { promisify } = require('util');
+      const execAsync = promisify(exec);
+      let foundPath = '';
+      if (process.platform === 'win32') {
+        try {
+          const { stdout } = await execAsync('where chrome');
+          foundPath = (stdout || '').split(/\r?\n/).find(Boolean) || '';
+        } catch {}
+        if (!foundPath) {
+          try {
+            const { stdout } = await execAsync('where msedge');
+            foundPath = (stdout || '').split(/\r?\n/).find(Boolean) || '';
+          } catch {}
+        }
+      } else {
+        try {
+          const { stdout } = await execAsync('which chromium');
+          foundPath = (stdout || '').trim();
+        } catch {}
+        if (!foundPath) {
+          try {
+            const { stdout } = await execAsync('which google-chrome');
+            foundPath = (stdout || '').trim();
+          } catch {}
+        }
+      }
+      if (foundPath) {
+        process.env.REMOTION_BROWSER_EXECUTABLE = foundPath.trim();
+        process.env.PUPPETEER_EXECUTABLE_PATH = foundPath.trim();
+        console.log('[WORKER] Using system Chromium/Chrome at', foundPath.trim());
+      } else {
+        // Fallback to serverless chromium
+        try {
+          const chromium = require('@sparticuz/chromium');
+          const execPath = await chromium.executablePath();
+          process.env.REMOTION_BROWSER_EXECUTABLE = execPath;
+          process.env.PUPPETEER_EXECUTABLE_PATH = execPath;
+          console.log('[WORKER] Using serverless Chromium at', execPath);
+        } catch (e2) {
+          console.error('[WORKER] Could not resolve any Chromium executable', e2?.message || e2);
+        }
+      }
+    } catch (e) {
+      console.warn('[WORKER] Browser executable detection errored', e?.message || e);
+    }
+  }
   const marker = join(process.cwd(),'prebundled','serveUrl.txt');
   const preferPrebundled = process.env.REMOTION_USE_PREBUNDLED === 'true';
   let serveUrl = null;
@@ -98,6 +147,7 @@ async function processRender(jobId){
   const outDir = join(workDir,'renders');
   if (!existsSync(outDir)) mkdirSync(outDir,{ recursive:true });
   const outputPath = join(outDir, `${jobId}.mp4`);
+  const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE;
   await renderMedia({ 
     composition:{ ...comp, durationInFrames }, 
     serveUrl, 
@@ -108,6 +158,7 @@ async function processRender(jobId){
     crf: 15,
     concurrency:1,
     timeoutInMilliseconds: 120000,
+    browserExecutable,
     chromiumOptions: {
       headless: true,
       disableWebSecurity: true,
