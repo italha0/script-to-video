@@ -11,6 +11,7 @@ const { RENDER_QUEUE_NAME } = require('../lib/dist/queue.js');
 const fetch = require('node-fetch');
 
 const sdk = require('node-appwrite');
+const { Query } = require('node-appwrite');
 const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
 const APPWRITE_PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
@@ -204,10 +205,9 @@ async function pollingSweep(){
         APPWRITE_DATABASE_ID,
         APPWRITE_COLLECTION_VIDEO_RENDERS_ID,
         [
-          // Appwrite query for status in [pending, processing], order by created_at asc, limit 5
-          { attribute: 'status', operator: 'in', values: ['pending', 'processing'] },
-          { attribute: 'order', operator: 'asc', values: ['created_at'] },
-          { attribute: 'limit', operator: 'equal', values: [5] }
+          Query.equal('status', ['pending', 'processing']),
+          Query.orderAsc('created_at'),
+          Query.limit(5)
         ]
       );
       const rows = res.documents || [];
