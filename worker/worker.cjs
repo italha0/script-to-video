@@ -206,7 +206,7 @@ async function pollingSweep(){
         APPWRITE_COLLECTION_VIDEO_RENDERS_ID,
         [
           Query.equal('status', ['pending', 'processing']),
-          Query.orderAsc('created_at'),
+          Query.orderAsc('$createdAt'),
           Query.limit(5)
         ]
       );
