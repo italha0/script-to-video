@@ -2,8 +2,8 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Script from "next/script";
-import { AuthProvider } from "@/components/layout/AuthProvider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { WhopAuthProvider } from "@/components/layout/WhopAuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -133,9 +133,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false}>
-          <AuthProvider>
+          <WhopAuthProvider>
             <Suspense fallback={null}>{children}</Suspense>
-          </AuthProvider>
+          </WhopAuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>

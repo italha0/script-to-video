@@ -1,11 +1,15 @@
-import { type Metadata } from "next";
-import PricingComponent from "./pricing-component";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Pricing Plans | Script to Video",
-  description: "Find the perfect plan for your video creation needs. Start for free or upgrade to our Pro plan for HD exports, no watermarks, and premium features.",
-};
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAppStore } from "@/lib/store";
+import { MainLayout } from "@/components/layout/MainLayout";
 
-export default function PricingPage() {
-  return <PricingComponent />;
+export default function HomePage() {
+  const { user } = useAppStore();
+  const router = useRouter();
+
+  // Auth is now optional. Show editor for all users.
+
+  return <MainLayout />;
 }
